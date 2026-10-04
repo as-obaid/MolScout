@@ -1,4 +1,4 @@
-"""Command line: `molscout score` turns a predictions.csv into scores.json."""
+"""Command line: `molscout score` writes scores.json for a predictions.csv; `molscout bench` runs and scores a tool."""
 
 from __future__ import annotations
 
@@ -6,6 +6,8 @@ import argparse
 import sys
 from pathlib import Path
 
+from molscout.bench import BenchError
+from molscout.bench.harness import run_benchmark
 from molscout.data.internal import GROUND_TRUTH_PATH, SPLIT_PATH
 from molscout.runs import score_run
 from molscout.scoring import write_scores
@@ -25,7 +27,15 @@ def main(argv: list[str] | None = None) -> int:
     )
     score.add_argument("--ground-truth", type=Path, default=GROUND_TRUTH_PATH, help="internal: ground-truth CSV")
     score.add_argument("--split", type=Path, default=SPLIT_PATH, help="internal: dev/test split manifest")
+    bench = commands.add_parser("bench", help="run one tool on one crop dataset, then score and record the run")
+    bench.add_argument("config", type=Path, help="benchmarks/configs/<tool>__<dataset>.yaml")
+    bench.add_argument(
+        "--repo-root", type=Path, help="where relative paths in the config start (default: the current directory)"
+    )
+    bench.add_argument("--results-root", type=Path, help="default: <repo root>/benchmarks/results")
     args = parser.parse_args(argv)
+    if args.command == "bench":
+        return _bench(args)
     try:
         write_scores(args.output, _score(args))
     except (ValueError, OSError, RuntimeError) as exc:
@@ -43,3 +53,15 @@ def _score(args: argparse.Namespace) -> dict[str, object]:
         ground_truth=args.ground_truth,
         split=args.split,
     )
+
+
+def _bench(args: argparse.Namespace) -> int:
+    repo_root = args.repo_root or Path.cwd()
+    results_root = args.results_root or repo_root / "benchmarks" / "results"
+    try:
+        folder = run_benchmark(args.config, repo_root=repo_root, results_root=results_root)
+    except (BenchError, ValueError, OSError) as exc:
+        print(f"molscout bench: error: {exc}", file=sys.stderr)
+        return 1
+    print(f"wrote {folder}")
+    return 0
