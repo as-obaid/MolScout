@@ -11,9 +11,9 @@ the papers and tools live in `Course-Project/Docs/log.md`.
 | | |
 |:--|:--|
 | **Phase** | 1, baseline benchmark of existing tools |
-| **Session** | D1 Session 1 (Foundations), not started |
-| **Repo** | Docs and folder skeleton on `main`; no code yet |
-| **Internal data** | `data/internal/`, gitignored: 6 PDFs + 222-molecule ground-truth CSV |
+| **Session** | D1 Session 1 (Foundations) done; Session 2 next |
+| **Repo** | Scoring, loaders, predictions format and `fetch_data.py` on `benchmark` |
+| **Internal data** | `data/internal/`, gitignored: 6 PDFs + 222-row ground-truth CSV (220 unique structures) |
 | **Internal split** | Frozen in `data/manifests/internal_split.csv`: dev 1, 16, 19 (126) · test 2, 4, 6 (96) |
 | **BioVista** | Labels not downloaded; PDFs not fetched |
 | **MolGlyph** | Hugging Face access granted (`muhammad-ob`) |
@@ -34,17 +34,18 @@ the papers and tools live in `Course-Project/Docs/log.md`.
 
 **Session 1: Foundations**
 
-- [ ] `pyproject.toml`, RDKit 2026.3.2
-- [ ] Scoring: canonical, stereo-stripped, crop accuracy, whole-PDF P/R/F1 (micro, macro)
-- [ ] `predictions.csv` reader and validator
-- [ ] Loaders: molfile, SDF, internal CSV
-- [ ] `fetch_data.py` + manifests: USPTO, UOB, JPO, CLEF, MolRecBench-Wild
-- [ ] Split loader; Internal scores reported for dev, test and all
-- [ ] Unit tests; hand-made predictions file matches hand-computed scores
+- [x] `pyproject.toml`, RDKit 2026.3.2
+- [x] Scoring: canonical, stereo-stripped, crop accuracy, whole-PDF P/R/F1 (micro, macro)
+- [x] `predictions.csv` reader and validator
+- [x] Loaders: molfile, SDF, internal CSV
+- [x] `fetch_data.py` + manifests: USPTO, UOB, JPO, CLEF, MolRecBench-Wild
+- [x] Split loader; Internal scores reported for dev, test and all
+- [x] Unit tests; hand-made predictions file matches hand-computed scores
 
 **Session 2: Structure readers (30 runs)**
 
 - [ ] `run.sbatch` + harness writing `meta.json`
+- [ ] MolRecBench-Wild loader: its labels are CARBON molecular graphs, not SMILES
 - [ ] MolScribe on USPTO within 82.1–93.8%
 - [ ] MolNexTR, DECIMER, MolVec, MolGlyph, OCSRGlyph environments
 - [ ] 6 readers × 5 datasets scored; Type 1 tables filled

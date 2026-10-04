@@ -31,7 +31,8 @@ run at default settings.
 
 All five datasets are public. USPTO, JPO and CLEF are patent crops; UOB mixes patent and
 synthetic crops; [MolRecBench-Wild](https://huggingface.co/datasets/opendatalab/MolRecBench-Wild)
-has 5,029 real journal crops from 820 papers.
+has 5,024 real journal crops from 818 papers in its 2026-08-19 release (5,029 from 820 in the
+paper).
 
 Metrics:
 
