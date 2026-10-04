@@ -2,6 +2,9 @@
 data/raw/*
 !data/raw/.gitkeep
 
+# Internal sponsor dataset: six benchmark PDFs and ground-truth SMILES, never committed
+data/internal/
+
 # Python
 __pycache__/
 *.py[cod]
