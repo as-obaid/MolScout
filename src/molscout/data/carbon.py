@@ -190,10 +190,11 @@ def carbon_reference(
     if unknown:
         return Reference(item_id, None, f"label(s) with no SMILES form: {', '.join(unknown)}")
     with rdBase.BlockLogs():
-        mol = Chem.MolFromSmiles(smiles)
-        if mol is None:
+        if Chem.MolFromSmiles(smiles) is None:
             return Reference(item_id, None, sanitize_error(Chem.MolFromSmiles(smiles, sanitize=False)))
-    return Reference(item_id, Chem.MolToSmiles(mol))
+    # Kept as written, not canonicalized: the scorer canonicalizes references and predictions
+    # once each, and a second pass can change the text (an aromatic ring with `*` atoms).
+    return Reference(item_id, smiles)
 
 
 def _molblock(
@@ -331,10 +332,11 @@ def _is_atom(text: str) -> bool:
 
 
 def _to_smiles(mol: Chem.Mol) -> str:
-    try:
-        return Chem.MolToSmiles(mol, canonical=True, kekuleSmiles=True)
-    except RuntimeError:
-        return Chem.MolToSmiles(mol, canonical=True, kekuleSmiles=False)
+    with rdBase.BlockLogs():
+        try:
+            return Chem.MolToSmiles(mol, canonical=True, kekuleSmiles=True)
+        except (RuntimeError, ValueError):  # ValueError covers RDKit's KekulizeException
+            return Chem.MolToSmiles(mol, canonical=True, kekuleSmiles=False)
 
 
 def _simplify_bonds(bonds: Sequence[Sequence[Any]]) -> list[list[int]]:

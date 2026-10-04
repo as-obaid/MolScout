@@ -14,6 +14,7 @@ import tarfile
 from pathlib import Path
 
 from molscout.data.fetch import ChecksumError, fetch_dataset, load_manifests
+from molscout.data.molrecbench import export_images
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -31,8 +32,10 @@ def main(argv: list[str] | None = None) -> int:
         parser.error(f"no manifest for {', '.join(unknown)}; available: {', '.join(sorted(manifests))}")
     try:
         for name in names:
-            fetch_dataset(manifests[name], args.root)
-    except (ChecksumError, OSError, tarfile.TarError) as exc:
+            target = fetch_dataset(manifests[name], args.root)
+            if name == "molrecbench_wild":
+                print(f"molrecbench_wild: exported {export_images(target)} images to {target / 'images'}")
+    except (ChecksumError, OSError, ValueError, tarfile.TarError) as exc:
         print(f"fetch_data: error: {exc}", file=sys.stderr)
         return 1
     return 0

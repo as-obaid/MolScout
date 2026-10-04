@@ -9,7 +9,7 @@ from molscout.data.carbon import (
     label_atoms,
     load_templates,
 )
-from molscout.scoring import canonical_smiles, stereo_stripped_smiles
+from molscout.scoring import canonical_smiles, is_exact_match, stereo_stripped_smiles
 
 
 def record(symbols, bonds, coords=None, **fields):
@@ -31,7 +31,7 @@ def record(symbols, bonds, coords=None, **fields):
 def smiles_of(rec):
     reference = carbon_reference("x", rec)
     assert reference.error is None, reference.error
-    return reference.smiles
+    return canonical_smiles(reference.smiles)
 
 
 def test_plain_graph():
@@ -140,3 +140,12 @@ def test_expand_keeps_listed_labels_as_tokens():
 
 def test_expand_reports_labels_without_a_template():
     assert expand_abbreviations("CC[Qwerty]", load_templates())[1] == ["Qwerty"]
+
+
+def test_reference_is_canonicalized_once_like_a_prediction():
+    # An aromatic-looking ring with X atoms: canonicalizing RDKit's own canonical SMILES again
+    # turns it Kekulé, so a reference stored canonical would never match the drawn structure.
+    symbols = ["O", "C", "C", "[X]", "C", "[X]", "C"]
+    bonds = [[0, 1, 1], [1, 2, 2], [2, 3, 1], [3, 4, 2], [4, 5, 1], [5, 6, 2], [6, 1, 1]]
+    reference = carbon_reference("x", record(symbols, bonds))
+    assert is_exact_match("OC1=C*=C*=C1", reference.smiles)

@@ -18,7 +18,11 @@ def main(argv: list[str] | None = None) -> int:
     score.add_argument("predictions", type=Path, help="predictions.csv from one tool on one dataset")
     score.add_argument("-o", "--output", type=Path, required=True, help="scores.json to write")
     score.add_argument("--dataset", help="dataset name; needed only when predictions.csv has no rows")
-    score.add_argument("--references", type=Path, help="crop datasets: directory of reference .mol/.sdf files")
+    score.add_argument(
+        "--references",
+        type=Path,
+        help="crop datasets: directory of reference .mol/.sdf files, or the MolRecBench-Wild root",
+    )
     score.add_argument("--ground-truth", type=Path, default=GROUND_TRUTH_PATH, help="internal: ground-truth CSV")
     score.add_argument("--split", type=Path, default=SPLIT_PATH, help="internal: dev/test split manifest")
     args = parser.parse_args(argv)

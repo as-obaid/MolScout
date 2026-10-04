@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 
+from molscout.data import molfiles, molrecbench
 from molscout.data.internal import (
     GROUND_TRUTH_PATH,
     SPLIT_PATH,
@@ -13,7 +14,6 @@ from molscout.data.internal import (
     load_internal_split,
     references_by_paper,
 )
-from molscout.data.molfiles import load_references, reference_set_sha256
 from molscout.datasets import Kind, dataset_kind
 from molscout.hashing import sha256_file
 from molscout.predictions import Prediction, read_predictions
@@ -55,7 +55,9 @@ def _score_crops(
 ) -> tuple[dict[str, object], dict[str, object]]:
     if directory is None:
         raise ValueError(f"{dataset} is a crop dataset; pass --references DIR")
-    loaded = load_references(directory)
+    labels = dataset == "molrecbench_wild"
+    loader = molrecbench if labels else molfiles
+    loaded = loader.load_references(directory)
     references = {item: ref.smiles for item, ref in loaded.items()}
     unreadable = {item: ref.error or "" for item, ref in loaded.items() if ref.smiles is None}
     for item, smiles in references.items():
@@ -64,8 +66,8 @@ def _score_crops(
     inputs = {
         "references": {
             "directory": str(directory),
-            "files": len(loaded),
-            "sha256": reference_set_sha256(directory),
+            "labels" if labels else "files": len(loaded),
+            "sha256": loader.reference_set_sha256(directory),
             "unreadable": dict(sorted(unreadable.items())),
         }
     }
