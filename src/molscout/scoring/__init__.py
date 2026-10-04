@@ -10,6 +10,7 @@ from molscout.scoring.smiles import (
     is_exact_match,
     stereo_stripped_smiles,
 )
+from molscout.scoring.speed import seconds_per_item
 
 __all__ = [
     "RDKIT_VERSION",
@@ -22,6 +23,7 @@ __all__ = [
     "is_exact_match",
     "score_crops",
     "score_papers",
+    "seconds_per_item",
     "stereo_stripped_smiles",
     "write_scores",
 ]

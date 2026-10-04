@@ -154,6 +154,18 @@ def test_crop_scores_match_hand_counts(crops):
         assert scores[metric]["ci95"] == pytest.approx(bounds, abs=1e-9), metric
 
 
+def test_crop_report_has_seconds_per_item(crops):
+    # Six rows at 0.5 s each, c5 included: speed counts every row a tool wrote.
+    assert crops["scores"]["seconds_per_item"] == {"mean": 0.5, "median": 0.5, "items": 6, "total": 3.0}
+
+
+def test_score_run_gives_the_report_molscout_score_writes(crops):
+    from molscout.runs import score_run
+
+    report = score_run(FIXTURES / "crops_predictions.csv", references=FIXTURES / "crops_references")
+    assert report["scores"] == crops["scores"]
+
+
 def test_scores_are_reproducible(tmp_path, papers):
     assert score(tmp_path, FIXTURES / "papers_predictions.csv", *PAPER_ARGS) == papers
 
