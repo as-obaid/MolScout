@@ -10,6 +10,11 @@ from rdkit import Chem, rdBase
 
 RDKIT_VERSION = "2026.03.2"
 
+# By default RDKit reads text after whitespace as a molecule name, so "CCO CCN" would parse
+# as CCO. Treat that text as part of the output instead; CXSMILES extensions still parse.
+_PARSER = Chem.SmilesParserParams()
+_PARSER.parseName = False
+
 
 def check_rdkit_version() -> None:
     """Raise RuntimeError unless RDKit is the version every score is computed with."""
@@ -47,7 +52,7 @@ def _parse(smiles: str) -> Chem.Mol | None:
     if not text:
         return None
     with rdBase.BlockLogs():
-        mol = Chem.MolFromSmiles(text)
+        mol = Chem.MolFromSmiles(text, _PARSER)
     # MolFromSmiles can return a zero-atom molecule; that is no output, not a molecule.
     if mol is None or mol.GetNumAtoms() == 0:
         return None

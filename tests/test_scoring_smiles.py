@@ -75,3 +75,12 @@ def test_star_and_labelled_star_do_not_match():
 def test_invalid_never_matches_even_itself():
     assert not is_exact_match("C1CC", "C1CC")
     assert not is_exact_match("", "")
+
+
+@pytest.mark.parametrize("raw", ["CCO CCN", "CCO\tCCN", "CCO junk"])
+def test_text_after_whitespace_makes_output_invalid(raw):
+    assert canonical_smiles(raw) is None
+
+
+def test_cxsmiles_extension_still_parses():
+    assert canonical_smiles("*C |$R1;$|") == "*C"
