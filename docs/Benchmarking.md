@@ -1,13 +1,13 @@
 # Baseline Benchmark: SMILES Extraction from Papers
 
 Existing ways of extracting SMILES from papers, benchmarked before any new pipeline is
-built. The benchmark covers three types of approach, 29 runs in total, all scored by exact
+built. The benchmark covers three types of approach, 39 runs in total, all scored by exact
 match of canonical SMILES under RDKit 2026.3.2. Results are added as runs complete; — marks
 a result that is not yet available.
 
 | Type | Runs | Input | Datasets |
 |:---------------------|:-----|:---------------|:----------------------------------|
-| 1. Structure readers | 20 | Cut-out molecule | • [USPTO](https://github.com/Kohulan/OCSR_Review)<br>• [UOB](https://github.com/Kohulan/OCSR_Review)<br>• [JPO](https://github.com/Kohulan/OCSR_Review)<br>• [CLEF](https://github.com/Kohulan/OCSR_Review)<br>• [MolRecBench-Wild](https://huggingface.co/datasets/opendatalab/MolRecBench-Wild) |
+| 1. Structure readers | 30 | Cut-out molecule | • [USPTO](https://github.com/Kohulan/OCSR_Review)<br>• [UOB](https://github.com/Kohulan/OCSR_Review)<br>• [JPO](https://github.com/Kohulan/OCSR_Review)<br>• [CLEF](https://github.com/Kohulan/OCSR_Review)<br>• [MolRecBench-Wild](https://huggingface.co/datasets/opendatalab/MolRecBench-Wild) |
 | 2. Complete systems | 6 | Whole PDF | • [BioVista](https://github.com/jiaxianyan/BioMiner#statistics-and-access-of-biovista)<br>• Internal |
 | 3. AI agent | 3 | Whole PDF | • Internal |
 
@@ -26,6 +26,8 @@ run at default settings.
 | [MolNexTR](https://github.com/CYF2000127/MolNexTR) | ConvNeXt + ViT | Graph → SMILES | Explorer GPU | — |
 | [DECIMER](https://github.com/Kohulan/DECIMER-Image_Transformer) | EfficientNet-V2 + Transformer | SMILES | Local | — |
 | [MolVec](https://github.com/ncats/molvec) | Rule-based vectorization | Molfile → SMILES | Local CPU | — |
+| [MolGlyph](https://github.com/jiaxianyan/BioMiner/blob/main/BioMiner/MolScribe/molscribe/interface_molglyph.py) | Swin-B + Transformer on MolScribe's code; BioMiner's reader | SMILES | Explorer GPU | — |
+| [OCSRGlyph](https://github.com/EdisonScientific/glyph) | Swin-B + 6-layer Transformer decoder | SMILES | Explorer GPU | — |
 
 All five datasets are public. USPTO, JPO and CLEF are patent crops; UOB mixes patent and
 synthetic crops; [MolRecBench-Wild](https://huggingface.co/datasets/opendatalab/MolRecBench-Wild)
@@ -48,6 +50,8 @@ Metrics:
 | MolNexTR | — | — | — | — | — |
 | DECIMER | — | — | — | — | — |
 | MolVec | — | — | — | — | — |
+| MolGlyph | — | — | — | — | — |
+| OCSRGlyph | — | — | — | — | — |
 
 **Exact match, stereo-stripped (%)**
 
@@ -57,6 +61,8 @@ Metrics:
 | MolNexTR | — | — | — | — | — |
 | DECIMER | — | — | — | — | — |
 | MolVec | — | — | — | — | — |
+| MolGlyph | — | — | — | — | — |
+| OCSRGlyph | — | — | — | — | — |
 
 **Valid output and speed, all datasets pooled**
 
@@ -66,6 +72,8 @@ Metrics:
 | MolNexTR | — | — |
 | DECIMER | — | — |
 | MolVec | — | — |
+| MolGlyph | — | — |
+| OCSRGlyph | — | — |
 
 **Published accuracy (%), for reference**
 
@@ -75,8 +83,15 @@ Metrics:
 | MolNexTR | 82.1–93.8\* | — | 82.1–93.8\* | — | 40.90 |
 | DECIMER | — | — | — | — | — |
 | MolVec | — | — | — | — | — |
+| MolGlyph | — | — | — | — | — |
+| OCSRGlyph | 93.8 | — | — | — | — |
 
 \* Reported as a range across USPTO and JPO for MolScribe and MolNexTR, not per dataset.
+
+MolGlyph's published OCSR score is 76.4% overall and 50.4% on chirality, measured on
+BioVista crops rather than on these datasets (Yan et al., 2026). Its weights are gated on
+[Hugging Face](https://huggingface.co/jiaxianustc/MolGlyph). OCSRGlyph's 93.8% is on the
+5,719-image USPTO set with all stereochemistry required, as reported in its repository.
 
 ---
 
@@ -95,7 +110,9 @@ and weights are run at default settings.
 
 [BioVista](https://github.com/jiaxianyan/BioMiner#statistics-and-access-of-biovista) is
 public: 8,735 structures from 500 papers, with PDFs fetched by DOI. Internal is private:
-222 molecules from 6 papers.
+222 molecules from 6 papers. Existing tools are scored on all six; papers 2, 4 and 6
+(96 molecules) are also MolScout's held-out test set, so per-paper scores allow a direct
+comparison later.
 
 Metrics:
 
