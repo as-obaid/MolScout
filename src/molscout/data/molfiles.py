@@ -82,7 +82,7 @@ def reference_set_sha256(directory: str | Path) -> str:
 
 def _reference(path: Path, mol: Chem.Mol | None, unsanitized: Callable[[Path], Chem.Mol | None]) -> Reference:
     if mol is None:
-        return Reference(path.stem, None, _diagnose(unsanitized(path)))
+        return Reference(path.stem, None, sanitize_error(unsanitized(path)))
     if mol.GetNumAtoms() == 0:
         return Reference(path.stem, None, "file has no atoms")
     return Reference(path.stem, Chem.MolToSmiles(mol))
@@ -98,7 +98,7 @@ def _read_sdfile_unsanitized(path: Path) -> Chem.Mol | None:
         return next(iter(Chem.SDMolSupplier(str(path), sanitize=False)), None)
 
 
-def _diagnose(mol: Chem.Mol | None) -> str:
+def sanitize_error(mol: Chem.Mol | None) -> str:
     """RDKit's reason for rejecting a molecule that failed the default read."""
     if mol is None:
         return "RDKit cannot parse the file"
