@@ -1,0 +1,12 @@
+paperID,name of molecule,canonical_SMILES
+1,ethanol,CCO
+1,benzene,c1ccccc1
+1,L-alanine,C[C@H](N)C(=O)O
+1,phenyl R-group,*c1ccccc1
+2,acetic acid,CC(=O)O
+2,ethylamine,CCN
+2,compound 7,CCO
+2,ethanol,CCO
+3,trans-2-butene,C/C=C/C
+4,pyridine,c1ccncc1
+4,acetonitrile,CC#N
