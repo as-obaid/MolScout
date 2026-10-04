@@ -109,19 +109,28 @@ number.
   are different atoms.
 - **Invalid output counts as emitted and wrong.** An empty or unparsable SMILES is a wrong
   answer for its crop and a false positive for its paper, and it counts against the
-  valid-output rate.
+  valid-output rate. Text after whitespace makes an output invalid (`CCO CCN` is not read as
+  `CCO`); CXSMILES extensions such as `*C |$R1$|` are accepted.
+- **Valid-output rate counts what a tool emitted:** crops with a parsable SMILES ÷ scored
+  crops, and parsable rows ÷ rows for papers.
 - **Duplicates collapse within a paper.** Predictions and ground truth are each reduced to
   unique canonical SMILES per paper before counting; unparsable outputs collapse by their
   trimmed text. On Internal, papers 4 and 19 each list one structure under two names, so 220
   structures are scored rather than 222: 125 in dev and 95 in test.
 - **Unreadable references are left out.** A crop whose reference file RDKit cannot read is
   dropped from the denominator and listed in `scores.json`: 15 USPTO, 1 JPO and 15 CLEF crops.
-- **0 ÷ 0 is 0.** A paper with no output has precision 0.
+- **0 ÷ 0 is 0.** A paper with no output has precision 0; `papers_without_output` counts
+  them.
 - **95% confidence intervals.** Accuracy, valid-output rate and micro precision, recall and
   F1 use Wilson intervals. F1's interval uses TP out of TP + (FP + FN)/2, since
   F1 = TP ÷ (TP + (FP + FN)/2). Macro scores use a percentile bootstrap over papers with
-  10,000 resamples and seed 6630; with three papers per split, the dev and test macro
-  intervals are coarse.
+  10,000 resamples and seed 6630. Two limits apply. Pooled intervals treat molecules as
+  independent, though they cluster by paper (paper 19 holds 105 of 222 rows), so they are
+  optimistic. With three papers per split, the dev and test bootstrap intervals reduce to the
+  range of the per-paper values.
+- **`scores.json` pins its inputs:** the predictions sha256; the ground-truth and split sha256
+  (Internal) or the reference-set sha256 with the reason each crop was excluded (crops); and
+  the RDKit, NumPy, Python and MolScout versions.
 - **Internal is reported three ways:** dev (papers 1, 16, 19), test (2, 4, 6) and all six.
 
 ## Running Benchmarks
