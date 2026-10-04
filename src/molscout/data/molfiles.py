@@ -36,8 +36,11 @@ def read_molfile(path: str | Path) -> Reference:
 def read_sdfile(path: str | Path) -> Reference:
     """Read an SDfile holding exactly one record."""
     path = Path(path)
-    with rdBase.BlockLogs():
-        records = list(Chem.SDMolSupplier(str(path)))
+    try:
+        with rdBase.BlockLogs():
+            records = list(Chem.SDMolSupplier(str(path)))
+    except OSError:  # RDKit refuses an empty file outright
+        return Reference(path.stem, None, "RDKit cannot parse the file")
     if len(records) != 1:
         return Reference(path.stem, None, f"expected 1 record, found {len(records)}")
     return _reference(path, records[0], _read_sdfile_unsanitized)

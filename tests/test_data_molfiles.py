@@ -95,3 +95,12 @@ def test_load_references_needs_files(tmp_path):
 def test_load_references_needs_the_directory(tmp_path):
     with pytest.raises(FileNotFoundError):
         load_references(tmp_path / "missing")
+
+
+@pytest.mark.parametrize("name", ["empty.sdf", "empty.mol"])
+def test_zero_byte_file_is_unreadable_not_fatal(tmp_path, name):
+    (tmp_path / name).write_bytes(b"")
+    (tmp_path / "ok.mol").write_text(molblock("CCO"))
+    references = load_references(tmp_path)
+    assert references["empty"] == Reference("empty", None, "RDKit cannot parse the file")
+    assert references["ok"].smiles == "CCO"
