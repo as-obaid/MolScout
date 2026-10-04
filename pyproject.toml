@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "molscout"
+version = "0.1.0"
+description = "Detect chemical structure drawings in scientific PDFs and convert them to canonical SMILES."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "Muhammad Obaidullah" }]
+dependencies = [
+    "rdkit==2026.3.2",
+    "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-cov>=5"]
+
+[project.scripts]
+molscout = "molscout.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/molscout"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra --strict-markers"
