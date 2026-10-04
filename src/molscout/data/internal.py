@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import re
 from collections import Counter
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
@@ -84,7 +85,7 @@ def load_internal_split(path: str | Path = SPLIT_PATH) -> InternalSplit:
             row_errors.append(f"line {line}: paper {paper} listed twice")
         if split not in SPLITS:
             row_errors.append(f"line {line}: split must be dev or test, got {split!r}")
-        if not count.isdigit() or int(count) < 1:
+        if not re.fullmatch(r"[0-9]+", count) or int(count) < 1:
             row_errors.append(f"line {line}: molecules must be a positive integer, got {count!r}")
         if row_errors:
             errors.extend(row_errors)

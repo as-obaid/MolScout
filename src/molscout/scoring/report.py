@@ -2,28 +2,41 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
+import platform
 from collections.abc import Mapping
 from pathlib import Path
 
+import numpy as np
 from rdkit import rdBase
 
 import molscout
+from molscout.hashing import sha256_file
 from molscout.scoring.stats import BOOTSTRAP_RESAMPLES, BOOTSTRAP_SEED, Z_95
 
 
 def build_report(
-    scores: Mapping[str, object], *, dataset: str, tool: str, predictions_path: Path
+    scores: Mapping[str, object],
+    *,
+    dataset: str,
+    tool: str,
+    predictions_path: Path,
+    inputs: Mapping[str, object],
 ) -> dict[str, object]:
-    """Wrap scores with the dataset, tool, input checksum and scoring settings."""
+    """Wrap scores with the dataset, tool, input checksums and scoring settings.
+
+    `inputs` pins the reference side, such as ground-truth and split checksums.
+    """
     return {
         "dataset": dataset,
         "tool": tool,
-        "predictions": {"path": str(predictions_path), "sha256": _sha256(predictions_path)},
+        "predictions": {"path": str(predictions_path), "sha256": sha256_file(predictions_path)},
+        "inputs": dict(inputs),
         "scoring": {
             "molscout_version": molscout.__version__,
             "rdkit_version": rdBase.rdkitVersion,
+            "numpy_version": np.__version__,
+            "python_version": platform.python_version(),
             "match": "exact RDKit canonical SMILES, stereo-aware and stereo-stripped",
             "ci95_proportions": {"method": "wilson", "z": Z_95},
             "ci95_macro": {
@@ -42,10 +55,3 @@ def write_scores(path: str | Path, report: Mapping[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8")
 
-
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with Path(path).open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1 << 20), b""):
-            digest.update(chunk)
-    return digest.hexdigest()

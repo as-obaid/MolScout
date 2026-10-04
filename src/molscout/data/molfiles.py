@@ -6,11 +6,14 @@ The crop ID is the file name without its extension, which the image shares.
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
 from rdkit import Chem, rdBase
+
+from molscout.hashing import sha256_file
 
 MOLFILE_SUFFIXES = frozenset({".mol"})
 SDF_SUFFIXES = frozenset({".sdf", ".sd"})
@@ -52,17 +55,29 @@ def load_references(directory: str | Path) -> dict[str, Reference]:
     if not directory.is_dir():
         raise FileNotFoundError(f"reference directory not found: {directory}")
     references: dict[str, Reference] = {}
-    for path in sorted(directory.iterdir()):
-        suffix = path.suffix.lower()
-        if path.name.startswith(".") or suffix not in MOLFILE_SUFFIXES | SDF_SUFFIXES:
-            continue
-        reference = read_molfile(path) if suffix in MOLFILE_SUFFIXES else read_sdfile(path)
+    for path in reference_files(directory):
+        reference = read_molfile(path) if path.suffix.lower() in MOLFILE_SUFFIXES else read_sdfile(path)
         if reference.item_id in references:
             raise ValueError(f"two reference files for crop {reference.item_id!r} in {directory}")
         references[reference.item_id] = reference
     if not references:
         raise ValueError(f"no .mol or .sdf files in {directory}")
     return references
+
+
+def reference_files(directory: Path) -> list[Path]:
+    """The .mol and .sdf files in a directory, sorted by name; hidden files are skipped."""
+    return [
+        path
+        for path in sorted(directory.iterdir())
+        if not path.name.startswith(".") and path.suffix.lower() in MOLFILE_SUFFIXES | SDF_SUFFIXES
+    ]
+
+
+def reference_set_sha256(directory: str | Path) -> str:
+    """One checksum for a reference set: sha256 of `<sha256>  <name>` lines, as sha256sum prints them."""
+    lines = "".join(f"{sha256_file(path)}  {path.name}\n" for path in reference_files(Path(directory)))
+    return hashlib.sha256(lines.encode()).hexdigest()
 
 
 def _reference(path: Path, mol: Chem.Mol | None, unsanitized: Callable[[Path], Chem.Mol | None]) -> Reference:

@@ -1,7 +1,9 @@
 import pytest
 from rdkit import Chem
 
-from molscout.data.molfiles import Reference, load_references, read_molfile, read_sdfile
+import hashlib
+
+from molscout.data.molfiles import Reference, load_references, read_molfile, read_sdfile, reference_set_sha256
 
 
 def molblock(smiles):
@@ -104,3 +106,15 @@ def test_zero_byte_file_is_unreadable_not_fatal(tmp_path, name):
     references = load_references(tmp_path)
     assert references["empty"] == Reference("empty", None, "RDKit cannot parse the file")
     assert references["ok"].smiles == "CCO"
+
+
+def test_reference_set_sha256_covers_the_files_load_references_reads(tmp_path):
+    (tmp_path / "b.mol").write_text(molblock("CCN"))
+    (tmp_path / "a.MOL").write_text(molblock("CCO"))
+    (tmp_path / "notes.txt").write_text("ignored")
+    lines = "".join(
+        f"{hashlib.sha256((tmp_path / name).read_bytes()).hexdigest()}  {name}\n" for name in ["a.MOL", "b.mol"]
+    )
+    assert reference_set_sha256(tmp_path) == hashlib.sha256(lines.encode()).hexdigest()
+    (tmp_path / "b.mol").write_text(molblock("CCC"))
+    assert reference_set_sha256(tmp_path) != hashlib.sha256(lines.encode()).hexdigest()

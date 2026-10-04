@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections import defaultdict
 from collections.abc import Collection, Iterable, Mapping, Sequence
 from dataclasses import dataclass
@@ -34,6 +35,8 @@ class PaperResult:
     stereo_stripped: PaperCounts
     valid_outputs: int
     invalid_outputs: int
+    rows: int
+    invalid_rows: int
 
 
 def count_paper(predicted: Sequence[str], reference: Sequence[str]) -> PaperResult:
@@ -56,6 +59,8 @@ def count_paper(predicted: Sequence[str], reference: Sequence[str]) -> PaperResu
         stereo_stripped=_counts(_stripped(found), _stripped(truth), len(invalid)),
         valid_outputs=len(found),
         invalid_outputs=len(invalid),
+        rows=len(parsed),
+        invalid_rows=sum(canonical is None for _, canonical in parsed),
     )
 
 
@@ -107,7 +112,7 @@ def _stripped(smiles: Iterable[str]) -> set[str]:
 
 
 def _ordered(papers: Iterable[str]) -> list[str]:
-    return sorted(papers, key=lambda p: (0, int(p), p) if p.isdigit() else (1, 0, p))
+    return sorted(papers, key=lambda p: (0, int(p), p) if re.fullmatch(r"[0-9]+", p) else (1, 0, p))
 
 
 def _count_record(counts: PaperCounts) -> dict[str, object]:
@@ -122,6 +127,8 @@ def _paper_record(result: PaperResult) -> dict[str, object]:
         "stereo_stripped": _count_record(result.stereo_stripped),
         "valid_outputs": result.valid_outputs,
         "invalid_outputs": result.invalid_outputs,
+        "rows": result.rows,
+        "invalid_rows": result.invalid_rows,
     }
 
 
@@ -144,8 +151,8 @@ def _group_record(papers: list[str], results: Mapping[str, PaperResult]) -> dict
     members = [results[p] for p in papers]
     aware = _pooled(r.stereo_aware for r in members)
     stripped = _pooled(r.stereo_stripped for r in members)
-    valid = sum(r.valid_outputs for r in members)
-    invalid = sum(r.invalid_outputs for r in members)
+    rows = sum(r.rows for r in members)
+    invalid_rows = sum(r.invalid_rows for r in members)
     return {
         "papers": papers,
         "molecules": aware.tp + aware.fn,
@@ -156,5 +163,6 @@ def _group_record(papers: list[str], results: Mapping[str, PaperResult]) -> dict
             "recall": macro([r.stereo_aware.recall for r in members]),
         },
         "stereo_stripped": {"counts": {"tp": stripped.tp, "fp": stripped.fp, "fn": stripped.fn}, **_micro(stripped)},
-        "valid_output_rate": proportion(valid, valid + invalid),
+        "valid_output_rate": proportion(rows - invalid_rows, rows),
+        "papers_without_output": sum(r.rows == 0 for r in members),
     }

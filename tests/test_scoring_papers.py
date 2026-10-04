@@ -45,6 +45,8 @@ def test_per_paper_counts(scores):
     stripped = {p: tuple(r["stereo_stripped"][k] for k in ("tp", "fp", "fn")) for p, r in scores["papers"].items()}
     assert stripped == {"1": (4, 2, 0), "2": (2, 2, 1), "3": (1, 0, 0), "4": (0, 0, 2)}
     assert scores["papers"]["2"]["molecules"] == 3
+    rows = {p: (r["rows"], r["invalid_rows"]) for p, r in scores["papers"].items()}
+    assert rows == {"1": (7, 1), "2": (6, 3), "3": (1, 0), "4": (0, 0)}
 
 
 def test_micro_scores_pool_counts(scores):
@@ -58,7 +60,8 @@ def test_micro_scores_pool_counts(scores):
     assert group["stereo_stripped"]["precision"]["value"] == pytest.approx(7 / 11)
     assert group["stereo_stripped"]["recall"]["value"] == pytest.approx(7 / 10)
     assert group["stereo_stripped"]["f1"]["value"] == pytest.approx(2 / 3)
-    assert group["valid_output_rate"]["value"] == pytest.approx(8 / 11)
+    assert (group["valid_output_rate"]["successes"], group["valid_output_rate"]["trials"]) == (10, 14)
+    assert group["papers_without_output"] == 1
 
 
 def test_micro_f1_interval_is_wilson_on_its_denominator(scores):
@@ -80,6 +83,7 @@ def test_groups_are_scored_separately(scores):
     assert test["counts"] == {"tp": 2, "fp": 3, "fn": 2}
     assert dev["macro"]["recall"]["value"] == pytest.approx(0.375)
     assert test["macro"]["recall"]["value"] == pytest.approx(1 / 3)
+    assert (dev["papers_without_output"], test["papers_without_output"]) == (1, 0)
 
 
 def test_default_group_is_all_papers():
@@ -91,7 +95,9 @@ def test_default_group_is_all_papers():
 def test_duplicates_collapse_before_scoring():
     once = score_papers([row("2", "CCO")], {"2": ["CCO"]})
     repeated = score_papers([row("2", "CCO"), row("2", "OCC"), row("2", "CCO")], {"2": ["CCO", "CCO"]})
-    assert once["papers"] == repeated["papers"]
+    scored = ("molecules", "tp", "fp", "fn", "precision", "recall", "stereo_stripped")
+    assert {k: once["papers"]["2"][k] for k in scored} == {k: repeated["papers"]["2"][k] for k in scored}
+    assert (once["papers"]["2"]["rows"], repeated["papers"]["2"]["rows"]) == (1, 3)
 
 
 def test_distinct_invalid_strings_are_separate_false_positives():
@@ -128,3 +134,8 @@ def test_empty_group_raises():
 def test_unparsable_reference_raises_with_paper():
     with pytest.raises(ValueError, match="paper '1'.*C1CC"):
         score_papers([], {"1": ["C1CC"]})
+
+
+def test_non_ascii_digits_in_paper_ids_do_not_crash():
+    papers = score_papers([], {"\u00b2": ["CCO"], "10": ["CCO"], "9": ["CCO"]})["papers"]
+    assert list(papers) == ["9", "10", "\u00b2"]

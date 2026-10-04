@@ -10,9 +10,10 @@ from __future__ import annotations
 
 import argparse
 import sys
+import tarfile
 from pathlib import Path
 
-from molscout.data.fetch import fetch_dataset, load_manifests
+from molscout.data.fetch import ChecksumError, fetch_dataset, load_manifests
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -28,8 +29,12 @@ def main(argv: list[str] | None = None) -> int:
     unknown = sorted(set(names) - set(manifests))
     if unknown:
         parser.error(f"no manifest for {', '.join(unknown)}; available: {', '.join(sorted(manifests))}")
-    for name in names:
-        fetch_dataset(manifests[name], args.root)
+    try:
+        for name in names:
+            fetch_dataset(manifests[name], args.root)
+    except (ChecksumError, OSError, tarfile.TarError) as exc:
+        print(f"fetch_data: error: {exc}", file=sys.stderr)
+        return 1
     return 0
 
 

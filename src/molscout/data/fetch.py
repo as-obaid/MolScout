@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
 from molscout.datasets import DATASETS
+from molscout.hashing import sha256_file
 
 CHUNK_BYTES = 1 << 20
 MANIFEST_KEYS = ("dataset", "description", "source", "revision", "citation", "license", "items", "files")
@@ -66,14 +67,6 @@ def load_manifests(directory: str | Path) -> dict[str, DatasetManifest]:
     """Every *.json manifest in a directory, keyed by dataset."""
     manifests = (load_manifest(path) for path in sorted(Path(directory).glob("*.json")))
     return {manifest.dataset: manifest for manifest in manifests}
-
-
-def sha256_file(path: str | Path) -> str:
-    digest = hashlib.sha256()
-    with Path(path).open("rb") as handle:
-        for chunk in iter(lambda: handle.read(CHUNK_BYTES), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def download(url: str, destination: Path, *, sha256: str, timeout: float = 60.0) -> None:

@@ -1,0 +1,16 @@
+"""sha256 of files, for manifests and for pinning a run's inputs."""
+
+from __future__ import annotations
+
+import hashlib
+from pathlib import Path
+
+CHUNK_BYTES = 1 << 20
+
+
+def sha256_file(path: str | Path) -> str:
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as handle:
+        for chunk in iter(lambda: handle.read(CHUNK_BYTES), b""):
+            digest.update(chunk)
+    return digest.hexdigest()

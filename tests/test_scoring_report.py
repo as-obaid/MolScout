@@ -10,7 +10,12 @@ from molscout.scoring.stats import BOOTSTRAP_SEED
 def test_report_records_how_scores_were_made(tmp_path):
     predictions = tmp_path / "predictions.csv"
     predictions.write_bytes(b"x\n")
-    report = build_report({"kind": "crop"}, dataset="uspto", tool="T 1", predictions_path=predictions)
+    report = build_report(
+        {"kind": "crop"}, dataset="uspto", tool="T 1", predictions_path=predictions, inputs={"split_sha256": "ab"}
+    )
+    assert report["inputs"] == {"split_sha256": "ab"}
+    assert report["scoring"]["python_version"].count(".") == 2
+    assert report["scoring"]["numpy_version"]
     assert (report["dataset"], report["tool"]) == ("uspto", "T 1")
     assert report["predictions"]["sha256"] == hashlib.sha256(b"x\n").hexdigest()
     assert report["scoring"]["rdkit_version"] == "2026.03.2"

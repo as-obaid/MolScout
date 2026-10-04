@@ -85,6 +85,7 @@ def test_unknown_split_name(tmp_path):
         ("paperID,split,molecules\n1,train,2\n", "split must be dev or test"),
         ("paperID,split,molecules\n1,dev,2\n1,test,3\n", "listed twice"),
         ("paperID,split,molecules\n1,dev,zero\n", "molecules"),
+        ("paperID,split,molecules\n1,dev,\u00b2\n", "molecules must be a positive integer"),
         ("paperID,split\n1,dev\n", "expected columns"),
         ("paperID,split,molecules\n", "no papers"),
     ],

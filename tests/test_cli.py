@@ -17,7 +17,8 @@ paper 3 {trans-2-butene}; paper 4 {pyridine, acetonitrile}. Dev is 1 and 4; test
     dev     3  3  3  3/6   3/6   1/2    1/4      3/8     |          4  2  2   4/6   4/6   2/3
     test    2  3  2  2/5   2/4   4/9    1/4      1/3     |          3  2  1   3/5   3/4   2/3
 
-    Valid outputs: all 8 of 11, dev 5 of 6, test 3 of 5.
+    Valid output rows: paper 1 6 of 7, paper 2 3 of 6, paper 3 1 of 1, paper 4 none;
+    so all 10 of 14, dev 6 of 7, test 4 of 7. Paper 4 is the one paper without output.
 
 Crops (fixtures/handmade/crops_*). c5's molfile has a pentavalent carbon, so c5 is
 excluded; c6 has no prediction; c7's prediction is unparsable.
@@ -35,6 +36,7 @@ excluded; c6 has no prediction; c7's prediction is unparsable.
 Wilson bounds are from statsmodels proportion_confint(method="wilson"), computed separately.
 """
 
+import hashlib
 import json
 import os
 import subprocess
@@ -101,10 +103,10 @@ def test_paper_stereo_stripped_scores_match_hand_counts(papers, group, counts, p
     assert scores["f1"]["value"] == pytest.approx(f1)
 
 
-@pytest.mark.parametrize(("group", "valid", "outputs"), [("all", 8, 11), ("dev", 5, 6), ("test", 3, 5)])
-def test_paper_valid_output_rate(papers, group, valid, outputs):
+@pytest.mark.parametrize(("group", "valid", "rows"), [("all", 10, 14), ("dev", 6, 7), ("test", 4, 7)])
+def test_paper_valid_output_rate(papers, group, valid, rows):
     rate = papers["scores"]["groups"][group]["valid_output_rate"]
-    assert (rate["successes"], rate["trials"]) == (valid, outputs)
+    assert (rate["successes"], rate["trials"]) == (valid, rows)
 
 
 def test_paper_wilson_intervals_match_statsmodels(papers):
@@ -119,7 +121,7 @@ def test_paper_wilson_intervals_match_statsmodels(papers):
     }
     for (section, metric), bounds in expected.items():
         assert scores[section][metric]["ci95"] == pytest.approx(bounds, abs=1e-9), (section, metric)
-    assert scores["valid_output_rate"]["ci95"] == pytest.approx([0.434354698824, 0.902539407100], abs=1e-9)
+    assert scores["valid_output_rate"]["ci95"] == pytest.approx([0.453509156701, 0.882786213554], abs=1e-9)
 
 
 def test_paper_macro_intervals_bracket_the_mean(papers):
@@ -221,3 +223,33 @@ def test_runs_as_a_module(tmp_path):
     )
     assert result.returncode == 0, result.stderr
     assert json.loads(out.read_text())["scores"]["accuracy"]["successes"] == 3
+
+
+def sha256(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def test_paper_report_pins_ground_truth_and_split(papers):
+    assert papers["inputs"] == {
+        "ground_truth_sha256": sha256(FIXTURES / "papers_ground_truth.csv"),
+        "split_sha256": sha256(FIXTURES / "papers_split.csv"),
+    }
+
+
+def test_crop_report_pins_references_and_why_crops_were_excluded(crops):
+    references = crops["inputs"]["references"]
+    assert references["files"] == 7
+    assert len(references["sha256"]) == 64
+    assert list(references["unreadable"]) == ["c5"]
+    assert "valence" in references["unreadable"]["c5"].lower()
+
+
+def test_unwritable_output_is_reported(tmp_path, capsys):
+    args = ["score", str(FIXTURES / "crops_predictions.csv"), *map(str, CROP_ARGS), "-o", str(tmp_path)]
+    assert main(args) == 1
+    assert "molscout score: error:" in capsys.readouterr().err
+
+
+def test_unreadable_predictions_are_reported(tmp_path, capsys):
+    assert main(["score", str(tmp_path), *map(str, CROP_ARGS), "-o", str(tmp_path / "scores.json")]) == 1
+    assert "molscout score: error:" in capsys.readouterr().err

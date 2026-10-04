@@ -207,3 +207,14 @@ def test_script_fetches_named_datasets(tmp_path, monkeypatch):
     monkeypatch.setattr(script, "fetch_dataset", lambda manifest, root: fetched.append((manifest.dataset, root)))
     assert script.main(["jpo", "clef", "--root", str(tmp_path)]) == 0
     assert fetched == [("jpo", tmp_path), ("clef", tmp_path)]
+
+
+def test_script_reports_fetch_errors(monkeypatch, capsys):
+    script = load_script()
+
+    def fail(manifest, root):
+        raise ChecksumError("sha256 mismatch for JPO.tar.gz")
+
+    monkeypatch.setattr(script, "fetch_dataset", fail)
+    assert script.main(["jpo"]) == 1
+    assert "sha256 mismatch for JPO.tar.gz" in capsys.readouterr().err

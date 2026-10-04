@@ -15,10 +15,18 @@ from molscout.data.internal import (
     load_internal_split,
     references_by_paper,
 )
-from molscout.data.molfiles import load_references
+from molscout.data.molfiles import load_references, reference_set_sha256
 from molscout.datasets import Kind, dataset_kind
+from molscout.hashing import sha256_file
 from molscout.predictions import Prediction, read_predictions
-from molscout.scoring import build_report, check_rdkit_version, score_crops, score_papers, write_scores
+from molscout.scoring import (
+    build_report,
+    canonical_smiles,
+    check_rdkit_version,
+    score_crops,
+    score_papers,
+    write_scores,
+)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -33,11 +41,10 @@ def main(argv: list[str] | None = None) -> int:
     score.add_argument("--split", type=Path, default=SPLIT_PATH, help="internal: dev/test split manifest")
     args = parser.parse_args(argv)
     try:
-        report = _score(args)
-    except (ValueError, FileNotFoundError, RuntimeError) as exc:
+        write_scores(args.output, _score(args))
+    except (ValueError, OSError, RuntimeError) as exc:
         print(f"molscout score: error: {exc}", file=sys.stderr)
         return 1
-    write_scores(args.output, report)
     print(f"wrote {args.output}")
     return 0
 
@@ -47,19 +54,45 @@ def _score(args: argparse.Namespace) -> dict[str, object]:
     predictions = read_predictions(args.predictions)
     dataset = _dataset(predictions, args.dataset)
     if dataset_kind(dataset) is Kind.CROP:
-        if args.references is None:
-            raise ValueError(f"{dataset} is a crop dataset; pass --references DIR")
-        references = {item: ref.smiles for item, ref in load_references(args.references).items()}
-        scores = score_crops(predictions, references)
+        scores, inputs = _score_crops(predictions, dataset, args.references)
     elif dataset == "internal":
-        ground_truth = load_internal_ground_truth(args.ground_truth)
-        split = load_internal_split(args.split)
-        check_split_counts(ground_truth, split)
-        scores = score_papers(predictions, references_by_paper(ground_truth), split.groups())
+        scores, inputs = _score_internal(predictions, args.ground_truth, args.split)
     else:
         raise ValueError(f"no ground-truth loader for {dataset} yet")
     tool = predictions[0].tool if predictions else ""
-    return build_report(scores, dataset=dataset, tool=tool, predictions_path=args.predictions)
+    return build_report(scores, dataset=dataset, tool=tool, predictions_path=args.predictions, inputs=inputs)
+
+
+def _score_crops(
+    predictions: Sequence[Prediction], dataset: str, directory: Path | None
+) -> tuple[dict[str, object], dict[str, object]]:
+    if directory is None:
+        raise ValueError(f"{dataset} is a crop dataset; pass --references DIR")
+    loaded = load_references(directory)
+    references = {item: ref.smiles for item, ref in loaded.items()}
+    unreadable = {item: ref.error or "" for item, ref in loaded.items() if ref.smiles is None}
+    for item, smiles in references.items():
+        if smiles is not None and canonical_smiles(smiles) is None:
+            unreadable[item] = "RDKit cannot re-parse the SMILES it wrote for this file"
+    inputs = {
+        "references": {
+            "directory": str(directory),
+            "files": len(loaded),
+            "sha256": reference_set_sha256(directory),
+            "unreadable": dict(sorted(unreadable.items())),
+        }
+    }
+    return score_crops(predictions, references), inputs
+
+
+def _score_internal(
+    predictions: Sequence[Prediction], ground_truth_path: Path, split_path: Path
+) -> tuple[dict[str, object], dict[str, object]]:
+    ground_truth = load_internal_ground_truth(ground_truth_path)
+    split = load_internal_split(split_path)
+    check_split_counts(ground_truth, split)
+    inputs = {"ground_truth_sha256": sha256_file(ground_truth_path), "split_sha256": sha256_file(split_path)}
+    return score_papers(predictions, references_by_paper(ground_truth), split.groups()), inputs
 
 
 def _dataset(predictions: Sequence[Prediction], requested: str | None) -> str:
