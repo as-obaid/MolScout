@@ -1,0 +1,16 @@
+# Data: paper PDFs, dataset images and private files stay local
+data/raw/*
+!data/raw/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+
+# OS
+.DS_Store
+
+# Docs: kept local for now
+docs/
