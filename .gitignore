@@ -5,6 +5,12 @@ data/raw/*
 # Internal sponsor dataset: six benchmark PDFs and ground-truth SMILES, never committed
 data/internal/
 
+# Benchmark runs: SLURM logs and harness staging folders
+benchmarks/slurm/logs/*
+!benchmarks/slurm/logs/.gitkeep
+benchmarks/results/.staging-*
+benchmarks/results/.old-*
+
 # Python
 __pycache__/
 *.py[cod]

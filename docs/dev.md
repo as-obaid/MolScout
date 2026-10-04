@@ -106,7 +106,9 @@ number.
   tetrahedral and double-bond stereo with `RemoveStereochemistry`; isotopes are kept.
 - **`*` is an atom.** Five internal ground-truth molecules contain `*`, so `*` is
   canonicalized like any other atom, never rejected. Labels are kept: `*`, `[1*]` and `[*:1]`
-  are different atoms.
+  are different atoms, so a reader that writes a bare `*` for a drawn R1 is wrong. CLEF
+  R-groups canonicalize as `[1*]`, `[2*]` (85 of 992 references); the reader has to keep the
+  number.
 - **Invalid output counts as emitted and wrong.** An empty or unparsable SMILES is a wrong
   answer for its crop and a false positive for its paper, and it counts against the
   valid-output rate. Text after whitespace makes an output invalid (`CCO CCN` is not read as
