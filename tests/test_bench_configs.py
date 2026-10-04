@@ -84,6 +84,14 @@ def test_configs_keep_the_plan_key_order_and_unexpanded_variables(tmp_path):
     assert config["lock_commands"] == [["java", "-version"]]
 
 
+def test_generated_lock_commands_expand_when_the_config_loads(tmp_path, monkeypatch):
+    monkeypatch.setenv("STORE", "/store")
+    data = {**TOOL, "lock_commands": [["${STORE}/models/reader/jdk/bin/java", "-version"]]}
+    path = make_configs(write_tool(tmp_path, data), tmp_path / "configs", repo_root=tmp_path)[0]
+    assert yaml.safe_load(path.read_text())["lock_commands"] == [["${STORE}/models/reader/jdk/bin/java", "-version"]]
+    assert load_config(path, tmp_path).lock_commands == (("/store/models/reader/jdk/bin/java", "-version"),)
+
+
 def test_env_and_lock_commands_default_to_empty(tmp_path):
     path = make_configs(write_tool(tmp_path, TOOL), tmp_path / "configs", repo_root=tmp_path)[0]
     config = yaml.safe_load(path.read_text())

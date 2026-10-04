@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import signal
 import sys
 from pathlib import Path
 
-from molscout.bench import BenchError
+from molscout.bench import BenchError, Terminated
 from molscout.bench.harness import run_benchmark
 from molscout.data.internal import GROUND_TRUTH_PATH, SPLIT_PATH
 from molscout.runs import score_run
@@ -60,8 +61,11 @@ def _bench(args: argparse.Namespace) -> int:
     results_root = args.results_root or repo_root / "benchmarks" / "results"
     try:
         folder = run_benchmark(args.config, repo_root=repo_root, results_root=results_root)
-    except (BenchError, ValueError, OSError) as exc:
+    except (BenchError, RuntimeError, ValueError, OSError) as exc:
         print(f"molscout bench: error: {exc}", file=sys.stderr)
         return 1
+    except Terminated as exc:
+        print(f"molscout bench: error: {exc}", file=sys.stderr)
+        return 128 + signal.SIGTERM
     print(f"wrote {folder}")
     return 0

@@ -12,7 +12,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from molscout.tables import fill_type1, load_runs, missing_runs
+from molscout.tables import fill_type1, git_warnings, load_runs, missing_runs
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -30,6 +30,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"make_tables: error: {exc}", file=sys.stderr)
         return 1
     print(f"{len(runs)} runs found")
+    for warning in git_warnings(runs):
+        print(f"make_tables: warning: {warning}", file=sys.stderr)
     missing = missing_runs(runs)
     if missing:
         print(f"missing: {', '.join(missing)}")

@@ -1,5 +1,6 @@
 """The shared crop loop that every tool's run.py calls."""
 
+import json
 import sys
 from pathlib import Path
 
@@ -25,6 +26,15 @@ def parse(images: Path, output: Path, dataset: str = "uspto", tool: str = "fake 
     )
 
 
+def sidecar(output: Path) -> dict:
+    """The errors file run_crops writes beside predictions.csv."""
+    return json.loads(output.with_name(f"{output.stem}.errors.json").read_text(encoding="utf-8"))
+
+
+def leftovers(folder: Path) -> list[str]:
+    return sorted(p.name for p in folder.iterdir() if p.name.endswith(".part"))
+
+
 def test_list_images_sorted_and_filtered(tmp_path):
     folder = make_images(tmp_path / "img", ["b.png", "a.JPG", "c.tiff", "d.txt", ".hidden.png", "e.bmp"])
     (folder / ".cache").mkdir()
@@ -46,7 +56,9 @@ def test_writes_predictions_the_reader_accepts(tmp_path):
     assert [r.confidence for r in rows] == [0.9, None, 1.0]
     assert all(r.dataset == "uspto" and r.tool == "fake 1.0" for r in rows)
     assert all(r.page is None and r.bbox is None and r.seconds >= 0 for r in rows)
-    assert not Path(f"{output}.part").exists()
+    assert sidecar(output) == {"images": 3, "failed": 0, "errors": {}}
+    assert (tmp_path / "predictions.errors.json").is_file()
+    assert leftovers(tmp_path) == []
 
 
 def test_failed_image_gives_empty_row_and_run_continues(tmp_path, capsys):
@@ -62,6 +74,41 @@ def test_failed_image_gives_empty_row_and_run_continues(tmp_path, capsys):
     assert errors == 1
     assert [(r.item_id, r.smiles) for r in read_predictions(output)] == [("a", "C"), ("bad", ""), ("c", "C")]
     assert "bad.png: ValueError: empty drawing" in capsys.readouterr().err
+    assert sidecar(output) == {"images": 3, "failed": 1, "errors": {"bad": "ValueError: empty drawing"}}
+
+
+def test_25_failures_in_a_row_stop_the_run_and_write_nothing(tmp_path):
+    names = [f"{i:02d}.png" for i in range(40)]
+    images = make_images(tmp_path / "img", names)
+    output = tmp_path / "out" / "predictions.csv"
+    output.parent.mkdir()
+    seen = []
+
+    def predict(image):
+        seen.append(image.stem)
+        if image.stem == "00":
+            return "C", None
+        raise RuntimeError(f"CUDA error on {image.stem}")
+
+    assert crop_runner.MAX_CONSECUTIVE_FAILURES == 25
+    with pytest.raises(RuntimeError, match=r"25 images failed in a row.*25\.png: RuntimeError: CUDA error on 25"):
+        crop_runner.run_crops(predict, parse(images, output), warmup=False)
+    assert seen == [f"{i:02d}" for i in range(26)]
+    assert list(output.parent.iterdir()) == []
+
+
+def test_failures_that_are_not_in_a_row_do_not_stop_the_run(tmp_path):
+    images = make_images(tmp_path / "img", [f"{i:02d}.png" for i in range(49)])
+    output = tmp_path / "predictions.csv"
+
+    def predict(image):
+        if image.stem == "24":
+            return "C", None
+        raise ValueError("odd drawing")
+
+    assert crop_runner.run_crops(predict, parse(images, output), warmup=False) == 48
+    assert sidecar(output)["failed"] == 48
+    assert [r.smiles for r in read_predictions(output)].count("C") == 1
 
 
 def test_warmup_runs_first_image_untimed_and_extra(tmp_path):
@@ -76,7 +123,7 @@ def test_warmup_runs_first_image_untimed_and_extra(tmp_path):
     assert seen == ["a", "b"]
 
 
-def test_failing_warmup_does_not_stop_the_run(tmp_path):
+def test_failing_warmup_is_reported_and_does_not_stop_the_run(tmp_path, capsys):
     images = make_images(tmp_path / "img", ["a.png", "b.png"])
     calls = {"a": 0}
 
@@ -89,6 +136,8 @@ def test_failing_warmup_does_not_stop_the_run(tmp_path):
 
     assert crop_runner.run_crops(predict, parse(images, tmp_path / "p.csv")) == 0
     assert [r.smiles for r in read_predictions(tmp_path / "p.csv")] == ["C", "C"]
+    assert "warmup on a.png failed: RuntimeError: cold start" in capsys.readouterr().err
+    assert sidecar(tmp_path / "p.csv") == {"images": 2, "failed": 0, "errors": {}}
 
 
 def test_smiles_with_whitespace_and_newline_round_trip(tmp_path):
@@ -117,8 +166,7 @@ def test_interrupt_leaves_no_predictions_and_no_part_file(tmp_path):
 
     with pytest.raises(KeyboardInterrupt):
         crop_runner.run_crops(predict, parse(images, output), warmup=False)
-    assert not output.exists()
-    assert not Path(f"{output}.part").exists()
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["img"]
 
 
 def test_progress_every_500_images_and_final_count(tmp_path, capsys):

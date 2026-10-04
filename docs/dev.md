@@ -104,6 +104,12 @@ number.
 - **Canonical form.** Predictions and ground truth both go through RDKit's default
   `MolToSmiles`, and a match is an identical string. Stereo-stripped scores first remove
   tetrahedral and double-bond stereo with `RemoveStereochemistry`; isotopes are kept.
+  RDKit's canonical SMILES is not always stable, so each side is read and written again
+  until the string stops changing, at most five passes. An aromatic ring with `*` atoms comes
+  back Kekulé (MolRecBench-Wild `10.1002_anie.202411707_3_figure_0_mol_3`), and stripping
+  stereo can leave an explicit `[H]` that the next pass drops (USPTO
+  `US07317016-20080108-C00012`). A tool that already writes RDKit's canonical SMILES is
+  scored the same as one that does not.
 - **`*` is an atom.** Five internal ground-truth molecules contain `*`, so `*` is
   canonicalized like any other atom, never rejected. Labels are kept: `*`, `[1*]` and `[*:1]`
   are different atoms, so a reader that writes a bare `*` for a drawn R1 is wrong. CLEF
@@ -163,7 +169,15 @@ sbatch benchmarks/slurm/run.sbatch benchmarks/configs/molscribe__uspto.yaml
 ```
 
 Output goes to `benchmarks/results/molscribe__uspto/`: `predictions.csv`, `scores.json`,
-`config.yaml` and `meta.json` (commit, environment lock, hardware, timing).
+`config.yaml`, `meta.json` (commit, environment lock, hardware, timing) and `errors.json` (the
+crops whose prediction crashed).
+
+Each row's `seconds` times one `predict` call: reading the image, inference and the tool's own
+post-processing. Imports, model loading and one untimed warm-up image are not counted.
+
+A crash on a single image gives that crop an empty SMILES, which scores as wrong. The crash is
+listed in `errors.json` and counted in `meta.json` (`tool_errors`). 25 crashes in a row stop the
+run.
 
 `scores.json` comes from the shared scorer:
 

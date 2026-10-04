@@ -6,11 +6,12 @@ import hashlib
 import json
 import os
 import platform
+import re
 import shlex
 import shutil
 import socket
 import subprocess
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -21,6 +22,20 @@ LOCK_TIMEOUT_SECONDS = 600
 PROBE_TIMEOUT_SECONDS = 60
 OUTPUT_SHOWN = 2000
 PYTHON_VERSION = "import platform; print(platform.python_version())"
+# Variables that change what a tool computes or where it reads from; meta.json records their values.
+RECORDED_VARIABLES = (
+    "CUDA_VISIBLE_DEVICES",
+    "OMP_NUM_THREADS",
+    "MKL_NUM_THREADS",
+    "HF_HOME",
+    "HF_HUB_OFFLINE",
+    "TRANSFORMERS_OFFLINE",
+    "PYSTOW_HOME",
+    "MOLSCOUT_STORE",
+    "SLURM_CPUS_PER_TASK",
+    "SLURM_JOB_PARTITION",
+)
+SECRET_NAME = re.compile("TOKEN|SECRET|PASSWORD|KEY", re.IGNORECASE)
 SLURM_FIELDS = (
     ("job", "SLURM_JOB_ID"),
     ("array_job", "SLURM_ARRAY_JOB_ID"),
@@ -34,18 +49,26 @@ def build_meta(
     config: RunConfig,
     *,
     items: int,
+    tool_errors: int | None,
+    inputs: Mapping[str, object],
     git: Mapping[str, object],
     environment: Mapping[str, object],
     timing: Mapping[str, object],
     command: Sequence[str],
 ) -> dict[str, object]:
-    """The meta.json record for one run; hardware and SLURM details are read here."""
+    """The meta.json record for one run; hardware and SLURM details are read here.
+
+    `tool_errors` counts the images whose predict call raised (crop_runner's errors file), or is None
+    when run.py wrote no errors file.
+    """
     checkpoints = [{"path": str(c.path), "sha256": c.sha256} for c in config.checkpoints]
     return {
         "run": config.run_name,
         "tool": {"tool": config.tool, "name": config.name, "version": config.version, "checkpoints": checkpoints},
         "dataset": config.dataset,
         "items": items,
+        "tool_errors": tool_errors,
+        "inputs": dict(inputs),
         "git": dict(git),
         "environment": dict(environment),
         "hardware": hardware(),
@@ -98,6 +121,15 @@ def environment_lock(
     }
     digest = hashlib.sha256(json.dumps(lock, sort_keys=True).encode("utf-8")).hexdigest()
     return {"python": str(python), "freeze_command": freeze_command, **lock, "sha256": digest}
+
+
+def environment_variables(env: Mapping[str, str], extra: Iterable[str]) -> dict[str, str | None]:
+    """The RECORDED_VARIABLES and `extra` names as the tool saw them (None when unset).
+
+    A name that looks like a credential (TOKEN, SECRET, PASSWORD, KEY) is never recorded.
+    """
+    names = dict.fromkeys([*RECORDED_VARIABLES, *extra])
+    return {name: env.get(name) for name in names if not SECRET_NAME.search(name)}
 
 
 def hardware() -> dict[str, object]:

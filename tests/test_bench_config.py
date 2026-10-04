@@ -67,6 +67,19 @@ def test_env_and_lock_commands_are_optional_and_expanded(tmp_path, store):
     assert config.lock_commands == (("java", "-version"),)
 
 
+def test_lock_commands_expand_variables_like_the_molvec_tool_yaml(tmp_path, store):
+    data = {**BASE, "lock_commands": [["${STORE}/models/molvec/jdk/bin/java", "-version"]]}
+    config = load_config(write_config(tmp_path, data), tmp_path)
+    assert config.lock_commands == ((f"{store}/models/molvec/jdk/bin/java", "-version"),)
+
+
+def test_unset_variable_in_lock_commands_is_named(tmp_path, store, monkeypatch):
+    monkeypatch.delenv("JDK_HOME_FOR_TEST", raising=False)
+    data = {**BASE, "lock_commands": [["${JDK_HOME_FOR_TEST}/bin/java", "-version"]]}
+    with pytest.raises(ValueError, match=r"lock_commands\[0\] uses \$\{JDK_HOME_FOR_TEST\}, which is not set"):
+        load_config(write_config(tmp_path, data), tmp_path)
+
+
 def test_numeric_args_become_strings(tmp_path, store):
     config = load_config(write_config(tmp_path, {**BASE, "args": ["--batch-size", 16]}), tmp_path)
     assert config.args == ("--batch-size", "16")

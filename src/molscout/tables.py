@@ -16,6 +16,7 @@ STRIPPED_ANCHOR = "**Exact match, stereo-stripped (%)**"
 POOLED_ANCHOR = "**Valid output and speed, all datasets pooled**"
 
 DATASETS = ("uspto", "uob", "jpo", "clef", "molrecbench_wild")
+COMMIT_SHOWN = 12
 TOOL_ROWS = {
     "molscribe": "MolScribe",
     "molnextr": "MolNexTR",
@@ -42,14 +43,24 @@ class Run:
     items: int
     version: str
     hardware: str
+    commit: str | None = None
+    dirty: bool | None = None
+    dirty_paths: tuple[str, ...] = ()
+
+    @property
+    def name(self) -> str:
+        return f"{self.tool}__{self.dataset}"
 
 
 def load_runs(results: Path) -> dict[tuple[str, str], Run]:
-    """Every `<tool>__<dataset>/` folder under `results` that holds a scores.json, keyed by (tool, dataset)."""
+    """Every `<tool>__<dataset>/` folder under `results` that holds a scores.json, keyed by (tool, dataset).
+
+    Hidden folders are skipped: `.staging-*` and `.old-*` are what a killed harness leaves behind.
+    """
     runs: dict[tuple[str, str], Run] = {}
     for folder in sorted(Path(results).glob("*__*")):
         scores_path = folder / "scores.json"
-        if not scores_path.is_file():
+        if folder.name.startswith(".") or not scores_path.is_file():
             continue
         tool, dataset = folder.name.split("__", 1)
         report = json.loads(scores_path.read_text(encoding="utf-8"))
@@ -70,6 +81,9 @@ def load_runs(results: Path) -> dict[tuple[str, str], Run]:
             items=speed["items"],
             version=meta["tool"]["version"],
             hardware=_hardware(meta["hardware"]),
+            commit=meta["git"]["commit"],
+            dirty=meta["git"]["dirty"],
+            dirty_paths=tuple(meta["git"]["dirty_paths"] or ()),
         )
     return runs
 
@@ -95,10 +109,31 @@ def missing_runs(runs: Mapping[tuple[str, str], Run]) -> list[str]:
     return [f"{tool}__{dataset}" for tool in TOOL_ROWS for dataset in DATASETS if (tool, dataset) not in runs]
 
 
+def git_warnings(runs: Mapping[tuple[str, str], Run]) -> list[str]:
+    """One line per run with uncommitted (or unrecorded) changes, and one when runs come from several commits."""
+    ordered = sorted(runs.values(), key=lambda run: run.name)
+    warnings = []
+    for run in ordered:
+        if run.dirty is None:
+            warnings.append(f"{run.name} does not record whether its code was committed")
+        elif run.dirty:
+            warnings.append(f"{run.name} ran with uncommitted changes: {', '.join(run.dirty_paths)}")
+    by_commit: dict[str | None, list[str]] = {}
+    for run in ordered:
+        by_commit.setdefault(run.commit, []).append(run.name)
+    if len(by_commit) > 1:
+        groups = "; ".join(
+            f"{commit[:COMMIT_SHOWN] if commit else 'unknown'} ({', '.join(names)})" for commit, names in by_commit.items()
+        )
+        warnings.append(f"runs come from {len(by_commit)} commits: {groups}")
+    return warnings
+
+
 def _hardware(hardware: Mapping[str, object]) -> str:
-    parts = [str(hardware["cluster"]).capitalize()]
+    cluster = hardware["cluster"]
+    parts = [] if cluster is None else [str(cluster).capitalize()]
     names = list(dict.fromkeys(gpu["name"] for gpu in hardware["gpus"]))
-    parts += names or ["CPU", f"{hardware['cpus']} cores"]
+    parts += names or ["CPU", f"{hardware['cpus_available']} cores"]
     return ", ".join(parts)
 
 
