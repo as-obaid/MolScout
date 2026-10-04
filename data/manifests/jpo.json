@@ -1,0 +1,25 @@
+{
+  "dataset": "jpo",
+  "description": "450 Japanese Patent Office crops (PNG), one SDfile each; a subset of the ChemInfty set.",
+  "source": "https://github.com/Kohulan/OCSR_Review",
+  "revision": "165b46ce5594f971c3f2d95d9e62f79333fdfdce",
+  "citation": "Rajan, K., Brinkhaus, H. O., Zielesny, A., & Steinbeck, C. (2020). A review of optical chemical structure recognition tools. Journal of Cheminformatics, 12. https://doi.org/10.1186/s13321-020-00465-0",
+  "license": "MIT (OCSR_Review repository)",
+  "items": 450,
+  "files": [
+    {
+      "url": "https://raw.githubusercontent.com/Kohulan/OCSR_Review/165b46ce5594f971c3f2d95d9e62f79333fdfdce/assets/images/JPO.tar.gz",
+      "path": "JPO.tar.gz",
+      "sha256": "521408cc1dab88f343fa4d7d204a08064d4ad4f91551560596e86ce5fa65eff4",
+      "size_bytes": 2748971,
+      "extract": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Kohulan/OCSR_Review/165b46ce5594f971c3f2d95d9e62f79333fdfdce/assets/reference/JPO_mol_ref.tar.gz",
+      "path": "JPO_mol_ref.tar.gz",
+      "sha256": "70fc4131d20f63038cae86c103f16d1e15897b7627fa24cb451f5f84b7f04aa6",
+      "size_bytes": 181426,
+      "extract": true
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "dataset": "clef",
+  "description": "992 CLEF-IP 2012 patent crops (PNG), one molfile each.",
+  "source": "https://github.com/Kohulan/OCSR_Review",
+  "revision": "165b46ce5594f971c3f2d95d9e62f79333fdfdce",
+  "citation": "Rajan, K., Brinkhaus, H. O., Zielesny, A., & Steinbeck, C. (2020). A review of optical chemical structure recognition tools. Journal of Cheminformatics, 12. https://doi.org/10.1186/s13321-020-00465-0",
+  "license": "MIT (OCSR_Review repository)",
+  "items": 992,
+  "files": [
+    {
+      "url": "https://raw.githubusercontent.com/Kohulan/OCSR_Review/165b46ce5594f971c3f2d95d9e62f79333fdfdce/assets/images/CLEF.tar.gz",
+      "path": "CLEF.tar.gz",
+      "sha256": "772d129e3fee17d2a17fb5326b7582483108f1133cbdc7f141319ab5620e8700",
+      "size_bytes": 3196278,
+      "extract": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Kohulan/OCSR_Review/165b46ce5594f971c3f2d95d9e62f79333fdfdce/assets/reference/CLEF_mol_ref.tar.gz",
+      "path": "CLEF_mol_ref.tar.gz",
+      "sha256": "41e9c4e750a2be842dc79e56106a3a5c0d3f011db60c8efda39bbd95ce373a98",
+      "size_bytes": 328135,
+      "extract": true
+    }
+  ]
+}

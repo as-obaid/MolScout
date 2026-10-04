@@ -1,0 +1,25 @@
+{
+  "dataset": "uspto",
+  "description": "5,719 USPTO patent crops (PNG), one molfile each; the OSRA validation set.",
+  "source": "https://github.com/Kohulan/OCSR_Review",
+  "revision": "165b46ce5594f971c3f2d95d9e62f79333fdfdce",
+  "citation": "Rajan, K., Brinkhaus, H. O., Zielesny, A., & Steinbeck, C. (2020). A review of optical chemical structure recognition tools. Journal of Cheminformatics, 12. https://doi.org/10.1186/s13321-020-00465-0",
+  "license": "MIT (OCSR_Review repository)",
+  "items": 5719,
+  "files": [
+    {
+      "url": "https://raw.githubusercontent.com/Kohulan/OCSR_Review/165b46ce5594f971c3f2d95d9e62f79333fdfdce/assets/images/USPTO.tar.gz",
+      "path": "USPTO.tar.gz",
+      "sha256": "97522cfa4206cd9055d1ab2bee4d9a3f924291cad8a632b51f8a5f97a339c171",
+      "size_bytes": 19692282,
+      "extract": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Kohulan/OCSR_Review/165b46ce5594f971c3f2d95d9e62f79333fdfdce/assets/reference/USPTO_mol_ref.tar.gz",
+      "path": "USPTO_mol_ref.tar.gz",
+      "sha256": "366e6bac00a8b4c855e699e3a5daf5e243084f1a7fbba7567df4de2182a3b758",
+      "size_bytes": 2022444,
+      "extract": true
+    }
+  ]
+}
