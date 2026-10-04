@@ -121,6 +121,13 @@ number.
   structures are scored rather than 222: 125 in dev and 95 in test.
 - **Unreadable references are left out.** A crop whose reference file RDKit cannot read is
   dropped from the denominator and listed in `scores.json`: 15 USPTO, 1 JPO and 15 CLEF crops.
+- **MolRecBench-Wild references come from its CARBON graphs**, converted as the official
+  SMILES track does (evaluator commit 500da87): graphs with Greek letters or `?` in a label,
+  repeat brackets, drawing-specific bonds or attachment points are left out, and drawn
+  abbreviations are expanded from the evaluator's table. R-group and variable labels become
+  `*` atoms (R1 becomes `[1*]`); a graph with any other label left is left out. 2,371 of
+  5,024 crops are scored. Unlike the official track, cis/trans counts in the stereo-aware
+  score.
 - **0 ÷ 0 is 0.** A paper with no output has precision 0; `papers_without_output` counts
   them.
 - **95% confidence intervals.** Accuracy, valid-output rate and micro precision, recall and
@@ -146,7 +153,8 @@ python scripts/fetch_data.py            # or: python scripts/fetch_data.py uspto
 
 Crop datasets unpack to `data/raw/<dataset>/`, with images in `USPTO/` and references in
 `USPTO_mol_ref/` (likewise for UOB, JPO and CLEF). MolRecBench-Wild arrives as Parquet in
-`data/raw/molrecbench_wild/data/`.
+`data/raw/molrecbench_wild/data/`, and `scripts/fetch_data.py molrecbench_wild` also exports
+each crop's image to `data/raw/molrecbench_wild/images/<crop ID>.png`.
 
 One run is one tool on one dataset:
 
@@ -164,6 +172,12 @@ molscout score benchmarks/results/molscribe__uspto/predictions.csv \
     --references data/raw/uspto/USPTO_mol_ref -o benchmarks/results/molscribe__uspto/scores.json
 molscout score benchmarks/results/biominer__internal/predictions.csv \
     -o benchmarks/results/biominer__internal/scores.json   # reads data/internal/ and the split
+```
+
+MolRecBench-Wild is scored against its Parquet shards, whose folder is the references path:
+
+```bash
+molscout score predictions.csv --references data/raw/molrecbench_wild
 ```
 
 ## Build Order
