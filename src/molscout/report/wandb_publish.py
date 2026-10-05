@@ -9,6 +9,7 @@ computed and checked before the first run starts.
 from __future__ import annotations
 
 import hashlib
+import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from itertools import chain
@@ -17,6 +18,7 @@ from typing import Any
 
 import plotly.graph_objects as go
 import wandb
+from plotly.offline import get_plotlyjs_version
 
 from molscout.bench.harness import IMAGE_SUFFIXES
 from molscout.data.molrecbench import read_sample_labels
@@ -30,13 +32,10 @@ from molscout.report.analysis import (
     ResultsError,
     RunResult,
     accuracy_by_group,
-    agreement_accuracy,
-    box_stats,
     by_item,
     check_consistency,
     check_outcomes,
     check_references,
-    crop_seconds,
     dataset_rank,
     failure_sample,
     image_path,
@@ -45,8 +44,7 @@ from molscout.report.analysis import (
     load_truth,
     molrecbench_groups,
     oracle,
-    pairwise_agreement,
-    pooled,
+    plurality_vote,
     reference_path,
     run_metrics,
     tool_rank,
@@ -57,7 +55,72 @@ GROUP = "structure-readers"
 ARTIFACT_TYPE = "benchmark-run"
 SUMMARY_NAME = "summary"
 HASH_SHOWN = 10
+# Each republish adds a history step to the summary run, so panels would grow a step slider; the figures need a
+# key prefix never used before. Used so far: report/, figures/, charts/, plots/, panels/, figure/, htmltest/, fig/.
+FIGURE_PREFIX = "viz/"
+PANEL_ROW_PX = 47  # one row of a W&B report panel grid
+HTML_PANEL_CHROME_PX = 150  # 47 * rows minus the height of the iframe W&B shows an HTML page in
+MIN_PANEL_ROWS = 4  # the fewest rows a figure's panel gets
 WILD = "molrecbench_wild"
+
+# The figure page: placeholders are filled in by panel_html. Container-anchored title and legend positions are
+# fractions of the height, so they are rescaled to keep their pixel offsets, as figures.at_height does.
+PAGE = """<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light dark">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; }
+  #plot { width: 100%; height: 100%; font: 13px system-ui, sans-serif; color: MUTED_LIGHT; }
+  @media (prefers-color-scheme: dark) { #plot { color: MUTED_DARK; } }
+</style>
+</head>
+<body>
+<div id="plot"></div>
+<script src="PLOTLY_URL" onerror="document.getElementById('plot').textContent = 'This figure needs cdn.plot.ly.'"></script>
+<script>
+  const loggedHeight = LOGGED_HEIGHT;
+  const figures = {
+    light: LIGHT_FIGURE,
+    dark: DARK_FIGURE,
+  };
+  const config = {responsive: true, displaylogo: false, modeBarButtonsToRemove: ['toImage']};
+  const scheme = window.matchMedia('(prefers-color-scheme: dark)');
+  const plot = document.getElementById('plot');
+
+  function pinned(part, height) {
+    const y = part.y;
+    if (y === undefined || y === null) return part;
+    return {...part, y: 1 - (1 - y) * loggedHeight / height};
+  }
+
+  function draw() {
+    if (!window.Plotly || !window.innerHeight) return;  // no frame yet: the resize handler draws later
+    const figure = figures[scheme.matches ? 'dark' : 'light'];
+    // W&B's frame starts taller than it settles; drawing at the settled height up front avoids a second redraw.
+    // Plotly's responsive resize refits the figure to its container, so the container gets the same height.
+    const height = Math.min(window.innerHeight, loggedHeight);
+    plot.style.height = `${height}px`;
+    const layout = {...figure.layout, height, autosize: true};
+    delete layout.width;
+    const title = figure.layout.title || {};
+    if (title.yref === undefined || title.yref === 'container') layout.title = pinned(title, height);
+    const legend = figure.layout.legend || {};
+    if (legend.yref === 'container') layout.legend = pinned(legend, height);
+    Plotly.react(plot, figure.data, layout, config);
+  }
+
+  let timer;
+  window.addEventListener('resize', () => { clearTimeout(timer); timer = setTimeout(draw, 100); });
+  scheme.addEventListener('change', draw);
+  // A tooltip would otherwise stay on screen after the pointer has left the frame.
+  document.documentElement.addEventListener('mouseleave', () => { if (plot.data) Plotly.Fx.unhover(plot); });
+  draw();
+</script>
+</body>
+</html>
+"""
 
 Rows = tuple[list[str], list[list[Any]]]
 
@@ -136,25 +199,36 @@ def _checked_config(run: RunResult) -> dict[str, Any]:
         raise ResultsError(f"{run.name}: meta.json lacks {exc}") from None
 
 
-def figure_panels(benchmark: Benchmark, repo_root: str | Path) -> dict[str, go.Figure]:
-    """The summary run's figures by W&B key; comparisons between tools need two tools, breakdowns MolRecBench-Wild."""
+def figure_panels(
+    benchmark: Benchmark, repo_root: str | Path, theme: figures.Theme = figures.LIGHT
+) -> dict[str, go.Figure]:
+    """The summary run's figures by W&B key, in report order.
+
+    The journal-crop figures need MolRecBench-Wild, and the headroom from combining tools needs two tools.
+    """
     runs, metrics, items = benchmark.runs, benchmark.metrics, benchmark.all_items()
     panels = {
-        "accuracy/by_dataset": figures.accuracy_bars(metrics),
-        "accuracy/stereo_penalty": figures.stereo_penalty_bars(metrics),
-        "accuracy/vs_speed": figures.accuracy_speed_scatter(metrics),
-        "outcomes/by_tool": figures.outcome_bars(metrics),
-        "speed/time_per_crop": figures.time_boxes({tool: box_stats(s) for tool, s in crop_seconds(runs).items() if s}),
-        "resources/by_tool": figures.resource_bars(tool_resources(runs)),
+        f"{FIGURE_PREFIX}accuracy_by_dataset": figures.accuracy_bars(metrics, theme=theme),
+        f"{FIGURE_PREFIX}stereo_gain": figures.stereo_penalty_bars(metrics, theme=theme),
     }
-    if len({run.tool for run in runs}) > 1:
-        panels["agreement/pairwise"] = figures.agreement_heatmap(pooled(pairwise_agreement(items)))
-        panels["agreement/consensus"] = figures.consensus_bars(agreement_accuracy(items), oracle(items))
     if any(run.dataset == WILD for run in runs):
         subsets, hardcases = molrecbench_groups(read_sample_labels(reference_path(WILD, repo_root)))
         wild = [result for result in items if result.dataset == WILD]
-        panels[f"{WILD}/by_subset"] = figures.subset_bars(accuracy_by_group(wild, subsets))
-        panels[f"{WILD}/by_hardcase"] = figures.hardcase_heatmap(accuracy_by_group(wild, hardcases))
+        panels[f"{FIGURE_PREFIX}journal_crops"] = figures.journal_crop_lines(
+            metrics, accuracy_by_group(wild, subsets), theme=theme
+        )
+        crops = len({result.item_id for result in wild})
+        panels[f"{FIGURE_PREFIX}hardcases"] = figures.hardcase_heatmap(
+            accuracy_by_group(wild, hardcases), crops=crops, theme=theme
+        )
+    panels[f"{FIGURE_PREFIX}error_mix"] = figures.error_mix_bars(metrics, theme=theme)
+    if len({run.tool for run in runs}) > 1:
+        panels[f"{FIGURE_PREFIX}headroom"] = figures.headroom_dots(
+            metrics, plurality_vote(items), oracle(items), theme=theme
+        )
+    panels[f"{FIGURE_PREFIX}accuracy_vs_time"] = figures.accuracy_speed_scatter(
+        metrics, tool_resources(runs), theme=theme
+    )
     return panels
 
 
@@ -212,7 +286,9 @@ def publish(
 
     Everything logged is built before the first run starts, so a failure leaves W&B untouched.
     """
-    panels = figure_panels(benchmark, repo_root)
+    light = figure_panels(benchmark, repo_root)
+    dark = figure_panels(benchmark, repo_root, theme=figures.DARK)
+    plots = {key: wandb.Html(panel_html(light[key], dark[key]), inject=False) for key in light}
     tables = _tables(benchmark, images_per_dataset, repo_root)
     artifacts = {run.name: _artifact(run) for run in benchmark.runs}
     summary_config = _summary_config(benchmark, images_per_dataset)
@@ -234,7 +310,7 @@ def publish(
         id=summary_run_id(benchmark.runs), name=SUMMARY_NAME, job_type="analysis", settings=_settings(), **common
     ) as logged:
         logged.config.update(summary_config, allow_val_change=True)
-        logged.log({**{key: wandb.Plotly(figure) for key, figure in panels.items()}, **tables})
+        logged.log({**plots, **tables})
         echo(f"{SUMMARY_NAME}: {logged.id if offline else logged.url}")
 
 
@@ -268,6 +344,40 @@ def _summary_config(benchmark: Benchmark, images_per_dataset: int) -> dict[str, 
         "failures_per_dataset": images_per_dataset,
         "failures_seed": FAILURE_SEED,
     }
+
+
+def panel_rows(figure: go.Figure) -> int:
+    """Whole W&B report panel rows nearest the figure's height plus the panel's chrome.
+
+    The page redraws the figure to fill them, so it grows or shrinks by at most half a row.
+    """
+    if figure.layout.height is None:
+        raise ValueError("a figure needs layout.height to be sized for a W&B report panel")
+    return max(MIN_PANEL_ROWS, round((figure.layout.height + HTML_PANEL_CHROME_PX) / PANEL_ROW_PX))
+
+
+def panel_html(light: go.Figure, dark: go.Figure) -> str:
+    """A page that draws the light or the dark figure, whichever the viewer's theme is, to fill its frame.
+
+    W&B shows it in a sandboxed iframe that settles at 47 * rows - 150 px but is briefly taller, so the page
+    redraws at the window's height on every resize. Both figures are sized to the settled height first.
+    """
+    if light.layout.height != dark.layout.height:
+        raise ValueError("the light and dark figures need the same layout.height")
+    height = PANEL_ROW_PX * panel_rows(light) - HTML_PANEL_CHROME_PX
+    embedded = {
+        name: figures.at_height(figure, height).to_json().replace("</", "<\\/").replace("<!--", "<\\!--")
+        for name, figure in (("light", light), ("dark", dark))
+    }
+    fill = {
+        "PLOTLY_URL": f"https://cdn.plot.ly/plotly-{get_plotlyjs_version()}.min.js",
+        "MUTED_LIGHT": figures.LIGHT.muted,
+        "MUTED_DARK": figures.DARK.muted,
+        "LOGGED_HEIGHT": str(height),
+        **{f"{name.upper()}_FIGURE": text for name, text in embedded.items()},
+    }
+    # One pass, so a figure's own text is never scanned for placeholders.
+    return re.sub("|".join(fill), lambda found: fill[found.group()], PAGE)
 
 
 def _settings() -> wandb.Settings:

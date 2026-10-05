@@ -251,8 +251,9 @@ Each `<tool>__<dataset>/` folder becomes one `eval` run in the `structure-reader
 holds its config (tool, version, commit, checkpoints, environment, device), namespaced summary
 metrics (`accuracy/`, `speed/`, `resources/`, `items/`, `outcome/`) and the folder as a
 `benchmark-run` artifact. One `analysis` run, `summary`, holds the figures and the `leaderboard`,
-`predictions` and `failures` tables. Run IDs come from each `predictions.csv` sha256, so
-publishing the same results again updates the same runs.
+`predictions` and `failures` tables. The figures are interactive Plotly pages logged as HTML; they load
+plotly.js from cdn.plot.ly and follow the viewer's light or dark theme. Run IDs come from each
+`predictions.csv` sha256, so publishing the same results again updates the same runs.
 
 The upload refuses runs from more than one commit, runs with uncommitted code, and runs scored
 against different references; `--allow-inconsistent` is for development only. It reads the
