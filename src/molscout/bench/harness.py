@@ -9,6 +9,7 @@ import shlex
 import shutil
 import signal
 import subprocess
+import sys
 import threading
 from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
@@ -17,7 +18,7 @@ from time import perf_counter
 
 from molscout.bench import BenchError, Terminated
 from molscout.bench.config import RunConfig, load_config
-from molscout.bench.meta import build_meta, environment_lock, environment_variables, git_state, utc_now
+from molscout.bench.meta import GpuSampler, build_meta, environment_lock, environment_variables, git_state, utc_now
 from molscout.data import molfiles, molrecbench
 from molscout.hashing import sha256_tree
 from molscout.predictions import Prediction, PredictionsFormatError, read_predictions
@@ -31,6 +32,7 @@ EXAMPLES_SHOWN = 10
 ERRORS_FILE = "predictions.errors.json"  # what benchmarks/tools/crop_runner.py writes beside predictions.csv
 ERRORS_KEYS = frozenset({"images", "failed", "errors"})
 STOP_GRACE_SECONDS = 10
+MAXRSS_BYTES = 1 if sys.platform == "darwin" else 1024  # the unit of ru_maxrss: bytes on macOS, KiB on Linux
 
 
 def run_benchmark(config_path: str | Path, *, repo_root: str | Path, results_root: str | Path) -> Path:
@@ -83,7 +85,7 @@ def _run(config_path: str | Path, repo_root: Path, results_root: Path) -> Path:
             *config.args,
         ]
         tool_clock = perf_counter()
-        run_tool(command, config, env)
+        resources = run_tool(command, config, env)
         tool_seconds = perf_counter() - tool_clock
         predictions = checked_predictions(predictions_path, config, image_ids)
         tool_errors = read_tool_errors(staging / ERRORS_FILE, config, image_ids)
@@ -111,6 +113,7 @@ def _run(config_path: str | Path, repo_root: Path, results_root: Path) -> Path:
             git=git,
             environment=environment,
             timing=timing,
+            resources=resources,
             command=command,
         )
         (staging / "meta.json").write_text(json.dumps(meta, indent=2, allow_nan=False) + "\n", encoding="utf-8")
@@ -173,22 +176,47 @@ def tool_environment(config: RunConfig) -> dict[str, str]:
     return {**inherited, "PYTHONNOUSERSITE": "1", "PYTHONUNBUFFERED": "1", **config.env}
 
 
-def run_tool(command: Sequence[str], config: RunConfig, env: Mapping[str, str]) -> None:
-    """Run run.py in its folder; its output goes straight to the job log. An interrupted wait stops run.py first."""
+def run_tool(command: Sequence[str], config: RunConfig, env: Mapping[str, str]) -> dict[str, object]:
+    """Run run.py in its folder; its output goes straight to the job log. An interrupted wait stops run.py first.
+
+    Returns meta.json's `resources`: run.py's peak memory and CPU time, and the GPU use sampled while it ran.
+    """
     print(f"{config.run_name}: running {shlex.join(command)} in {config.run_dir}", flush=True)
-    try:
-        process = subprocess.Popen(list(command), cwd=config.run_dir, env=dict(env))
-    except OSError as exc:
-        raise BenchError(f"{config.run_name}: cannot start run.py: {exc}") from None
-    try:
-        returncode = process.wait()
-    except BaseException:
-        _stop(process)
-        raise
+    with GpuSampler() as gpu:
+        try:
+            process = subprocess.Popen(list(command), cwd=config.run_dir, env=dict(env))
+        except OSError as exc:
+            raise BenchError(f"{config.run_name}: cannot start run.py: {exc}") from None
+        try:
+            usage = _wait(process)
+        except BaseException:
+            _stop(process)
+            raise
+    returncode = process.returncode
     if returncode < 0:
         raise BenchError(f"{config.run_name}: run.py was killed by signal {-returncode}")
     if returncode != 0:
         raise BenchError(f"{config.run_name}: run.py exited with status {returncode}; see its output above")
+    return {**usage, "gpu": gpu.summary()}
+
+
+def _wait(process: subprocess.Popen[bytes]) -> dict[str, float | None]:
+    """Wait for run.py and set its returncode; return its peak memory and CPU time (user plus system).
+
+    Both cover run.py and the descendants it waited for; the peak is that of the largest single
+    process. On Linux run.py starts as a copy of the harness, so its peak is at least the harness's
+    own at that moment (about 80 MiB). Both are None if run.py cannot be waited for.
+    """
+    try:
+        _, status, usage = os.wait4(process.pid, 0)
+    except ChildProcessError:  # SIGCHLD is ignored, so the system reaped run.py; Popen.wait then takes status 0
+        process.wait()
+        return {"tool_peak_rss_mib": None, "tool_cpu_seconds": None}
+    process.returncode = os.waitstatus_to_exitcode(status)
+    return {
+        "tool_peak_rss_mib": round(usage.ru_maxrss * MAXRSS_BYTES / 2**20, 1),
+        "tool_cpu_seconds": round(usage.ru_utime + usage.ru_stime, 3),
+    }
 
 
 def _stop(process: subprocess.Popen[bytes]) -> None:

@@ -9,6 +9,7 @@ import argparse
 import csv
 import json
 import os
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -17,6 +18,7 @@ COLUMNS = ("dataset", "item_id", "smiles", "page", "bbox", "confidence", "tool",
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".gif", ".bmp"}
 RECORDED_VARIABLES = ("PYTHONPATH", "PYTHONHOME", "VIRTUAL_ENV", "PYTHONNOUSERSITE", "PYTHONUNBUFFERED", "FAKE_SETTING")
 SECONDS = 0.25
+BUSY_CHILD = "import sys, time\nwhile time.process_time() < float(sys.argv[1]):\n    pass\n"
 
 
 def main() -> int:
@@ -32,6 +34,8 @@ def main() -> int:
     parser.add_argument("--tool-column", help="write this in the tool column instead of --tool")
     parser.add_argument("--record", type=Path, help="write argv, cwd, pid and some environment variables here as JSON")
     parser.add_argument("--sleep", type=float, default=0.0, help="sleep this many seconds before writing anything")
+    parser.add_argument("--allocate-mib", type=int, default=0, help="hold this many MiB of memory until the end")
+    parser.add_argument("--child-cpu", type=float, default=0.0, help="wait for a child that uses this many CPU seconds")
     parser.add_argument(
         "--crash", default="", help="comma-separated crop IDs that 'raise': an empty SMILES and an entry in the errors file"
     )
@@ -45,6 +49,9 @@ def main() -> int:
     if args.fail:
         print("fake tool: failing on purpose", file=sys.stderr)
         return 3
+    held = b"\x01" * (args.allocate_mib << 20)  # written, so resident
+    if args.child_cpu:
+        subprocess.run([sys.executable, "-c", BUSY_CHILD, str(args.child_cpu)], check=True)
     time.sleep(args.sleep)
 
     answers = json.loads(args.answers.read_text()) if args.answers else {}
@@ -72,7 +79,7 @@ def main() -> int:
         write_atomically(errors_path(args.output), args.errors_text)
     elif not args.no_errors_file:
         write_atomically(errors_path(args.output), json.dumps({"images": len(images), "failed": len(errors), "errors": errors}))
-    print(f"fake tool: wrote {rows} rows")
+    print(f"fake tool: wrote {rows} rows, holding {len(held) >> 20} MiB")
     return 0
 
 

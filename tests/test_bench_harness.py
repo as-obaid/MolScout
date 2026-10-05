@@ -10,6 +10,7 @@ import json
 import os
 import platform
 import re
+import resource
 import shutil
 import signal
 import socket
@@ -169,6 +170,10 @@ def test_meta_records_commit_environment_hardware_and_timing(ws, monkeypatch):
     assert timing["started_utc"].endswith("Z")
     assert timing["wall_seconds"] >= timing["tool_seconds"] + timing["scoring_seconds"]
     assert timing["item_seconds_total"] == pytest.approx(7 * 0.25)
+    resources = meta["resources"]
+    assert set(resources) == {"tool_peak_rss_mib", "tool_cpu_seconds", "gpu"}
+    assert resources["tool_peak_rss_mib"] > 0
+    assert resources["tool_cpu_seconds"] > 0
     assert meta["command"][:9] == [
         sys.executable,
         "run.py",
@@ -238,6 +243,99 @@ def test_meta_records_allow_listed_variables_and_never_secrets(ws, monkeypatch):
 def test_meta_git_is_none_outside_a_repository(ws):
     meta = json.loads((ws.run() / "meta.json").read_text())
     assert meta["git"] == {"commit": None, "dirty": None, "dirty_paths": None}
+
+
+def test_meta_records_the_tools_peak_memory_and_cpu_time_with_its_children(ws):
+    # On Linux run.py starts as a copy of this process, so its peak memory is at least ours: hold more than that.
+    allocated = round(peak_rss_mib()) + 50
+    folder = ws.run("--allocate-mib", str(allocated), "--child-cpu", "0.3")
+    resources = json.loads((folder / "meta.json").read_text())["resources"]
+    assert allocated <= resources["tool_peak_rss_mib"] < allocated + 500  # MiB, not KiB or bytes
+    assert resources["tool_cpu_seconds"] >= 0.3  # the child's CPU time counts
+
+
+def test_resources_are_null_when_the_tool_cannot_be_waited_for(ws):
+    # With SIGCHLD ignored the system reaps run.py itself; like Popen.wait, the harness then takes its status as 0.
+    previous = signal.signal(signal.SIGCHLD, signal.SIG_IGN)
+    try:
+        meta = json.loads((ws.run("--answers", str(ws.answers)) / "meta.json").read_text())
+    finally:
+        signal.signal(signal.SIGCHLD, previous)
+    assert meta["resources"]["tool_peak_rss_mib"] is None
+    assert meta["resources"]["tool_cpu_seconds"] is None
+
+
+COUNTING_SMI = """calls=$(($(cat "$0.calls" 2>/dev/null || echo 0) + 1))
+echo "$calls" > "$0.calls"
+case $calls in
+1) echo "NVIDIA H200, 50, 1000" ;;
+2) echo "NVIDIA H200, 70, 3000" ;;
+*) exit 1 ;;
+esac"""
+
+
+def test_meta_records_gpu_memory_and_utilization_sampled_while_the_tool_runs(ws, tmp_path, monkeypatch):
+    fake_nvidia_smi(tmp_path / "bin", monkeypatch, COUNTING_SMI)  # two readings, then every call fails
+    meta = json.loads((ws.run("--sleep", "0.5") / "meta.json").read_text())
+    assert meta["resources"]["gpu"] == {
+        "name": "NVIDIA H200",
+        "peak_memory_mib": 3000,
+        "mean_utilization_pct": 60,
+        "samples": 2,
+        "interval_seconds": 0.05,
+    }
+
+
+def test_gpu_readings_pool_every_gpu_the_job_was_given(ws, tmp_path, monkeypatch):
+    two_gpus = 'echo "NVIDIA H200, 10, 500"\necho "NVIDIA A100-SXM4-80GB, 30, 2500"'
+    fake_nvidia_smi(tmp_path / "bin", monkeypatch, two_gpus)
+    gpu = json.loads((ws.run("--sleep", "0.3") / "meta.json").read_text())["resources"]["gpu"]
+    assert gpu["name"] == "NVIDIA H200, NVIDIA A100-SXM4-80GB"
+    assert gpu["peak_memory_mib"] == 2500
+    assert gpu["mean_utilization_pct"] == 20
+    assert gpu["samples"] >= 1
+
+
+def test_gpu_is_null_without_nvidia_smi(ws, monkeypatch):
+    path = [folder for folder in os.environ["PATH"].split(os.pathsep) if not (Path(folder) / "nvidia-smi").exists()]
+    monkeypatch.setenv("PATH", os.pathsep.join(path))
+    resources = json.loads((ws.run("--answers", str(ws.answers)) / "meta.json").read_text())["resources"]
+    assert resources["gpu"] is None
+    assert resources["tool_cpu_seconds"] > 0
+
+
+@pytest.mark.parametrize(
+    "script",
+    ["exit 1", 'echo "NVIDIA H200, [N/A], [N/A]"', 'echo "NVIDIA H200, nan, inf"', "exec sleep 30"],
+    ids=["fails", "unreadable", "not-finite", "hangs"],
+)
+def test_gpu_is_null_when_nvidia_smi_fails_and_the_run_still_succeeds(ws, tmp_path, monkeypatch, script):
+    fake_nvidia_smi(tmp_path / "bin", monkeypatch, script)
+    monkeypatch.setattr("molscout.bench.meta.GPU_QUERY_TIMEOUT_SECONDS", 0.2)
+    folder = ws.run("--answers", str(ws.answers), "--sleep", "0.3")
+    meta = json.loads((folder / "meta.json").read_text())
+    assert meta["resources"]["gpu"] is None
+    assert meta["timing"]["tool_seconds"] < 5
+    assert json.loads((folder / "scores.json").read_text())["scores"]["accuracy"]["successes"] == 3
+
+
+def fake_nvidia_smi(folder: Path, monkeypatch, script: str) -> None:
+    """Put an nvidia-smi first on PATH that runs `script` for the harness's sampling query and fails any other.
+
+    Sampling every 0.05 s instead of 5 s keeps the tests fast.
+    """
+    folder.mkdir()
+    smi = folder / "nvidia-smi"
+    smi.write_text(f'#!/bin/sh\ncase "$*" in *utilization.gpu*) ;; *) exit 1 ;; esac\n{script}\n')
+    smi.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{folder}{os.pathsep}{os.environ['PATH']}")
+    monkeypatch.setattr("molscout.bench.meta.GPU_SAMPLE_SECONDS", 0.05)
+
+
+def peak_rss_mib() -> float:
+    """This process's peak resident memory; ru_maxrss is in bytes on macOS and KiB on Linux."""
+    peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    return peak / 2**20 if sys.platform == "darwin" else peak / 2**10
 
 
 def test_tool_runs_in_its_folder_with_a_clean_environment(ws, monkeypatch):
@@ -379,7 +477,10 @@ def test_failed_run_keeps_previous_results(ws):
     assert ws.leftovers() == []
 
 
-def test_sigterm_stops_the_tool_removes_staging_and_keeps_earlier_results(ws):
+@pytest.mark.parametrize("gpu", [False, True], ids=["without-gpu-sampler", "with-gpu-sampler"])
+def test_sigterm_stops_the_tool_removes_staging_and_keeps_earlier_results(ws, tmp_path, monkeypatch, gpu):
+    if gpu:  # the harness below inherits PATH, so its GPU sampler thread runs while SIGTERM arrives
+        fake_nvidia_smi(tmp_path / "bin", monkeypatch, 'echo "NVIDIA H200, 50, 1000"')
     record = ws.root / "record.json"
     log = ws.root / "harness.log"
 

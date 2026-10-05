@@ -172,6 +172,9 @@ Output goes to `benchmarks/results/molscribe__uspto/`: `predictions.csv`, `score
 `config.yaml`, `meta.json` (commit, environment lock, hardware, timing) and `errors.json` (the
 crops whose prediction crashed).
 
+`meta.json` also records the tool's peak memory and CPU time, and the GPU's peak memory and
+mean utilization, sampled every 5 s (`resources`).
+
 Each row's `seconds` times one `predict` call: reading the image, inference and the tool's own
 post-processing. Imports, model loading and one untimed warm-up image are not counted.
 

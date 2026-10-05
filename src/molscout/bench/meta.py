@@ -1,9 +1,10 @@
-"""What a benchmark run records in meta.json: commit, environment lock, hardware, SLURM job and timing."""
+"""What a benchmark run records in meta.json: commit, environment lock, hardware, SLURM job, timing and resources."""
 
 from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import platform
 import re
@@ -11,15 +12,21 @@ import shlex
 import shutil
 import socket
 import subprocess
+import sys
+import threading
 from collections.abc import Iterable, Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
+from types import TracebackType
 
 from molscout.bench import BenchError
 from molscout.bench.config import RunConfig
 
 LOCK_TIMEOUT_SECONDS = 600
 PROBE_TIMEOUT_SECONDS = 60
+GPU_QUERY = ("--query-gpu=name,utilization.gpu,memory.used", "--format=csv,noheader,nounits")
+GPU_SAMPLE_SECONDS = 5.0
+GPU_QUERY_TIMEOUT_SECONDS = 5.0
 OUTPUT_SHOWN = 2000
 PYTHON_VERSION = "import platform; print(platform.python_version())"
 # Variables that change what a tool computes or where it reads from; meta.json records their values.
@@ -54,12 +61,14 @@ def build_meta(
     git: Mapping[str, object],
     environment: Mapping[str, object],
     timing: Mapping[str, object],
+    resources: Mapping[str, object],
     command: Sequence[str],
 ) -> dict[str, object]:
     """The meta.json record for one run; hardware and SLURM details are read here.
 
     `tool_errors` counts the images whose predict call raised (crop_runner's errors file), or is None
-    when run.py wrote no errors file.
+    when run.py wrote no errors file. `resources` is what run.py used: tool_peak_rss_mib,
+    tool_cpu_seconds and gpu (see GpuSampler).
     """
     checkpoints = [{"path": str(c.path), "sha256": c.sha256} for c in config.checkpoints]
     return {
@@ -74,6 +83,7 @@ def build_meta(
         "hardware": hardware(),
         "slurm": slurm(),
         "timing": dict(timing),
+        "resources": dict(resources),
         "command": list(command),
     }
 
@@ -147,6 +157,63 @@ def hardware() -> dict[str, object]:
 
 def slurm() -> dict[str, str | None]:
     return {field: os.environ.get(variable) for field, variable in SLURM_FIELDS}
+
+
+class GpuSampler:
+    """Reads GPU memory and utilization with nvidia-smi every GPU_SAMPLE_SECONDS while the `with` block runs.
+
+    nvidia-smi lists the GPUs SLURM gave the job. It runs in a daemon thread with a short timeout,
+    so a missing, failing or hung nvidia-smi only leaves `summary()` None; it never fails or delays the run.
+    """
+
+    def __init__(self) -> None:
+        self.interval = GPU_SAMPLE_SECONDS
+        self._samples: list[list[tuple[str, float, float]]] = []
+        self._stopped = threading.Event()
+        self._thread: threading.Thread | None = None
+
+    def __enter__(self) -> GpuSampler:
+        smi = shutil.which("nvidia-smi")
+        if smi is not None:
+            thread = threading.Thread(target=self._sample, args=(smi,), name="gpu-sampler", daemon=True)
+            try:
+                thread.start()
+            except RuntimeError:  # no thread to spare: the run goes on without GPU readings
+                return self
+            self._thread = thread
+        return self
+
+    def __exit__(
+        self, exc_type: type[BaseException] | None, exc: BaseException | None, traceback: TracebackType | None
+    ) -> None:
+        self._stopped.set()
+        if self._thread is not None:
+            self._thread.join(timeout=GPU_QUERY_TIMEOUT_SECONDS)
+
+    def summary(self) -> dict[str, object] | None:
+        """meta.json's `gpu`, over every GPU in every sample; None without nvidia-smi or readings."""
+        samples = list(self._samples)
+        readings = [gpu for sample in samples for gpu in sample]
+        if not readings:
+            return None
+        return {
+            "name": ", ".join(dict.fromkeys(name for name, _, _ in readings)),
+            "peak_memory_mib": max(memory for _, _, memory in readings),
+            "mean_utilization_pct": round(math.fsum(utilization for _, utilization, _ in readings) / len(readings), 1),
+            "samples": len(samples),
+            "interval_seconds": self.interval,
+        }
+
+    def _sample(self, smi: str) -> None:
+        try:
+            while True:
+                reading = _gpu_reading(smi)
+                if reading:
+                    self._samples.append(reading)
+                if self._stopped.wait(self.interval):
+                    return
+        except BaseException as exc:  # nothing may escape: a broken sampler only loses its readings
+            print(f"GPU sampling stopped: {exc!r}", file=sys.stderr, flush=True)
 
 
 def _freeze(python: Path, env: Mapping[str, str], cwd: Path) -> tuple[list[str], list[str]]:
@@ -278,3 +345,23 @@ def _gpus() -> list[dict[str, str]]:
         if len(parts) == 3:
             gpus.append({"name": parts[0], "memory": parts[1], "driver": parts[2]})
     return gpus
+
+
+def _gpu_reading(smi: str) -> list[tuple[str, float, float]]:
+    """(name, utilization %, memory used MiB) for each GPU nvidia-smi lists; empty if it fails.
+
+    Lines without finite numbers ("[N/A]") are skipped: meta.json is strict JSON.
+    """
+    found = _quiet([smi, *GPU_QUERY], timeout=GPU_QUERY_TIMEOUT_SECONDS)
+    reading = []
+    for line in (found or "").splitlines():
+        parts = [part.strip() for part in line.rsplit(",", 2)]
+        if len(parts) != 3:
+            continue
+        try:
+            utilization, memory = float(parts[1]), float(parts[2])
+        except ValueError:
+            continue
+        if math.isfinite(utilization) and math.isfinite(memory):
+            reading.append((parts[0], utilization, memory))
+    return reading
