@@ -272,8 +272,11 @@ def test_offline_upload_logs_one_run_per_folder_and_one_summary(repo, publisher,
     )
     assert logged["config"]["tool"] == "molscribe" and logged["config"]["device"] == "NVIDIA H200"
     assert logged["history"] == {}  # an eval run has a summary, not panels
+    assert logged["run"] == {"tags": ["molscribe", "uspto"], "group": "structure-readers", "job_type": "eval"}
     [analysis_dir] = offline.glob("offline-run-*-summary-*")
-    history = logged_values(analysis_dir)["history"]
+    analysis = logged_values(analysis_dir)
+    assert analysis["run"] == {"tags": [], "group": "", "job_type": "analysis"}  # nothing carried over from eval runs
+    history = analysis["history"]
     figures = {key.removesuffix("/_type") for key, value in history.items() if value == "plotly-file"}
     assert figures == {
         "accuracy/by_dataset",
@@ -315,6 +318,10 @@ def logged_values(run_dir):
             record.ParseFromString(pending)
             pending = b""
             kind_of = record.WhichOneof("record_type")
+            if kind_of == "run":
+                run = record.run
+                values["run"] = {"tags": sorted(run.tags), "group": run.run_group, "job_type": run.job_type}
+                continue
             if kind_of == "summary":
                 items = record.summary.update
             elif kind_of == "config":

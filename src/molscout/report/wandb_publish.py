@@ -217,17 +217,22 @@ def publish(
     artifacts = {run.name: _artifact(run) for run in benchmark.runs}
     summary_config = _summary_config(benchmark, images_per_dataset)
     # Offline runs cannot resume; `wandb sync` updates the run with the same ID instead.
-    common = {"entity": entity, "project": project, "save_code": False, "settings": _settings()}
+    common = {"entity": entity, "project": project, "save_code": False}
     common.update({"mode": "offline"} if offline else {"resume": "allow"})
     for run in benchmark.runs:
         name = f"{run.tool}/{run.dataset}"
         tags = [run.tool, run.dataset]
-        with wandb.init(id=run_id(run), name=name, group=GROUP, job_type="eval", tags=tags, **common) as logged:
+        # A fresh Settings per run: wandb.init writes each run's tags and group into the one it is given.
+        with wandb.init(
+            id=run_id(run), name=name, group=GROUP, job_type="eval", tags=tags, settings=_settings(), **common
+        ) as logged:
             logged.config.update(dict(benchmark.configs[run.name]), allow_val_change=True)
             logged.summary.update(dict(benchmark.metrics[(run.tool, run.dataset)]))
             logged.log_artifact(artifacts[run.name])
             echo(f"{name}: {logged.id if offline else logged.url}")
-    with wandb.init(id=summary_run_id(benchmark.runs), name=SUMMARY_NAME, job_type="analysis", **common) as logged:
+    with wandb.init(
+        id=summary_run_id(benchmark.runs), name=SUMMARY_NAME, job_type="analysis", settings=_settings(), **common
+    ) as logged:
         logged.config.update(summary_config, allow_val_change=True)
         logged.log({**{key: wandb.Plotly(figure) for key, figure in panels.items()}, **tables})
         echo(f"{SUMMARY_NAME}: {logged.id if offline else logged.url}")
