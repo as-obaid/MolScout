@@ -1,0 +1,7 @@
+{
+  "images": 992,
+  "failed": 1,
+  "errors": {
+    "US20070049758A1_p0014_x1456_y2580_c00010": "RuntimeError: MolVec: java.lang.NullPointerException: Cannot invoke \"java.awt.geom.Point2D.getX()\" because \"p1\" is null"
+  }
+}

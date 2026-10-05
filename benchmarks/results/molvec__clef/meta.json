@@ -1,0 +1,144 @@
+{
+  "run": "molvec__clef",
+  "tool": {
+    "tool": "molvec",
+    "name": "MolVec",
+    "version": "0.9.8 (git b412dd0, Maven Central)",
+    "checkpoints": [
+      {
+        "path": "/scratch/abdulsalam.m/molscout-store/models/molvec/lib",
+        "sha256": "0144166d8f4b1460a3ddb0911169217bc2501668f769f0c1cecd79af4faa99d8"
+      },
+      {
+        "path": "/scratch/abdulsalam.m/molscout-store/models/molvec/classes",
+        "sha256": "5d7f42d38c6bcf7d9431ace38c93ea48b42d35baa5a66d05c0206edf87c71d6a"
+      }
+    ]
+  },
+  "dataset": "clef",
+  "items": 992,
+  "tool_errors": 1,
+  "inputs": {
+    "images": "/scratch/abdulsalam.m/molscout/data/raw/clef/CLEF",
+    "images_sha256": "75f94862c5acbc3606ba546c0509028c9b30717bcbc27ecbabcc494d240d61f1"
+  },
+  "git": {
+    "commit": "139105a717de9c42e75838d22c23a2baadb416fb",
+    "dirty": false,
+    "dirty_paths": []
+  },
+  "environment": {
+    "python": "/scratch/abdulsalam.m/molscout-store/envs/molvec/bin/python",
+    "freeze_command": [
+      "/home/abdulsalam.m/.local/bin/uv",
+      "pip",
+      "freeze",
+      "--python",
+      "/scratch/abdulsalam.m/molscout-store/envs/molvec/bin/python"
+    ],
+    "python_version": "3.12.14",
+    "packages": [
+      "numpy==2.5.3",
+      "pillow==12.3.0",
+      "rdkit==2026.3.2"
+    ],
+    "conda_meta": null,
+    "lock_commands": [
+      {
+        "command": [
+          "/scratch/abdulsalam.m/molscout-store/models/molvec/jdk/bin/java",
+          "-version"
+        ],
+        "output": "openjdk version \"17.0.20.1\" 2026-08-18\nOpenJDK Runtime Environment Temurin-17.0.20.1+1 (build 17.0.20.1+1)\nOpenJDK 64-Bit Server VM Temurin-17.0.20.1+1 (build 17.0.20.1+1, mixed mode, sharing)\n"
+      }
+    ],
+    "sha256": "f87fd3daa610dca1f6b4694e3babed7b3b7aaa9de56572124ae0001e661e5a5f",
+    "variables": {
+      "CUDA_VISIBLE_DEVICES": null,
+      "OMP_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null,
+      "HF_HOME": "/scratch/abdulsalam.m/hf_cache",
+      "HF_HUB_OFFLINE": "1",
+      "TRANSFORMERS_OFFLINE": "1",
+      "PYSTOW_HOME": null,
+      "MOLSCOUT_STORE": "/scratch/abdulsalam.m/molscout-store",
+      "SLURM_CPUS_PER_TASK": "8",
+      "SLURM_JOB_PARTITION": "short"
+    }
+  },
+  "hardware": {
+    "host": "c3151",
+    "platform": "Linux-5.14.0-611.5.1.el9_7.x86_64-x86_64-with-glibc2.34",
+    "cluster": "explorer",
+    "cpu_model": "Intel(R) Xeon(R) CPU E5-2680 v4 @ 2.40GHz",
+    "cpus_available": 8,
+    "slurm_mem_per_node_mb": 65536,
+    "slurm_mem_per_cpu_mb": null,
+    "gpus": []
+  },
+  "slurm": {
+    "job": "10818711",
+    "array_job": null,
+    "array_task": null,
+    "partition": "short",
+    "nodes": "c3151"
+  },
+  "timing": {
+    "started_utc": "2026-10-05T05:23:53.425Z",
+    "finished_utc": "2026-10-05T05:27:47.798Z",
+    "wall_seconds": 234.373,
+    "tool_seconds": 223.956,
+    "scoring_seconds": 6.638,
+    "item_seconds_total": 217.83186325244606
+  },
+  "resources": {
+    "tool_peak_rss_mib": 2201.5,
+    "tool_cpu_seconds": 333.765,
+    "gpu": null
+  },
+  "segments": [
+    {
+      "slurm": {
+        "job": "10818711",
+        "array_job": null,
+        "array_task": null,
+        "partition": "short"
+      },
+      "host": "c3151",
+      "gpus": [],
+      "started_utc": "2026-10-05T05:23:57.127Z",
+      "finished_utc": "2026-10-05T05:27:41.083Z",
+      "rows": 992,
+      "tool_seconds": 223.956,
+      "resources": {
+        "tool_peak_rss_mib": 2201.5,
+        "tool_cpu_seconds": 333.765,
+        "gpu": null
+      }
+    }
+  ],
+  "command": [
+    "/scratch/abdulsalam.m/molscout-store/envs/molvec/bin/python",
+    "run.py",
+    "--images",
+    "/scratch/abdulsalam.m/molscout/data/raw/clef/CLEF",
+    "--dataset",
+    "clef",
+    "--tool",
+    "MolVec 0.9.8 (git b412dd0, Maven Central)",
+    "--output",
+    "/scratch/abdulsalam.m/molscout/benchmarks/results/.staging-molvec__clef-2981789/predictions.csv",
+    "--resume",
+    "/scratch/abdulsalam.m/molscout/benchmarks/results/.checkpoints/molvec__clef/predictions.csv",
+    "--java",
+    "/scratch/abdulsalam.m/molscout-store/models/molvec/jdk/bin/java",
+    "--lib",
+    "/scratch/abdulsalam.m/molscout-store/models/molvec/lib",
+    "--classes",
+    "/scratch/abdulsalam.m/molscout-store/models/molvec/classes",
+    "--timeout",
+    "300",
+    "--heap",
+    "4g"
+  ]
+}

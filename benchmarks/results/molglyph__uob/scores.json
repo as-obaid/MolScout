@@ -1,0 +1,71 @@
+{
+  "dataset": "uob",
+  "tool": "MolGlyph 1.1.1 (BioMiner git 17c6161, molglyph_large)",
+  "predictions": {
+    "path": "benchmarks/results/molglyph__uob/predictions.csv",
+    "sha256": "22166120bb6e4713f98eb5d976165c9a09963d3958742e0ed37287d1a86d93ef"
+  },
+  "inputs": {
+    "references": {
+      "directory": "data/raw/uob/UOB_mol_ref",
+      "files": 5740,
+      "sha256": "b9ebed94461a134f1e761752d95844d05fe788418658438526fce668063a2aa8",
+      "unreadable": {}
+    }
+  },
+  "scoring": {
+    "molscout_version": "0.1.0",
+    "rdkit_version": "2026.03.2",
+    "numpy_version": "2.5.3",
+    "python_version": "3.12.14",
+    "match": "exact RDKit canonical SMILES, stereo-aware and stereo-stripped",
+    "ci95_proportions": {
+      "method": "wilson",
+      "z": 1.959963984540054
+    },
+    "ci95_macro": {
+      "method": "percentile bootstrap over papers",
+      "resamples": 10000,
+      "seed": 6630
+    }
+  },
+  "scores": {
+    "kind": "crop",
+    "items_scored": 5740,
+    "items_excluded": [],
+    "items_without_prediction": 0,
+    "accuracy": {
+      "value": 0.8695121951219512,
+      "ci95": [
+        0.8605505288168491,
+        0.8779796047901034
+      ],
+      "successes": 4991,
+      "trials": 5740
+    },
+    "accuracy_stereo_stripped": {
+      "value": 0.8777003484320558,
+      "ci95": [
+        0.8689710688625154,
+        0.8859244189544921
+      ],
+      "successes": 5038,
+      "trials": 5740
+    },
+    "valid_output_rate": {
+      "value": 0.9998257839721254,
+      "ci95": [
+        0.9990137589336285,
+        0.9999692459312213
+      ],
+      "successes": 5739,
+      "trials": 5740
+    },
+    "seconds_per_item": {
+      "mean": 0.14218566377098812,
+      "median": 0.13649603258818388,
+      "items": 5740,
+      "total": 816.1457100454718
+    }
+  }
+}

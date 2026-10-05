@@ -1,0 +1,301 @@
+{
+  "run": "molnextr__uspto",
+  "tool": {
+    "tool": "molnextr",
+    "name": "MolNexTR",
+    "version": "1.0.2 (git 6f6502b, molnextr_best.pth @ 9ac2da6, pad-to-square)",
+    "checkpoints": [
+      {
+        "path": "/scratch/abdulsalam.m/molscout-store/models/molnextr/molnextr_best.pth",
+        "sha256": "5990bc19aaafa5cf44e9d04e06fb8e2b5aea50c66e1e925f662bdff7d2a6422c"
+      }
+    ]
+  },
+  "dataset": "uspto",
+  "items": 5719,
+  "tool_errors": 0,
+  "inputs": {
+    "images": "/scratch/abdulsalam.m/molscout/data/raw/uspto/USPTO",
+    "images_sha256": "ae79e7ff59b3d9261dbeec805362b0438645c2af64808fcece768a7c7bce2b25"
+  },
+  "git": {
+    "commit": "139105a717de9c42e75838d22c23a2baadb416fb",
+    "dirty": false,
+    "dirty_paths": []
+  },
+  "environment": {
+    "python": "/scratch/abdulsalam.m/molscout-store/envs/molnextr/bin/python",
+    "freeze_command": [
+      "/home/abdulsalam.m/.local/bin/uv",
+      "pip",
+      "freeze",
+      "--python",
+      "/scratch/abdulsalam.m/molscout-store/envs/molnextr/bin/python"
+    ],
+    "python_version": "3.10.21",
+    "packages": [
+      "absl-py==2.5.0",
+      "aiohappyeyeballs==2.7.1",
+      "aiohttp==3.14.3",
+      "aiosignal==1.4.0",
+      "albumentations==1.1.0",
+      "anyio==4.15.1",
+      "async-timeout==5.0.1",
+      "attrs==26.1.0",
+      "beautifulsoup4==4.15.0",
+      "blinker==1.9.0",
+      "certifi==2022.12.7",
+      "charset-normalizer==2.1.1",
+      "click==8.5.0",
+      "cloudpickle==3.1.2",
+      "configargparse==1.8.0",
+      "contourpy==1.3.2",
+      "cycler==0.12.1",
+      "exceptiongroup==1.3.1",
+      "fastcore==2.2.32",
+      "fastprogress==1.1.6",
+      "filelock==3.32.3",
+      "flask==3.1.3",
+      "fonttools==4.65.0",
+      "frozenlist==1.8.0",
+      "fsspec==2026.7.0",
+      "gensim==4.4.0",
+      "grpcio==1.84.0",
+      "h11==0.16.0",
+      "httpcore2==2.3.0",
+      "httptools==0.8.0",
+      "httpx2==2.3.0",
+      "huggingface-hub==0.26.2",
+      "idna==3.4",
+      "imageio==2.38.0",
+      "itsdangerous==2.2.0",
+      "jinja2==3.1.6",
+      "joblib==1.6.0",
+      "kiwisolver==1.5.1",
+      "lazy-loader==0.6",
+      "lightning-utilities==0.11.8",
+      "markdown==3.10.3",
+      "markupsafe==3.0.3",
+      "matplotlib==3.9.2",
+      "molnextr @ git+https://github.com/CYF2000127/MolNexTR.git@6f6502b4ed9733dba8b1ee45d2da474576683194",
+      "mpmath==1.3.0",
+      "multidict==6.9.1",
+      "networkx==3.4.2",
+      "numpy==1.26.4",
+      "nvidia-cublas-cu12==12.1.3.1",
+      "nvidia-cuda-cupti-cu12==12.1.105",
+      "nvidia-cuda-nvrtc-cu12==12.1.105",
+      "nvidia-cuda-runtime-cu12==12.1.105",
+      "nvidia-cudnn-cu12==9.1.0.70",
+      "nvidia-cufft-cu12==11.0.2.54",
+      "nvidia-curand-cu12==10.3.2.106",
+      "nvidia-cusolver-cu12==11.4.5.107",
+      "nvidia-cusparse-cu12==12.1.0.106",
+      "nvidia-nccl-cu12==2.21.5",
+      "nvidia-nvjitlink-cu12==12.9.86",
+      "nvidia-nvtx-cu12==12.1.105",
+      "oauthlib==4.0.0",
+      "opencv-python-headless==4.10.0.84",
+      "opennmt-py==2.2.0",
+      "packaging==24.1",
+      "pandas==2.2.3",
+      "pillow==11.1.0",
+      "propcache==0.5.4",
+      "protobuf==7.36.2",
+      "pyonmttok==1.37.1",
+      "pyparsing==3.2.1",
+      "pystow==0.7.11",
+      "python-dateutil==2.9.0.post0",
+      "python-dotenv==1.2.4",
+      "python-fasthtml==0.14.13",
+      "python-multipart==0.0.32",
+      "pytorch-lightning==2.5.0.post0",
+      "pytz==2026.5",
+      "pyyaml==6.0.3",
+      "qudida==0.0.4",
+      "rdkit==2024.3.6",
+      "requests==2.28.1",
+      "scikit-image==0.25.2",
+      "scikit-learn==1.7.2",
+      "scipy==1.15.3",
+      "sentencepiece==0.2.2",
+      "setuptools==78.1.0",
+      "six==1.17.0",
+      "smart-open==8.0.2",
+      "smilespe==0.0.3",
+      "soupsieve==2.10",
+      "starlette==1.7.0",
+      "sympy==1.13.1",
+      "tensorboard==2.21.0",
+      "tensorboard-data-server==0.7.2",
+      "threadpoolctl==3.7.0",
+      "tifffile==2025.5.10",
+      "timm==0.4.12",
+      "torch==2.5.1+cu121",
+      "torchmetrics==1.0.3",
+      "torchtext==0.5.0",
+      "torchvision==0.20.1+cu121",
+      "tqdm==4.66.5",
+      "triton==3.1.0",
+      "truststore==0.10.4",
+      "typing-extensions==4.16.0",
+      "tzdata==2026.5",
+      "urllib3==1.26.13",
+      "uvicorn==0.54.0",
+      "uvloop==0.23.0",
+      "waitress==3.0.2",
+      "watchfiles==1.3.0",
+      "websockets==16.1.1",
+      "werkzeug==3.1.9",
+      "wrapt==2.5.0",
+      "yarl==1.25.1"
+    ],
+    "conda_meta": null,
+    "lock_commands": [],
+    "sha256": "d087c2ba10259f87c019c19d1646e866fa7dfc2328b61ad43528423b25ba71f4",
+    "variables": {
+      "CUDA_VISIBLE_DEVICES": "0",
+      "OMP_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null,
+      "HF_HOME": "/scratch/abdulsalam.m/hf_cache",
+      "HF_HUB_OFFLINE": "1",
+      "TRANSFORMERS_OFFLINE": "1",
+      "PYSTOW_HOME": null,
+      "MOLSCOUT_STORE": "/scratch/abdulsalam.m/molscout-store",
+      "SLURM_CPUS_PER_TASK": "8",
+      "SLURM_JOB_PARTITION": "gpu-short"
+    }
+  },
+  "hardware": {
+    "host": "d4053",
+    "platform": "Linux-5.14.0-362.13.1.el9_3.x86_64-x86_64-with-glibc2.34",
+    "cluster": "explorer",
+    "cpu_model": "INTEL(R) XEON(R) GOLD 6548Y+",
+    "cpus_available": 8,
+    "slurm_mem_per_node_mb": 65536,
+    "slurm_mem_per_cpu_mb": null,
+    "gpus": [
+      {
+        "name": "NVIDIA H200",
+        "memory": "143771 MiB",
+        "driver": "570.86.15"
+      }
+    ]
+  },
+  "slurm": {
+    "job": "10818703",
+    "array_job": null,
+    "array_task": null,
+    "partition": "gpu-short",
+    "nodes": "d4053"
+  },
+  "timing": {
+    "started_utc": "2026-10-05T06:22:33.876Z",
+    "finished_utc": "2026-10-05T06:57:17.527Z",
+    "wall_seconds": 2083.651,
+    "tool_seconds": 2110.216,
+    "scoring_seconds": 15.238,
+    "item_seconds_total": 2028.1258347518742
+  },
+  "resources": {
+    "tool_peak_rss_mib": 2220.7,
+    "tool_cpu_seconds": 2242.231,
+    "gpu": {
+      "name": "NVIDIA H200",
+      "peak_memory_mib": 1302.0,
+      "mean_utilization_pct": 23.1,
+      "samples": 409,
+      "interval_seconds": 5.0
+    }
+  },
+  "segments": [
+    {
+      "slurm": {
+        "job": "10818706",
+        "array_job": null,
+        "array_task": null,
+        "partition": "sharing"
+      },
+      "host": "d4072",
+      "gpus": [
+        "NVIDIA H200 NVL"
+      ],
+      "started_utc": "2026-10-05T05:23:35.456Z",
+      "finished_utc": "2026-10-05T05:24:13.996Z",
+      "rows": 0,
+      "tool_seconds": 38.541,
+      "resources": {
+        "tool_peak_rss_mib": 2107.6,
+        "tool_cpu_seconds": 12.39,
+        "gpu": null
+      }
+    },
+    {
+      "slurm": {
+        "job": "10818707",
+        "array_job": null,
+        "array_task": null,
+        "partition": "sharing"
+      },
+      "host": "d4072",
+      "gpus": [
+        "NVIDIA H200 NVL"
+      ],
+      "started_utc": "2026-10-05T05:24:21.228Z",
+      "finished_utc": "2026-10-05T05:24:32.397Z",
+      "rows": 0,
+      "tool_seconds": 11.169,
+      "resources": {
+        "tool_peak_rss_mib": 2113.6,
+        "tool_cpu_seconds": 13.227,
+        "gpu": null
+      }
+    },
+    {
+      "slurm": {
+        "job": "10818703",
+        "array_job": null,
+        "array_task": null,
+        "partition": "gpu-short"
+      },
+      "host": "d4053",
+      "gpus": [
+        "NVIDIA H200"
+      ],
+      "started_utc": "2026-10-05T06:22:41.580Z",
+      "finished_utc": "2026-10-05T06:57:02.086Z",
+      "rows": 5719,
+      "tool_seconds": 2060.506,
+      "resources": {
+        "tool_peak_rss_mib": 2220.7,
+        "tool_cpu_seconds": 2216.614,
+        "gpu": {
+          "name": "NVIDIA H200",
+          "peak_memory_mib": 1302.0,
+          "mean_utilization_pct": 23.1,
+          "samples": 409,
+          "interval_seconds": 5.0
+        }
+      }
+    }
+  ],
+  "command": [
+    "/scratch/abdulsalam.m/molscout-store/envs/molnextr/bin/python",
+    "run.py",
+    "--images",
+    "/scratch/abdulsalam.m/molscout/data/raw/uspto/USPTO",
+    "--dataset",
+    "uspto",
+    "--tool",
+    "MolNexTR 1.0.2 (git 6f6502b, molnextr_best.pth @ 9ac2da6, pad-to-square)",
+    "--output",
+    "/scratch/abdulsalam.m/molscout/benchmarks/results/.staging-molnextr__uspto-2763310/predictions.csv",
+    "--resume",
+    "/scratch/abdulsalam.m/molscout/benchmarks/results/.checkpoints/molnextr__uspto/predictions.csv",
+    "--checkpoint",
+    "/scratch/abdulsalam.m/molscout-store/models/molnextr/molnextr_best.pth",
+    "--device",
+    "cuda",
+    "--pad-to-square"
+  ]
+}

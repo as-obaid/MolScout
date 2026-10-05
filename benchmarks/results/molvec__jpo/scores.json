@@ -1,0 +1,75 @@
+{
+  "dataset": "jpo",
+  "tool": "MolVec 0.9.8 (git b412dd0, Maven Central)",
+  "predictions": {
+    "path": "benchmarks/results/molvec__jpo/predictions.csv",
+    "sha256": "666cba40334ad16abec31f85d26e4de23b923dbe2689c779914f80272d4b0d94"
+  },
+  "inputs": {
+    "references": {
+      "directory": "data/raw/jpo/JPO_mol_ref",
+      "files": 450,
+      "sha256": "5b499918f6581e83a7b9503ef5b3ec21fc4362270fb231d3368b75591c0fd060",
+      "unreadable": {
+        "2008056719_47_chem": "Explicit valence for atom # 24 Cl, 3, is greater than permitted"
+      }
+    }
+  },
+  "scoring": {
+    "molscout_version": "0.1.0",
+    "rdkit_version": "2026.03.2",
+    "numpy_version": "2.5.3",
+    "python_version": "3.12.14",
+    "match": "exact RDKit canonical SMILES, stereo-aware and stereo-stripped",
+    "ci95_proportions": {
+      "method": "wilson",
+      "z": 1.959963984540054
+    },
+    "ci95_macro": {
+      "method": "percentile bootstrap over papers",
+      "resamples": 10000,
+      "seed": 6630
+    }
+  },
+  "scores": {
+    "kind": "crop",
+    "items_scored": 449,
+    "items_excluded": [
+      "2008056719_47_chem"
+    ],
+    "items_without_prediction": 0,
+    "accuracy": {
+      "value": 0.6659242761692651,
+      "ci95": [
+        0.6210519352076995,
+        0.707981542398417
+      ],
+      "successes": 299,
+      "trials": 449
+    },
+    "accuracy_stereo_stripped": {
+      "value": 0.688195991091314,
+      "ci95": [
+        0.643904647684899,
+        0.7292943973851259
+      ],
+      "successes": 309,
+      "trials": 449
+    },
+    "valid_output_rate": {
+      "value": 0.9398663697104677,
+      "ci95": [
+        0.9139232144227625,
+        0.9583467429894257
+      ],
+      "successes": 422,
+      "trials": 449
+    },
+    "seconds_per_item": {
+      "mean": 0.8256460215192702,
+      "median": 0.4202110059559345,
+      "items": 450,
+      "total": 371.5407096836716
+    }
+  }
+}

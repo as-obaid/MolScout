@@ -1,0 +1,75 @@
+{
+  "dataset": "jpo",
+  "tool": "MolNexTR 1.0.2 (git 6f6502b, molnextr_best.pth @ 9ac2da6, pad-to-square)",
+  "predictions": {
+    "path": "benchmarks/results/molnextr__jpo/predictions.csv",
+    "sha256": "1b1a15365f99ad4395f9f5b714b5413e894999e64cf07643d15f5eb9b81e6993"
+  },
+  "inputs": {
+    "references": {
+      "directory": "data/raw/jpo/JPO_mol_ref",
+      "files": 450,
+      "sha256": "5b499918f6581e83a7b9503ef5b3ec21fc4362270fb231d3368b75591c0fd060",
+      "unreadable": {
+        "2008056719_47_chem": "Explicit valence for atom # 24 Cl, 3, is greater than permitted"
+      }
+    }
+  },
+  "scoring": {
+    "molscout_version": "0.1.0",
+    "rdkit_version": "2026.03.2",
+    "numpy_version": "2.5.3",
+    "python_version": "3.12.14",
+    "match": "exact RDKit canonical SMILES, stereo-aware and stereo-stripped",
+    "ci95_proportions": {
+      "method": "wilson",
+      "z": 1.959963984540054
+    },
+    "ci95_macro": {
+      "method": "percentile bootstrap over papers",
+      "resamples": 10000,
+      "seed": 6630
+    }
+  },
+  "scores": {
+    "kind": "crop",
+    "items_scored": 449,
+    "items_excluded": [
+      "2008056719_47_chem"
+    ],
+    "items_without_prediction": 0,
+    "accuracy": {
+      "value": 0.512249443207127,
+      "ci95": [
+        0.4661076060285791,
+        0.5581834560765704
+      ],
+      "successes": 230,
+      "trials": 449
+    },
+    "accuracy_stereo_stripped": {
+      "value": 0.5211581291759465,
+      "ci95": [
+        0.4749679146603785,
+        0.5669893744303343
+      ],
+      "successes": 234,
+      "trials": 449
+    },
+    "valid_output_rate": {
+      "value": 0.8930957683741648,
+      "ci95": [
+        0.8611073146833985,
+        0.9184149510545823
+      ],
+      "successes": 401,
+      "trials": 449
+    },
+    "seconds_per_item": {
+      "mean": 0.27666872467017833,
+      "median": 0.23608703631907701,
+      "items": 450,
+      "total": 124.50092610158026
+    }
+  }
+}

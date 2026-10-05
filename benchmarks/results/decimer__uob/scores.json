@@ -1,0 +1,71 @@
+{
+  "dataset": "uob",
+  "tool": "DECIMER 2.8.0 (git d927ed1, Zenodo 8300489)",
+  "predictions": {
+    "path": "benchmarks/results/decimer__uob/predictions.csv",
+    "sha256": "16b668ef5b992822e022f65e47f41f36f0f1d58a0573e13593547c33e71f69c7"
+  },
+  "inputs": {
+    "references": {
+      "directory": "data/raw/uob/UOB_mol_ref",
+      "files": 5740,
+      "sha256": "b9ebed94461a134f1e761752d95844d05fe788418658438526fce668063a2aa8",
+      "unreadable": {}
+    }
+  },
+  "scoring": {
+    "molscout_version": "0.1.0",
+    "rdkit_version": "2026.03.2",
+    "numpy_version": "2.5.3",
+    "python_version": "3.12.14",
+    "match": "exact RDKit canonical SMILES, stereo-aware and stereo-stripped",
+    "ci95_proportions": {
+      "method": "wilson",
+      "z": 1.959963984540054
+    },
+    "ci95_macro": {
+      "method": "percentile bootstrap over papers",
+      "resamples": 10000,
+      "seed": 6630
+    }
+  },
+  "scores": {
+    "kind": "crop",
+    "items_scored": 5740,
+    "items_excluded": [],
+    "items_without_prediction": 0,
+    "accuracy": {
+      "value": 0.8644599303135888,
+      "ci95": [
+        0.8553605862118475,
+        0.873071775648475
+      ],
+      "successes": 4962,
+      "trials": 5740
+    },
+    "accuracy_stereo_stripped": {
+      "value": 0.8714285714285714,
+      "ci95": [
+        0.8625202440336038,
+        0.8798400788565529
+      ],
+      "successes": 5002,
+      "trials": 5740
+    },
+    "valid_output_rate": {
+      "value": 1.0,
+      "ci95": [
+        0.9993312038905957,
+        1.0
+      ],
+      "successes": 5740,
+      "trials": 5740
+    },
+    "seconds_per_item": {
+      "mean": 0.27996199243354775,
+      "median": 0.27093545254319906,
+      "items": 5740,
+      "total": 1606.9818365685642
+    }
+  }
+}

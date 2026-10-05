@@ -1,0 +1,103 @@
+{
+  "dataset": "clef",
+  "tool": "MolScribe 1.1.1 (git 7296a30, swin_base_char_aux_1m680k)",
+  "predictions": {
+    "path": "benchmarks/results/molscribe__clef/predictions.csv",
+    "sha256": "7206f58874403c6f03507efbe0a6d84cd0c11042a5e08f50cb13ae1cb5b1d7ea"
+  },
+  "inputs": {
+    "references": {
+      "directory": "data/raw/clef/CLEF_mol_ref",
+      "files": 992,
+      "sha256": "e3a609f68ab612d37ba75b260aecac578e5f3501fabb69a5c8d5f0f3a86fd66a",
+      "unreadable": {
+        "US20030130506A1_p0003_x0392_y2374_c00002": "Explicit valence for atom # 13 Ar, 1, is greater than permitted",
+        "US20030130506A1_p0003_x1476_y1572_c00003": "Explicit valence for atom # 2 H, 3, is greater than permitted",
+        "US20030130506A1_p0004_x1363_y1078_c00010": "Explicit valence for atom # 4 H, 3, is greater than permitted",
+        "US20030130506A1_p0008_x1381_y1349_c00031": "Explicit valence for atom # 16 Ar, 1, is greater than permitted",
+        "US20030130506A1_p0010_x0383_y2595_c00033": "Explicit valence for atom # 18 Ar, 1, is greater than permitted",
+        "US20050002859A1_p0016_x0336_y0672_c00094": "Explicit valence for atom # 6 N, 4, is greater than permitted",
+        "US20050002859A1_p0024_x0336_y0622_c00118": "Explicit valence for atom # 6 N, 4, is greater than permitted",
+        "US20050043351A1_p0001_x1536_y1025_c00000": "Explicit valence for atom # 19 Ar, 1, is greater than permitted",
+        "US20050227932A1_p0033_x0404_y1092_c00056": "Explicit valence for atom # 4 C, 5, is greater than permitted",
+        "US20050227932A1_p0035_x0404_y0816_c00061": "Explicit valence for atom # 5 C, 5, is greater than permitted",
+        "US20060122222A1_p0026_x1536_y1400_c00076": "Explicit valence for atom # 4 N, 4, is greater than permitted",
+        "US20070049758A1_p0013_x1451_y0839_c00008": "Explicit valence for atom # 9 N, 4, is greater than permitted",
+        "US20070049758A1_p0015_x0485_y1893_c00011": "Explicit valence for atom # 9 N, 4, is greater than permitted",
+        "US20070117785A1_p0008_x0478_y0710_c00002": "Explicit valence for atom # 19 Ar, 1, is greater than permitted",
+        "US20070265270A1_p0034_x1406_y2511_c00138": "Explicit valence for atom # 27 C, 6, is greater than permitted"
+      }
+    }
+  },
+  "scoring": {
+    "molscout_version": "0.1.0",
+    "rdkit_version": "2026.03.2",
+    "numpy_version": "2.5.3",
+    "python_version": "3.12.14",
+    "match": "exact RDKit canonical SMILES, stereo-aware and stereo-stripped",
+    "ci95_proportions": {
+      "method": "wilson",
+      "z": 1.959963984540054
+    },
+    "ci95_macro": {
+      "method": "percentile bootstrap over papers",
+      "resamples": 10000,
+      "seed": 6630
+    }
+  },
+  "scores": {
+    "kind": "crop",
+    "items_scored": 977,
+    "items_excluded": [
+      "US20030130506A1_p0003_x0392_y2374_c00002",
+      "US20030130506A1_p0003_x1476_y1572_c00003",
+      "US20030130506A1_p0004_x1363_y1078_c00010",
+      "US20030130506A1_p0008_x1381_y1349_c00031",
+      "US20030130506A1_p0010_x0383_y2595_c00033",
+      "US20050002859A1_p0016_x0336_y0672_c00094",
+      "US20050002859A1_p0024_x0336_y0622_c00118",
+      "US20050043351A1_p0001_x1536_y1025_c00000",
+      "US20050227932A1_p0033_x0404_y1092_c00056",
+      "US20050227932A1_p0035_x0404_y0816_c00061",
+      "US20060122222A1_p0026_x1536_y1400_c00076",
+      "US20070049758A1_p0013_x1451_y0839_c00008",
+      "US20070049758A1_p0015_x0485_y1893_c00011",
+      "US20070117785A1_p0008_x0478_y0710_c00002",
+      "US20070265270A1_p0034_x1406_y2511_c00138"
+    ],
+    "items_without_prediction": 0,
+    "accuracy": {
+      "value": 0.8075742067553736,
+      "ci95": [
+        0.7816700659899604,
+        0.8310691229943704
+      ],
+      "successes": 789,
+      "trials": 977
+    },
+    "accuracy_stereo_stripped": {
+      "value": 0.8689866939611054,
+      "ci95": [
+        0.8463761040529172,
+        0.8887070161762052
+      ],
+      "successes": 849,
+      "trials": 977
+    },
+    "valid_output_rate": {
+      "value": 0.9938587512794268,
+      "ci95": [
+        0.9866666527328742,
+        0.9971824610273241
+      ],
+      "successes": 971,
+      "trials": 977
+    },
+    "seconds_per_item": {
+      "mean": 0.32456126588494366,
+      "median": 0.3198647852987051,
+      "items": 992,
+      "total": 321.9647757578641
+    }
+  }
+}

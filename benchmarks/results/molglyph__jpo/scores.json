@@ -1,0 +1,75 @@
+{
+  "dataset": "jpo",
+  "tool": "MolGlyph 1.1.1 (BioMiner git 17c6161, molglyph_large)",
+  "predictions": {
+    "path": "benchmarks/results/molglyph__jpo/predictions.csv",
+    "sha256": "d147936412fedbef6d92a2911331bd03eb5d6bcec37bb65bea7027fc9be9d03b"
+  },
+  "inputs": {
+    "references": {
+      "directory": "data/raw/jpo/JPO_mol_ref",
+      "files": 450,
+      "sha256": "5b499918f6581e83a7b9503ef5b3ec21fc4362270fb231d3368b75591c0fd060",
+      "unreadable": {
+        "2008056719_47_chem": "Explicit valence for atom # 24 Cl, 3, is greater than permitted"
+      }
+    }
+  },
+  "scoring": {
+    "molscout_version": "0.1.0",
+    "rdkit_version": "2026.03.2",
+    "numpy_version": "2.5.3",
+    "python_version": "3.12.14",
+    "match": "exact RDKit canonical SMILES, stereo-aware and stereo-stripped",
+    "ci95_proportions": {
+      "method": "wilson",
+      "z": 1.959963984540054
+    },
+    "ci95_macro": {
+      "method": "percentile bootstrap over papers",
+      "resamples": 10000,
+      "seed": 6630
+    }
+  },
+  "scores": {
+    "kind": "crop",
+    "items_scored": 449,
+    "items_excluded": [
+      "2008056719_47_chem"
+    ],
+    "items_without_prediction": 0,
+    "accuracy": {
+      "value": 0.5746102449888641,
+      "ci95": [
+        0.5284368938185194,
+        0.6195177571855733
+      ],
+      "successes": 258,
+      "trials": 449
+    },
+    "accuracy_stereo_stripped": {
+      "value": 0.5991091314031181,
+      "ci95": [
+        0.5531226893448047,
+        0.6434140858695871
+      ],
+      "successes": 269,
+      "trials": 449
+    },
+    "valid_output_rate": {
+      "value": 0.8997772828507795,
+      "ci95": [
+        0.8685205237178215,
+        0.9242514122593317
+      ],
+      "successes": 404,
+      "trials": 449
+    },
+    "seconds_per_item": {
+      "mean": 0.31968245309674076,
+      "median": 0.2505834847688675,
+      "items": 450,
+      "total": 143.85710389353335
+    }
+  }
+}

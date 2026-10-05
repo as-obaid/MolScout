@@ -1,0 +1,71 @@
+{
+  "dataset": "uob",
+  "tool": "MolVec 0.9.8 (git b412dd0, Maven Central)",
+  "predictions": {
+    "path": "benchmarks/results/molvec__uob/predictions.csv",
+    "sha256": "cb39f72c1a8c22d8cd303a5f905512bc60b677e729b8903adc2ba6ddba5d5bdb"
+  },
+  "inputs": {
+    "references": {
+      "directory": "data/raw/uob/UOB_mol_ref",
+      "files": 5740,
+      "sha256": "b9ebed94461a134f1e761752d95844d05fe788418658438526fce668063a2aa8",
+      "unreadable": {}
+    }
+  },
+  "scoring": {
+    "molscout_version": "0.1.0",
+    "rdkit_version": "2026.03.2",
+    "numpy_version": "2.5.3",
+    "python_version": "3.12.14",
+    "match": "exact RDKit canonical SMILES, stereo-aware and stereo-stripped",
+    "ci95_proportions": {
+      "method": "wilson",
+      "z": 1.959963984540054
+    },
+    "ci95_macro": {
+      "method": "percentile bootstrap over papers",
+      "resamples": 10000,
+      "seed": 6630
+    }
+  },
+  "scores": {
+    "kind": "crop",
+    "items_scored": 5740,
+    "items_excluded": [],
+    "items_without_prediction": 0,
+    "accuracy": {
+      "value": 0.8015679442508711,
+      "ci95": [
+        0.7910503840555693,
+        0.8116821295105009
+      ],
+      "successes": 4601,
+      "trials": 5740
+    },
+    "accuracy_stereo_stripped": {
+      "value": 0.8074912891986062,
+      "ci95": [
+        0.797087304595777,
+        0.8174839758456519
+      ],
+      "successes": 4635,
+      "trials": 5740
+    },
+    "valid_output_rate": {
+      "value": 0.9763066202090592,
+      "ci95": [
+        0.9720419220544116,
+        0.9799342143347483
+      ],
+      "successes": 5604,
+      "trials": 5740
+    },
+    "seconds_per_item": {
+      "mean": 0.2461188911773485,
+      "median": 0.22969144501257688,
+      "items": 5740,
+      "total": 1412.7224353579804
+    }
+  }
+}
