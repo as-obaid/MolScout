@@ -39,8 +39,8 @@ below the setup table.
 - **Hardware:** each GPU run used a single card, an NVIDIA H200 or an H200 NVL. MolVec ran on 8
   cores of a Xeon E5-2680 v4 (CLEF, JPO) or a Xeon Platinum 8276 (USPTO, UOB, MolRecBench-Wild).
 
-All five datasets are public. USPTO, JPO and CLEF are patent crops; UOB mixes patent and
-synthetic crops; [MolRecBench-Wild](https://huggingface.co/datasets/opendatalab/MolRecBench-Wild)
+All five datasets are public. USPTO, JPO and CLEF are patent crops; UOB's crops come from the
+Maybridge catalog; [MolRecBench-Wild](https://huggingface.co/datasets/opendatalab/MolRecBench-Wild)
 has 5,024 real journal crops from 818 papers in its 2026-08-19 release (5,029 from 820 in the
 paper).
 
