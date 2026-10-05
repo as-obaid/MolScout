@@ -89,6 +89,7 @@ the papers and tools live in `Course-Project/Docs/log.md`.
 |:---------|:--------|:-----|
 | BioVista coverage | Score only fetched PDFs | Report as "n of 500 papers"; do not compare directly to BioMiner's published 500-paper score |
 | MolScout detector | MolDetv2 · DECIMER-Segmentation | MolDetv2 is CC-BY-NC-SA-4.0; shipping it limits MolScout's license |
+| MolRecBench-Wild cis/trans | Keep · ignore E/Z on Wild (official default) · read E/Z from the drawn coordinates | References carry no E/Z (graphs read as unsanitized molblocks), so the stereo-aware Wild score penalizes stated E/Z. Reading E/Z from the coordinates is the most correct reference; kept for MolScout's own evaluation |
 
 ---
 
