@@ -1,0 +1,18 @@
+# MolGlyph (jiaxianyan/BioMiner@17c6161, package BioMiner/MolScribe) for the MolScout benchmark,
+# Python 3.10. Installed by setup.sh. The code's requirements.txt leaves timm and albumentations
+# unpinned; these pins follow BioMiner's main_environment.yml, the environment the authors ran it in
+# (its swin_transformer.py and augment.py drop imports that newer timm and albumentations removed).
+# torch 2.6 loads molglyph_large.pt with the weights_only=True default.
+--extra-index-url https://download.pytorch.org/whl/cu124
+torch==2.6.0+cu124
+torchvision==0.21.0+cu124
+numpy==1.26.4
+opencv-python-headless==4.11.0.86
+albumentations==2.0.5
+timm==1.0.13
+SmilesPE==0.0.3
+OpenNMT-py==2.2.0
+rdkit==2022.9.5
+pandas==2.2.3
+matplotlib==3.10.1
+huggingface_hub==0.30.2
