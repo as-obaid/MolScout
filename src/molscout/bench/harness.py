@@ -350,12 +350,21 @@ def _sigterm_raises() -> Iterator[None]:
 
 @contextmanager
 def _signals_deferred() -> Iterator[None]:
-    """Hold SIGINT and SIGTERM until the block ends; a held signal is handled (and raises) right after."""
-    if not hasattr(signal, "pthread_sigmask"):
+    """Hold SIGINT and SIGTERM until the block ends; a held signal is handled (and raises) right after.
+
+    A signal mask would not do: it covers one thread, and Linux may deliver the signal to another,
+    after which Python still runs the handler in the main thread inside the block.
+    """
+    if threading.current_thread() is not threading.main_thread():
         yield
         return
-    held = signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGINT, signal.SIGTERM})
+    pending: list[int] = []
+    names = (signal.SIGINT, signal.SIGTERM)
+    previous = {signum: signal.signal(signum, lambda signum, frame: pending.append(signum)) for signum in names}
     try:
         yield
     finally:
-        signal.pthread_sigmask(signal.SIG_SETMASK, held)
+        for signum, handler in previous.items():
+            signal.signal(signum, signal.SIG_DFL if handler is None else handler)
+        if pending:
+            signal.raise_signal(pending[0])
