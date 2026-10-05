@@ -15,8 +15,9 @@ a result that is not yet available.
 
 ## Type 1: Structure readers
 
-Each tool reads a single cropped molecule image and returns SMILES. Released checkpoints are
-run at default settings.
+Each tool reads a single cropped molecule image and returns SMILES. Released checkpoints run
+through each tool's own inference code; settings that differ from a tool's defaults are listed
+below the setup table.
 
 ### Setup
 
@@ -29,17 +30,41 @@ run at default settings.
 | [MolGlyph](https://github.com/jiaxianyan/BioMiner/blob/main/BioMiner/MolScribe/molscribe/interface_molglyph.py) | Swin-B + Transformer on MolScribe's code; BioMiner's reader | SMILES | Explorer, NVIDIA H200 / Explorer, NVIDIA H200 NVL | 1.1.1 (BioMiner git 17c6161, molglyph_large) |
 | [OCSRGlyph](https://github.com/EdisonScientific/glyph) | Swin-B + 6-layer Transformer decoder | SMILES | Explorer, NVIDIA H200 NVL / Explorer, NVIDIA H200 | 0.1.0 (git 0bf782f, model.pth @ da0d049) |
 
+- **MolNexTR** pads each crop to a square before inference; its released API stretches
+  non-square crops.
+- **OCSRGlyph** runs in fp32, as in its published USPTO evaluation (its predictor defaults to
+  fp16 on CUDA), and keeps its own clean-up: `[H]` fragments dropped, RDKit canonical output.
+- **MolGlyph** writes a MolParser caption, which BioMiner's code converts to SMILES; captions
+  with ring or circle groups convert to nothing.
+- **Hardware:** each GPU run used a single card, an NVIDIA H200 or an H200 NVL. MolVec ran on 8
+  cores of a Xeon E5-2680 v4 (CLEF, JPO) or a Xeon Platinum 8276 (USPTO, UOB, MolRecBench-Wild).
+
 All five datasets are public. USPTO, JPO and CLEF are patent crops; UOB mixes patent and
 synthetic crops; [MolRecBench-Wild](https://huggingface.co/datasets/opendatalab/MolRecBench-Wild)
 has 5,024 real journal crops from 818 papers in its 2026-08-19 release (5,029 from 820 in the
 paper).
+
+Crops are scored against every reference RDKit can read: 5,704 of USPTO's 5,719, all 5,740 of
+UOB, 449 of JPO's 450 and 977 of CLEF's 992. MolRecBench-Wild labels its crops with molecular
+graphs, and 2,371 of the 5,024 are scored: the 2,392 graphs the official SMILES track turns into
+molecules, less 21 that keep counter-ion labels such as OTf⁻ as tokens
+([dev.md](dev.md#scoring-rules)).
 
 Metrics:
 
 - **Exact match, stereo-aware:** prediction matches the ground truth, stereochemistry included.
 - **Exact match, stereo-stripped:** prediction matches once stereochemistry is removed.
 - **Valid output:** share of crops that return a SMILES RDKit can parse.
-- **Speed:** seconds per crop on the hardware listed above.
+- **Speed:** seconds per crop, from reading the image to the tool's final SMILES; model loading
+  and one warm-up image are not counted. Runs used different cards and CPUs (above), so speed
+  compares tools only roughly.
+
+The pooled columns weight each dataset by its number of crops.
+
+MolRecBench-Wild references carry no cis/trans: the graphs are converted without reading
+double-bond geometry from the drawing, as in the official SMILES track (1 of 2,371 references has
+E/Z). On that dataset a stated E/Z bond counts against the stereo-aware score, so its
+stereo-stripped column compares tools more fairly.
 
 ### Results
 
@@ -80,14 +105,20 @@ Metrics:
 
 | Tool | USPTO | UOB | JPO | CLEF | MolRecBench-Wild |
 |:-----|------:|----:|----:|-----:|-----------------:|
-| MolScribe | 82.1–93.8\* | — | 82.1–93.8\* | — | 41.05 |
-| MolNexTR | 82.1–93.8\* | — | 82.1–93.8\* | — | 40.90 |
+| MolScribe | 82.1–93.8\* | — | 82.1–93.8\* | — | 41.05† |
+| MolNexTR | 82.1–93.8\* | — | 82.1–93.8\* | — | 40.90† |
 | DECIMER | — | — | — | — | — |
 | MolVec | — | — | — | — | — |
 | MolGlyph | — | — | — | — | — |
 | OCSRGlyph | 93.8 | — | — | — | — |
 
 \* Reported as a range across USPTO and JPO for MolScribe and MolNexTR, not per dataset.
+
+† On the paper's 5,029-crop v1 snapshot, not reproducible on the 2026-08-19 release. There the
+official SMILES track (commit 500da87, cis/trans ignored) scores 2,392 graphs and gives the
+MolScribe outputs bundled with it 62.25%, and our MolScribe run 60.91%. The official references
+keep labels such as R1, Ar or X as tokens, which a `*` in the output never matches; on the 2,207
+graphs without such labels our run scores 1,457 against the bundled outputs' 1,413.
 
 MolGlyph's published OCSR score is 76.4% overall and 50.4% on chirality, measured on
 BioVista crops rather than on these datasets (Yan et al., 2026). Its weights are gated on

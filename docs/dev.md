@@ -65,8 +65,10 @@ Agent runs are interactive sessions outside the harness; their output is convert
 
 ## Rules
 
-- **One environment per tool** (conda or Apptainer). DECIMER needs TensorFlow, MolScribe needs
-  PyTorch and MolVec needs Java.
+- **One environment per tool**, outside the repository under `$MOLSCOUT_STORE/envs/<tool>`: a uv
+  venv built from the tool's pinned `requirements.txt`, or from the tool's own uv lock where it
+  ships one (OCSRGlyph). DECIMER needs TensorFlow, MolScribe needs PyTorch and MolVec needs Java
+  (its own Temurin 17 JDK).
 - **`molscout` never imports external benchmark tools.** Tools run as separate processes.
 - **No paper PDFs, dataset images or private data in git.** Public data is rebuilt by
   `fetch_data.py` from the manifests; the internal set stays local.
@@ -162,6 +164,19 @@ Crop datasets unpack to `data/raw/<dataset>/`, with images in `USPTO/` and refer
 `data/raw/molrecbench_wild/data/`, and `scripts/fetch_data.py molrecbench_wild` also exports
 each crop's image to `data/raw/molrecbench_wild/images/<crop ID>.png`.
 
+Each tool's `setup.sh` builds its environment and downloads its weights. On Explorer, run it as a
+CPU job, since login nodes create files on `/scratch` too slowly:
+
+```bash
+sbatch benchmarks/slurm/setup.sbatch benchmarks/tools/structure_readers/molscribe/setup.sh
+```
+
+Configs are generated from each tool's `tool.yaml` (edit `tool.yaml`, not the configs):
+
+```bash
+python scripts/make_configs.py
+```
+
 One run is one tool on one dataset:
 
 ```bash
@@ -200,6 +215,12 @@ next run of the same config at the same commit predicts only the images left; a 
 another config or commit is deleted. `meta.json` records each part as a segment (job, host, GPU,
 start and finish, rows done, resources), and its `timing.tool_seconds` and `resources` cover all
 of them. The results equal those of one uninterrupted run, apart from each row's `seconds`.
+
+Once the runs are in, fill the Type 1 tables in `Benchmarking.md`:
+
+```bash
+python scripts/make_tables.py
+```
 
 `scores.json` comes from the shared scorer:
 
@@ -242,8 +263,8 @@ references and images under `data/raw/` and needs W&B credentials (`wandb login`
 | | Step | Done when |
 |:-:|:-----------------------------------------------|:-----------------------------------------------|
 | ☑ | Scoring, loaders, predictions format, internal split | Unit tests pass |
-| ☐ | MolScribe on USPTO, on Explorer | Accuracy within the published 82.1–93.8% range |
-| ☐ | MolNexTR, DECIMER, MolVec, MolGlyph, OCSRGlyph | All 30 structure-reader runs scored |
+| ☑ | MolScribe on USPTO, on Explorer | Accuracy within the published 82.1–93.8% range |
+| ☑ | MolNexTR, DECIMER, MolVec, MolGlyph, OCSRGlyph | All 30 structure-reader runs scored |
 | ☐ | DECIMER.ai, OpenChemIE | Scored on BioVista and Internal |
 | ☐ | BioMiner | Scored on BioVista and Internal |
 | ☐ | MolScout pipeline | Scored by the harness on BioVista and Internal |

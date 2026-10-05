@@ -11,8 +11,9 @@ the papers and tools live in `Course-Project/Docs/log.md`.
 | | |
 |:--|:--|
 | **Phase** | 1, baseline benchmark of existing tools |
-| **Session** | D1 Session 1 (Foundations) done; Session 2 next |
-| **Repo** | Scoring, loaders, predictions format and `fetch_data.py` on `benchmark` |
+| **Session** | D1 Sessions 1 (Foundations) and 2 (Structure readers) done; Session 3 next |
+| **Repo** | Scoring, loaders, harness, six structure readers, resumable SLURM workers and W&B publisher on `benchmark` |
+| **Type 1 results** | 30 runs in `benchmarks/results/`, all at `139105a`; tables in [Benchmarking.md](Benchmarking.md); W&B project `MolScout` (private) |
 | **Internal data** | `data/internal/`, gitignored: 6 PDFs + 222-row ground-truth CSV (220 unique structures) |
 | **Internal split** | Frozen in `data/manifests/internal_split.csv`: dev 1, 16, 19 (126) · test 2, 4, 6 (96) |
 | **BioVista** | Labels not downloaded; PDFs not fetched |
@@ -44,11 +45,11 @@ the papers and tools live in `Course-Project/Docs/log.md`.
 
 **Session 2: Structure readers (30 runs)**
 
-- [ ] `run.sbatch` + harness writing `meta.json`
-- [ ] MolRecBench-Wild loader: its labels are CARBON molecular graphs, not SMILES
-- [ ] MolScribe on USPTO within 82.1–93.8%
-- [ ] MolNexTR, DECIMER, MolVec, MolGlyph, OCSRGlyph environments
-- [ ] 6 readers × 5 datasets scored; Type 1 tables filled
+- [x] `run.sbatch` + harness writing `meta.json`
+- [x] MolRecBench-Wild loader: its labels are CARBON molecular graphs, not SMILES
+- [x] MolScribe on USPTO within 82.1–93.8% (92.1%)
+- [x] MolNexTR, DECIMER, MolVec, MolGlyph, OCSRGlyph environments
+- [x] 6 readers × 5 datasets scored; Type 1 tables filled
 
 **Session 3: Complete systems and agent**
 
@@ -60,7 +61,7 @@ the papers and tools live in `Course-Project/Docs/log.md`.
 
 **Manual**
 
-- [ ] Explorer: SSH, CUDA environment, storage
+- [x] Explorer: SSH, CUDA environment, storage
 - [ ] Hand-mark boxes for the 222 internal molecules
 - [x] Freeze the internal split
 - [ ] BioMiner go/no-go by Oct 8, or declare the fallback
@@ -136,11 +137,11 @@ Fixed before the first run; apply to every tool.
 | Tool | Role | Settings | Note |
 |:-----|:-----|:---------|:-----|
 | MolScribe | Reader | Released checkpoint, default inference | Hash recorded |
-| MolNexTR | Reader | Released checkpoint, default inference | Hash recorded |
+| MolNexTR | Reader | Released checkpoint; crops padded to square before inference | Hash recorded; unpadded crops are stretched |
 | DECIMER | Reader | Released Transformer, default inference | Package version recorded |
 | MolVec | Reader | Default | Java, CPU |
 | MolGlyph | Reader | `molglyph_large.pt`, run via BioMiner `interface_molglyph.py` | Gated on Hugging Face; MolScribe encoder/decoder code |
-| OCSRGlyph | Reader | `uv sync --extra ocsr`; weights `EdisonScientific/OCSRGlyph` | Apache-2.0; downloads on first use |
+| OCSRGlyph | Reader | `uv sync --extra ocsr`; weights `EdisonScientific/OCSRGlyph`; fp32, as in Glyph's own USPTO evaluation | Apache-2.0; `setup.sh` fetches the weights |
 | BioMiner | Complete system | Issue #5 environment; `--gres=gpu:h200:4`; 4-way tensor parallel; default config | Only structure output scored |
 | DECIMER.ai | Complete system | Default | DECIMER-Segmentation + DECIMER + classifier |
 | OpenChemIE | Complete system | Default | MolDet + MolScribe |
