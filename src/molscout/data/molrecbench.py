@@ -64,6 +64,22 @@ def read_labels(root: str | Path) -> dict[str, dict[str, Any]]:
     return labels
 
 
+def read_sample_labels(root: str | Path) -> dict[str, dict[str, Any]]:
+    """Every crop's `evaluation_subset` (A, B or C) and `hardcase_label` tuple, keyed by crop ID."""
+    samples: dict[str, dict[str, Any]] = {}
+    for path in shard_paths(root):
+        table = pq.read_table(path, columns=["id", "evaluation_subset", "hardcase_label"])
+        for record in table.to_pylist():
+            item = crop_id(record["id"])
+            if item in samples:
+                raise ValueError(f"crop {item!r} appears twice in {root}")
+            samples[item] = {
+                "evaluation_subset": record["evaluation_subset"],
+                "hardcase_label": tuple(record["hardcase_label"] or ()),
+            }
+    return samples
+
+
 def load_references(root: str | Path) -> dict[str, Reference]:
     """Reference SMILES for every crop, or the reason it is left out."""
     templates = carbon.load_templates()

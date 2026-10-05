@@ -19,6 +19,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "pytest-cov>=5"]
+report = ["wandb==0.30.0", "plotly==7.1.0"]
 
 [project.scripts]
 molscout = "molscout.cli:main"

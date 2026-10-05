@@ -197,6 +197,27 @@ MolRecBench-Wild is scored against its Parquet shards, whose folder is the refer
 molscout score predictions.csv --references data/raw/molrecbench_wild
 ```
 
+## Publishing to W&B
+
+Install the report extra, copy the result folders from the cluster, then publish them:
+
+```bash
+pip install -e ".[report]"
+rsync -a <cluster>:<repo>/benchmarks/results/ benchmarks/results/
+python scripts/wandb_upload.py --entity ENTITY --project PROJECT
+```
+
+Each `<tool>__<dataset>/` folder becomes one `eval` run in the `structure-readers` group. The run
+holds its config (tool, version, commit, checkpoints, environment, device), namespaced summary
+metrics (`accuracy/`, `speed/`, `resources/`, `items/`, `outcome/`) and the folder as a
+`benchmark-run` artifact. One `analysis` run, `summary`, holds the figures and the `leaderboard`,
+`predictions` and `failures` tables. Run IDs come from each `predictions.csv` sha256, so
+publishing the same results again updates the same runs.
+
+The upload refuses runs from more than one commit, runs with uncommitted code, and runs scored
+against different references; `--allow-inconsistent` is for development only. It reads the
+references and images under `data/raw/` and needs W&B credentials (`wandb login`).
+
 ## Build Order
 
 | | Step | Done when |

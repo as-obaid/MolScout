@@ -18,6 +18,7 @@ SCHEMA = pa.schema(
         ("image", pa.struct([("bytes", pa.binary()), ("path", pa.string())])),
         ("id", pa.string()),
         ("evaluation_subset", pa.string()),
+        ("hardcase_label", pa.list_(pa.string())),
         ("symbols", pa.list_(pa.string())),
         ("charges", INTS),
         ("radicals", INTS),
@@ -38,13 +39,14 @@ def jpeg(mode="RGB"):
     return buffer.getvalue()
 
 
-def row(sample_id, symbols, bonds, image=None):
+def row(sample_id, symbols, bonds, image=None, subset="A", hardcases=()):
     n = len(symbols)
     empty = [None] * n
     return {
         "image": {"bytes": image or jpeg(), "path": sample_id},
         "id": sample_id,
-        "evaluation_subset": "A",
+        "evaluation_subset": subset,
+        "hardcase_label": list(hardcases),
         "symbols": symbols,
         "charges": empty,
         "radicals": empty,
@@ -104,6 +106,27 @@ def test_duplicate_crop_ids_are_refused(root):
     write_shard(root / "data" / "test-00002-of-00002.parquet", [row("p2_mol_0.jpg", ["C"], [])])
     with pytest.raises(ValueError, match="p2_mol_0"):
         molrecbench.read_labels(root)
+
+
+def test_sample_labels_give_each_crops_subset_and_hard_cases(tmp_path):
+    root = tmp_path / "molrecbench_wild"
+    write_shard(
+        root / "data" / "test-00000-of-00001.parquet",
+        [
+            row("p1_mol_0.jpg", ["C"], [], subset="B", hardcases=["Wavy Bond", "Blurry or Unclear Image"]),
+            row("p1_mol_1.jpg", ["C"], [], subset="C"),
+        ],
+    )
+    assert molrecbench.read_sample_labels(root) == {
+        "p1_mol_0": {"evaluation_subset": "B", "hardcase_label": ("Wavy Bond", "Blurry or Unclear Image")},
+        "p1_mol_1": {"evaluation_subset": "C", "hardcase_label": ()},
+    }
+
+
+def test_sample_labels_refuse_duplicate_crop_ids(root):
+    write_shard(root / "data" / "test-00002-of-00002.parquet", [row("p2_mol_0.jpg", ["C"], [])])
+    with pytest.raises(ValueError, match="p2_mol_0"):
+        molrecbench.read_sample_labels(root)
 
 
 def test_checksum_changes_with_a_shard(root):

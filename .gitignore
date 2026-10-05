@@ -23,3 +23,6 @@ htmlcov/
 
 # OS
 .DS_Store
+
+# W&B local run files
+wandb/
