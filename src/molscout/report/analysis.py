@@ -345,6 +345,17 @@ def tool_resources(runs: Sequence[RunResult]) -> tuple[ToolResources, ...]:
     return tuple(resources)
 
 
+def pooled_accuracy(
+    metrics: Mapping[tuple[str, str], Mapping[str, float]], tool: str, datasets: Iterable[str]
+) -> Share:
+    """One tool's stereo-aware exact match over several datasets, each weighted by its scored crops.
+
+    `metrics` maps (tool, dataset) to run_metrics; datasets the tool has no run on are left out.
+    """
+    rows = [metrics[(tool, dataset)] for dataset in datasets if (tool, dataset) in metrics]
+    return Share(int(sum(row["outcome/correct"] for row in rows)), int(sum(row["items/scored"] for row in rows)))
+
+
 # Comparisons between tools
 
 
@@ -383,14 +394,9 @@ def agreement_accuracy(items: Iterable[ItemResult]) -> dict[tuple[str, int], Sha
     hits: Counter[tuple[str, int]] = Counter()
     totals: Counter[tuple[str, int]] = Counter()
     for (dataset, _), answers in by_item(items).items():
-        groups: dict[str, list[ItemResult]] = defaultdict(list)
-        for result in answers.values():
-            if _answer(result) is not None:
-                groups[result.canonical].append(result)
-        sizes = sorted((len(group) for group in groups.values()), reverse=True)
-        if not sizes or sizes[0] < 2 or sizes[1:2] == sizes[:1]:
+        agreed = _agreed(answers)
+        if agreed is None:
             continue
-        agreed = max(groups.values(), key=len)
         key = (dataset, len(agreed))
         totals[key] += 1
         hits[key] += any(result.outcome == "correct" for result in agreed)
@@ -405,6 +411,21 @@ def oracle(items: Iterable[ItemResult]) -> dict[str, Share]:
     for (dataset, _), answers in by_item(items).items():
         totals[dataset] += 1
         hits[dataset] += any(result.outcome == "correct" for result in answers.values())
+    return {dataset: Share(hits[dataset], totals[dataset]) for dataset in sorted(totals, key=dataset_rank)}
+
+
+def plurality_vote(items: Iterable[ItemResult]) -> dict[str, Share]:
+    """Per dataset: crops where the answer the largest group of tools shares is right, out of all scored crops.
+
+    The vote is agreement_accuracy's agreed answer, so its hits are that function's summed over k; a crop
+    with no agreed answer (no two tools agree, or two answers tie for largest) counts as wrong.
+    """
+    hits: Counter[str] = Counter()
+    totals: Counter[str] = Counter()
+    for (dataset, _), answers in by_item(items).items():
+        totals[dataset] += 1
+        agreed = _agreed(answers)
+        hits[dataset] += agreed is not None and any(result.outcome == "correct" for result in agreed)
     return {dataset: Share(hits[dataset], totals[dataset]) for dataset in sorted(totals, key=dataset_rank)}
 
 
@@ -491,6 +512,18 @@ def failure_sample(items: Iterable[ItemResult], per_dataset: int, seed: int = FA
 def _answer(result: ItemResult) -> str | None:
     """The canonical SMILES a tool answered with; None for no usable answer, a crash included."""
     return None if result.outcome == "crashed" else result.canonical
+
+
+def _agreed(answers: Mapping[str, ItemResult]) -> list[ItemResult] | None:
+    """The results sharing the answer of the largest group of at least two tools; None on a tie or without a group."""
+    groups: dict[str, list[ItemResult]] = defaultdict(list)
+    for result in answers.values():
+        if _answer(result) is not None:
+            groups[result.canonical].append(result)
+    sizes = sorted((len(group) for group in groups.values()), reverse=True)
+    if not sizes or sizes[0] < 2 or sizes[1:2] == sizes[:1]:
+        return None
+    return max(groups.values(), key=len)
 
 
 def _outcome(crashed: bool, smiles: str, canonical: str | None, reference: str) -> str:

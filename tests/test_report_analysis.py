@@ -26,7 +26,9 @@ from molscout.report.analysis import (
     oracle,
     outcome_counts,
     pairwise_agreement,
+    plurality_vote,
     pooled,
+    pooled_accuracy,
     run_metrics,
     tool_resources,
 )
@@ -218,6 +220,34 @@ def test_a_crashed_crop_agrees_with_nothing_even_with_a_smiles():
 
 def test_oracle_counts_crops_any_tool_reads_correctly():
     assert oracle(AGREEMENT) == {"uspto": Share(2, 3), "jpo": Share(2, 2)}
+
+
+def test_plurality_vote_is_right_when_the_largest_group_is_and_wrong_without_one():
+    # uspto: i1 is right, i2's pair is wrong, i3 has no pair; jpo: j1 ties, j2's three are right.
+    assert plurality_vote(AGREEMENT) == {"uspto": Share(1, 3), "jpo": Share(1, 2)}
+    crashed = [
+        item("uspto", "i1", "molscribe", "CCO", "correct"),
+        item("uspto", "i1", "molnextr", "CCO", "crashed"),
+    ]
+    assert plurality_vote(crashed) == {"uspto": Share(0, 1)}  # a crash agrees with nothing
+
+
+def test_plurality_vote_equals_agreement_hits_over_every_scored_crop():
+    vote, agreement, every = plurality_vote(AGREEMENT), agreement_accuracy(AGREEMENT), oracle(AGREEMENT)
+    for dataset, share in vote.items():
+        assert share.hits == sum(s.hits for (name, _), s in agreement.items() if name == dataset)
+        assert share.total == every[dataset].total
+
+
+def test_pooled_accuracy_weights_each_dataset_by_its_scored_crops():
+    metrics = {
+        ("molscribe", "uspto"): {"outcome/correct": 90, "items/scored": 100},
+        ("molscribe", "jpo"): {"outcome/correct": 5, "items/scored": 10},
+        ("molnextr", "uspto"): {"outcome/correct": 1, "items/scored": 100},
+    }
+    assert pooled_accuracy(metrics, "molscribe", ["uspto", "jpo"]) == Share(95, 110)
+    assert pooled_accuracy(metrics, "molnextr", ["uspto", "jpo"]) == Share(1, 100)  # no jpo run
+    assert pooled_accuracy(metrics, "molvec", ["uspto"]) == Share(0, 0)
 
 
 def test_share_value_and_wilson_interval():
