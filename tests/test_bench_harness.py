@@ -26,6 +26,7 @@ from molscout.bench import BenchError, Terminated
 from molscout.bench.harness import run_benchmark
 from molscout.cli import main
 from molscout.hashing import sha256_tree
+from molscout.predictions import read_predictions
 from molscout.runs import score_run
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -60,6 +61,7 @@ class Workspace:
         self.run_dir = root / "tools" / "fake"
         self.checkpoint = store / "model.pt"
         self.answers = root / "answers.json"
+        self.resume = self.results / ".checkpoints" / "fake__uspto"
 
     def config(self, *args: str, sha256: str | None = None, env: dict | None = None) -> Path:
         data = {
@@ -84,9 +86,10 @@ class Workspace:
         return run_benchmark(self.config(*args, **kwargs), repo_root=self.root, results_root=self.results)
 
     def leftovers(self) -> list[str]:
+        """Staging and moved-aside folders; .checkpoints is where interrupted runs are meant to stay."""
         if not self.results.exists():
             return []
-        return sorted(p.name for p in self.results.iterdir() if p.name.startswith("."))
+        return sorted(p.name for p in self.results.iterdir() if p.name.startswith(".") and p.name != ".checkpoints")
 
 
 def sha(path: Path) -> str:
@@ -609,6 +612,132 @@ def test_cli_bench_reports_runtime_errors_cleanly(ws, monkeypatch, capsys):
     monkeypatch.setattr("molscout.cli.run_benchmark", broken)
     assert main(["bench", str(ws.config()), "--repo-root", str(ws.root)]) == 1
     assert capsys.readouterr().err == "molscout bench: error: CUDA driver too old\n"
+
+
+IMAGES = ["c1", "c2", "c3", "c4", "c5", "c6", "c7"]
+HEADER = "dataset,item_id,smiles,page,bbox,confidence,tool,seconds\r\n"
+
+
+def bench(ws: Workspace, config: Path, log: Path) -> subprocess.Popen:
+    """`molscout bench` in its own process, as a SLURM job runs it."""
+    command = [sys.executable, "-m", "molscout", "bench", str(config), "--repo-root", str(ws.root)]
+    with log.open("a") as handle:
+        return subprocess.Popen([*command, "--results-root", str(ws.results)], stdout=handle, stderr=handle)
+
+
+def lines(path: Path) -> list[str]:
+    return path.read_text().splitlines() if path.exists() else []
+
+
+def test_a_run_records_its_segment_and_leaves_no_checkpoint(ws, monkeypatch):
+    monkeypatch.setenv("SLURM_JOB_ID", "123")
+    monkeypatch.setenv("SLURM_JOB_PARTITION", "gpu-short")
+    folder = ws.run("--answers", str(ws.answers))
+    meta = json.loads((folder / "meta.json").read_text())
+    assert meta["command"][10:12] == ["--resume", str(ws.resume / "predictions.csv")]
+    [segment] = meta["segments"]
+    assert set(segment) == {"slurm", "host", "gpus", "started_utc", "finished_utc", "rows", "tool_seconds", "resources"}
+    assert segment["slurm"] == {"job": "123", "array_job": None, "array_task": None, "partition": "gpu-short"}
+    assert segment["host"] == socket.gethostname()
+    assert segment["started_utc"] <= segment["finished_utc"]
+    assert segment["rows"] == 7
+    assert segment["tool_seconds"] == meta["timing"]["tool_seconds"]
+    assert segment["resources"] == meta["resources"]
+    assert not ws.resume.exists()
+
+
+def test_an_interrupted_run_resumes_where_it_stopped_and_scores_like_a_clean_run(ws, tmp_path, monkeypatch):
+    fake_nvidia_smi(tmp_path / "bin", monkeypatch, 'echo "NVIDIA H200, 40, 1000"')
+    predicted, log = ws.root / "predicted.txt", ws.root / "harness.log"
+    config = ws.config("--answers", str(ws.answers), "--crash", "c6", "--per-image", "0.3", "--predicted", str(predicted))
+    harness = bench(ws, config, log)
+    try:
+        deadline = time.monotonic() + 120
+        while len(lines(predicted)) < 2:
+            assert harness.poll() is None, log.read_text()
+            assert time.monotonic() < deadline, "the fake tool never wrote two rows"
+            time.sleep(0.05)
+        harness.send_signal(signal.SIGTERM)
+        harness.wait(timeout=60)
+    finally:
+        if harness.poll() is None:
+            harness.kill()
+            harness.wait()
+    assert harness.returncode == 128 + signal.SIGTERM, log.read_text()
+    assert not (ws.results / "fake__uspto").exists()
+    done = [row.item_id for row in read_predictions(ws.resume / "predictions.csv")]
+    assert 2 <= len(done) < 7 and done == IMAGES[: len(done)]
+    state = json.loads((ws.resume / "state.json").read_text())
+    assert state["config_sha256"] == hashlib.sha256(config.read_bytes()).hexdigest()
+    assert state["git_commit"] is None
+    [first] = state["segments"]
+    assert first["rows"] == len(done)
+    assert first["resources"]["gpu"]["name"] == "NVIDIA H200"
+    assert first["resources"]["tool_cpu_seconds"] > 0  # read from the stopped tool too
+
+    (tmp_path / "bin" / "nvidia-smi").write_text(
+        '#!/bin/sh\ncase "$*" in *utilization.gpu*) ;; *) exit 1 ;; esac\necho "NVIDIA H100 80GB HBM3, 80, 3000"\n'
+    )
+    before = len(lines(predicted))
+    second_run = bench(ws, config, log)
+    assert second_run.wait(timeout=120) == 0, log.read_text()
+    assert "resuming with" in log.read_text()
+    assert lines(predicted)[before:] == IMAGES[len(done) :]
+    folder = ws.results / "fake__uspto"
+    meta = json.loads((folder / "meta.json").read_text())
+    segment, second = meta["segments"]
+    assert segment == first
+    assert second["rows"] == 7
+    assert meta["timing"]["tool_seconds"] == round(first["tool_seconds"] + second["tool_seconds"], 3)
+    used = [first["resources"], second["resources"]]
+    gpus = [block["gpu"] for block in used]
+    samples = sum(gpu["samples"] for gpu in gpus)
+    assert meta["resources"] == {
+        "tool_peak_rss_mib": max(block["tool_peak_rss_mib"] for block in used),
+        "tool_cpu_seconds": round(sum(block["tool_cpu_seconds"] for block in used), 3),
+        "gpu": {
+            "name": "NVIDIA H200, NVIDIA H100 80GB HBM3",
+            "peak_memory_mib": 3000,
+            "mean_utilization_pct": round(sum(gpu["mean_utilization_pct"] * gpu["samples"] for gpu in gpus) / samples, 1),
+            "samples": samples,
+            "interval_seconds": 5.0,
+        },
+    }
+    assert not ws.resume.exists()
+
+    resumed = {name: (folder / name).read_bytes() for name in ("predictions.csv", "errors.json", "scores.json")}
+    clean = ws.run("--answers", str(ws.answers), "--crash", "c6", "--per-image", "0.3", "--predicted", str(predicted))
+    assert {name: (clean / name).read_bytes() for name in resumed} == resumed
+    assert len(json.loads((clean / "meta.json").read_text())["segments"]) == 1
+
+
+@pytest.mark.parametrize("stale", ["config", "commit", "no-state"])
+def test_a_checkpoint_from_another_config_or_commit_is_discarded(ws, capsys, stale):
+    config = ws.config("--answers", str(ws.answers))
+    ws.resume.mkdir(parents=True)
+    (ws.resume / "predictions.csv").write_bytes((HEADER + "uspto,c1,STALE,,,0.9,Fake 1.0 (test),0.25\r\n").encode())
+    state = {"config_sha256": hashlib.sha256(config.read_bytes()).hexdigest(), "git_commit": None, "segments": []}
+    if stale == "config":
+        state["config_sha256"] = "0" * 64
+    if stale == "commit":
+        state["git_commit"] = "f" * 40
+    if stale != "no-state":
+        (ws.resume / "state.json").write_text(json.dumps(state))
+    folder = run_benchmark(config, repo_root=ws.root, results_root=ws.results)
+    assert f"fake__uspto: discarding the checkpoint in {ws.resume}" in capsys.readouterr().out
+    assert read_predictions(folder / "predictions.csv")[0].smiles == "OCC"
+    assert len(json.loads((folder / "meta.json").read_text())["segments"]) == 1
+    assert not ws.resume.exists()
+
+
+def test_a_failed_run_keeps_its_checkpoint_and_records_the_segment(ws):
+    with pytest.raises(BenchError, match="exited with status 3"):
+        ws.run("--fail")
+    state = json.loads((ws.resume / "state.json").read_text())
+    [segment] = state["segments"]
+    assert segment["rows"] == 0
+    assert segment["resources"]["tool_cpu_seconds"] > 0
+    assert ws.leftovers() == []
 
 
 def test_sha256_tree_of_a_file_is_its_sha256(tmp_path):

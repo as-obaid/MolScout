@@ -18,6 +18,7 @@ from collections.abc import Iterable, Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from types import TracebackType
+from typing import Any
 
 from molscout.bench import BenchError
 from molscout.bench.config import RunConfig
@@ -62,13 +63,14 @@ def build_meta(
     environment: Mapping[str, object],
     timing: Mapping[str, object],
     resources: Mapping[str, object],
+    segments: Sequence[Mapping[str, object]],
     command: Sequence[str],
 ) -> dict[str, object]:
     """The meta.json record for one run; hardware and SLURM details are read here.
 
     `tool_errors` counts the images whose predict call raised (crop_runner's errors file), or is None
     when run.py wrote no errors file. `resources` is what run.py used: tool_peak_rss_mib,
-    tool_cpu_seconds and gpu (see GpuSampler).
+    tool_cpu_seconds and gpu (see GpuSampler), over all `segments`, the times run.py ran (see segment).
     """
     checkpoints = [{"path": str(c.path), "sha256": c.sha256} for c in config.checkpoints]
     return {
@@ -84,7 +86,52 @@ def build_meta(
         "slurm": slurm(),
         "timing": dict(timing),
         "resources": dict(resources),
+        "segments": [dict(record) for record in segments],
         "command": list(command),
+    }
+
+
+def segment(
+    *, started_utc: str, finished_utc: str, rows: int, tool_seconds: float, resources: Mapping[str, object]
+) -> dict[str, object]:
+    """The record of one time run.py ran: where, when, the rows in the checkpoint after it, and what it used."""
+    return {
+        "slurm": {field: value for field, value in slurm().items() if field != "nodes"},
+        "host": socket.gethostname(),
+        "gpus": [gpu["name"] for gpu in _gpus()],
+        "started_utc": started_utc,
+        "finished_utc": finished_utc,
+        "rows": rows,
+        "tool_seconds": round(tool_seconds, 3),
+        "resources": dict(resources),
+    }
+
+
+def combined_resources(blocks: Sequence[Mapping[str, Any]]) -> dict[str, object]:
+    """The `resources` of several segments as one: the largest peak memory and the summed CPU time
+    (unknown if unknown in any segment), and the GPU readings pooled."""
+    rss = [block["tool_peak_rss_mib"] for block in blocks]
+    cpu = [block["tool_cpu_seconds"] for block in blocks]
+    return {
+        "tool_peak_rss_mib": None if None in rss else max(rss),
+        "tool_cpu_seconds": None if None in cpu else round(math.fsum(cpu), 3),
+        "gpu": _pooled_gpu([block["gpu"] for block in blocks if block["gpu"] is not None]),
+    }
+
+
+def _pooled_gpu(gpus: Sequence[Mapping[str, Any]]) -> dict[str, object] | None:
+    """GpuSampler summaries as one: the mean utilization is weighted by each segment's samples."""
+    if not gpus:
+        return None
+    samples = sum(gpu["samples"] for gpu in gpus)
+    intervals = {gpu["interval_seconds"] for gpu in gpus}
+    weighted = math.fsum(gpu["mean_utilization_pct"] * gpu["samples"] for gpu in gpus)
+    return {
+        "name": ", ".join(dict.fromkeys(name for gpu in gpus for name in gpu["name"].split(", "))),
+        "peak_memory_mib": max(gpu["peak_memory_mib"] for gpu in gpus),
+        "mean_utilization_pct": round(weighted / samples, 1),
+        "samples": samples,
+        "interval_seconds": intervals.pop() if len(intervals) == 1 else None,
     }
 
 

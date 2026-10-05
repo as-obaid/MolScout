@@ -14,11 +14,21 @@ import threading
 from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from pathlib import Path
-from time import perf_counter
+from time import perf_counter, sleep
 
 from molscout.bench import BenchError, Terminated
 from molscout.bench.config import RunConfig, load_config
-from molscout.bench.meta import GpuSampler, build_meta, environment_lock, environment_variables, git_state, utc_now
+from molscout.bench.meta import (
+    GpuSampler,
+    build_meta,
+    combined_resources,
+    environment_lock,
+    environment_variables,
+    git_state,
+    segment,
+    utc_now,
+)
+from molscout.bench.resume import Checkpoint
 from molscout.data import molfiles, molrecbench
 from molscout.hashing import sha256_tree
 from molscout.predictions import Prediction, PredictionsFormatError, read_predictions
@@ -32,6 +42,8 @@ EXAMPLES_SHOWN = 10
 ERRORS_FILE = "predictions.errors.json"  # what benchmarks/tools/crop_runner.py writes beside predictions.csv
 ERRORS_KEYS = frozenset({"images", "failed", "errors"})
 STOP_GRACE_SECONDS = 10
+STOP_POLL_SECONDS = 0.05
+NO_USAGE: dict[str, float | None] = {"tool_peak_rss_mib": None, "tool_cpu_seconds": None}
 MAXRSS_BYTES = 1 if sys.platform == "darwin" else 1024  # the unit of ru_maxrss: bytes on macOS, KiB on Linux
 
 
@@ -42,6 +54,10 @@ def run_benchmark(config_path: str | Path, *, repo_root: str | Path, results_roo
     one, errors.json. Any failure raises and leaves an earlier results folder for the same run
     untouched. So does SIGTERM (a SLURM time limit or scancel): while the run is in progress it
     raises Terminated, which stops the tool and removes the staging folder.
+
+    run.py keeps its finished rows in results/.checkpoints/<tool>__<dataset>/ (see resume.py). A run
+    that fails or is stopped leaves that checkpoint, and the next run of the same config at the same
+    commit carries on from it; the folder is deleted once the results are in place.
     """
     with _sigterm_raises():
         return _run(config_path, Path(repo_root).absolute(), Path(results_root).absolute())
@@ -63,6 +79,7 @@ def _run(config_path: str | Path, repo_root: Path, results_root: Path) -> Path:
         "variables": environment_variables(env, config.env),
     }
     git = git_state(repo_root, [config.run_dir, config.path, *(repo_root / path for path in GIT_PATHS)])
+    checkpoint = Checkpoint.open(results_root, config.run_name, config_text=config.text, git_commit=git["commit"])
 
     target = results_root / config.run_name
     results_root.mkdir(parents=True, exist_ok=True)
@@ -82,11 +99,12 @@ def _run(config_path: str | Path, repo_root: Path, results_root: Path) -> Path:
             config.tool_label,
             "--output",
             str(predictions_path),
+            "--resume",
+            str(checkpoint.predictions),
             *config.args,
         ]
-        tool_clock = perf_counter()
-        resources = run_tool(command, config, env)
-        tool_seconds = perf_counter() - tool_clock
+        run_tool(command, config, env, checkpoint)
+        segments = checkpoint.segments
         predictions = checked_predictions(predictions_path, config, image_ids)
         tool_errors = read_tool_errors(staging / ERRORS_FILE, config, image_ids)
         scoring_clock = perf_counter()
@@ -101,7 +119,7 @@ def _run(config_path: str | Path, repo_root: Path, results_root: Path) -> Path:
             "started_utc": started,
             "finished_utc": utc_now(),
             "wall_seconds": round(perf_counter() - clock, 3),
-            "tool_seconds": round(tool_seconds, 3),
+            "tool_seconds": round(math.fsum(record["tool_seconds"] for record in segments), 3),
             "scoring_seconds": round(scoring_seconds, 3),
             "item_seconds_total": math.fsum(p.seconds for p in predictions),
         }
@@ -113,11 +131,13 @@ def _run(config_path: str | Path, repo_root: Path, results_root: Path) -> Path:
             git=git,
             environment=environment,
             timing=timing,
-            resources=resources,
+            resources=combined_resources([record["resources"] for record in segments]),
+            segments=segments,
             command=command,
         )
         (staging / "meta.json").write_text(json.dumps(meta, indent=2, allow_nan=False) + "\n", encoding="utf-8")
         _move_into_place(staging, target)
+        checkpoint.remove()
     finally:
         shutil.rmtree(staging, ignore_errors=True)
     return target
@@ -176,42 +196,58 @@ def tool_environment(config: RunConfig) -> dict[str, str]:
     return {**inherited, "PYTHONNOUSERSITE": "1", "PYTHONUNBUFFERED": "1", **config.env}
 
 
-def run_tool(command: Sequence[str], config: RunConfig, env: Mapping[str, str]) -> dict[str, object]:
+def run_tool(command: Sequence[str], config: RunConfig, env: Mapping[str, str], checkpoint: Checkpoint) -> None:
     """Run run.py in its folder; its output goes straight to the job log. An interrupted wait stops run.py first.
 
-    Returns meta.json's `resources`: run.py's peak memory and CPU time, and the GPU use sampled while it ran.
+    However run.py ends, the checkpoint records it as a segment before anything is raised: the rows
+    done, the time, and its `resources`, run.py's peak memory and CPU time and the GPU use sampled while it ran.
     """
     print(f"{config.run_name}: running {shlex.join(command)} in {config.run_dir}", flush=True)
+    started, clock = utc_now(), perf_counter()
     with GpuSampler() as gpu:
         try:
             process = subprocess.Popen(list(command), cwd=config.run_dir, env=dict(env))
         except OSError as exc:
             raise BenchError(f"{config.run_name}: cannot start run.py: {exc}") from None
+        usage = None
         try:
             usage = _wait(process)
         except BaseException:
-            _stop(process)
+            usage = _stop(process)
             raise
+        finally:
+            seconds = perf_counter() - clock
+            checkpoint.add_segment(
+                segment(
+                    started_utc=started,
+                    finished_utc=utc_now(),
+                    rows=checkpoint.rows(),
+                    tool_seconds=seconds,
+                    resources={**(usage or NO_USAGE), "gpu": gpu.summary()},
+                )
+            )
     returncode = process.returncode
     if returncode < 0:
         raise BenchError(f"{config.run_name}: run.py was killed by signal {-returncode}")
     if returncode != 0:
         raise BenchError(f"{config.run_name}: run.py exited with status {returncode}; see its output above")
-    return {**usage, "gpu": gpu.summary()}
 
 
-def _wait(process: subprocess.Popen[bytes]) -> dict[str, float | None]:
+def _wait(process: subprocess.Popen[bytes], options: int = 0) -> dict[str, float | None] | None:
     """Wait for run.py and set its returncode; return its peak memory and CPU time (user plus system).
 
     Both cover run.py and the descendants it waited for; the peak is that of the largest single
     process. On Linux run.py starts as a copy of the harness, so its peak is at least the harness's
-    own at that moment (about 80 MiB). Both are None if run.py cannot be waited for.
+    own at that moment (about 80 MiB). Both are None if run.py cannot be waited for. With
+    os.WNOHANG it returns None at once while run.py is still running.
     """
     try:
-        _, status, usage = os.wait4(process.pid, 0)
+        pid, status, usage = os.wait4(process.pid, options)
     except ChildProcessError:  # SIGCHLD is ignored, so the system reaped run.py; Popen.wait then takes status 0
         process.wait()
-        return {"tool_peak_rss_mib": None, "tool_cpu_seconds": None}
+        return dict(NO_USAGE)
+    if pid == 0:
+        return None
     process.returncode = os.waitstatus_to_exitcode(status)
     return {
         "tool_peak_rss_mib": round(usage.ru_maxrss * MAXRSS_BYTES / 2**20, 1),
@@ -219,14 +255,16 @@ def _wait(process: subprocess.Popen[bytes]) -> dict[str, float | None]:
     }
 
 
-def _stop(process: subprocess.Popen[bytes]) -> None:
-    """Terminate run.py, and kill it if it is still running after STOP_GRACE_SECONDS."""
+def _stop(process: subprocess.Popen[bytes]) -> dict[str, float | None] | None:
+    """Terminate run.py, and kill it if it is still running after STOP_GRACE_SECONDS; return what _wait does."""
     process.terminate()
-    try:
-        process.wait(timeout=STOP_GRACE_SECONDS)
-    except subprocess.TimeoutExpired:
+    deadline = perf_counter() + STOP_GRACE_SECONDS
+    while (usage := _wait(process, os.WNOHANG)) is None and perf_counter() < deadline:
+        sleep(STOP_POLL_SECONDS)
+    if usage is None:
         process.kill()
-        process.wait()
+        usage = _wait(process)
+    return usage
 
 
 def checked_predictions(path: Path, config: RunConfig, image_ids: frozenset[str]) -> tuple[Prediction, ...]:

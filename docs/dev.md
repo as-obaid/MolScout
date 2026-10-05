@@ -31,7 +31,7 @@ MolScout/
 │   │   └── agents/
 │   │       └── claude_code/    # goal prompt; AGENTIC.md per run
 │   ├── configs/                # one YAML per tool × dataset
-│   ├── slurm/                  # sbatch template
+│   ├── slurm/                  # run.sbatch, submit.sh (workers), status.sh
 │   └── results/                # one folder per run
 ├── data/
 │   ├── manifests/              # DOIs, URLs, checksums, internal_split.csv
@@ -181,6 +181,25 @@ post-processing. Imports, model loading and one untimed warm-up image are not co
 A crash on a single image gives that crop an empty SMILES, which scores as wrong. The crash is
 listed in `errors.json` and counted in `meta.json` (`tool_errors`). 25 crashes in a row stop the
 run.
+
+All 30 runs go through workers that fill every H200 partition, and the CPU queue for MolVec, up to
+the per-user limits:
+
+```bash
+bash benchmarks/slurm/submit.sh     # from the repository root; running it again only tops up
+bash benchmarks/slurm/status.sh     # one line per run, then the molscout jobs in the queue
+```
+
+Each worker gets every config of its kind, longest first. It skips configs with results from HEAD
+and no uncommitted changes, and configs another live job has claimed (`benchmarks/results/.claims/`);
+after two failures at HEAD it gives up on a config. Three minutes before its time limit a worker
+stops its run and resubmits itself; `scancel` stops it without resubmitting.
+
+Runs resume. `run.py` appends each finished row to `benchmarks/results/.checkpoints/<run>/`, and the
+next run of the same config at the same commit predicts only the images left; a checkpoint from
+another config or commit is deleted. `meta.json` records each part as a segment (job, host, GPU,
+start and finish, rows done, resources), and its `timing.tool_seconds` and `resources` cover all
+of them. The results equal those of one uninterrupted run, apart from each row's `seconds`.
 
 `scores.json` comes from the shared scorer:
 
