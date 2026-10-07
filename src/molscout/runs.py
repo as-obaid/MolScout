@@ -113,6 +113,9 @@ def _score_biovista(
             "papers_without_submitted": len(truth.groups()["without_submitted"]),
             "labels": truth.labels,
             "unreadable": dict(truth.unreadable),
+            # Papers with an unreadable label are not run or scored; `papers` and `labels` count the rest.
+            "dropped_papers": sorted(truth.dropped),
+            "dropped_reason": biovista_truth.DROPPED,
             "drawn_only": {
                 "papers": len(truth.drawn),
                 "labels": sum(len(smiles) for smiles in truth.drawn.values()),

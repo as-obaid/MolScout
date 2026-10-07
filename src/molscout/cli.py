@@ -30,7 +30,13 @@ def main(argv: list[str] | None = None) -> int:
     )
     score.add_argument("--ground-truth", type=Path, default=GROUND_TRUTH_PATH, help="internal: ground-truth CSV")
     score.add_argument("--split", type=Path, default=SPLIT_PATH, help="internal: dev/test split manifest")
-    score.add_argument("--papers", type=Path, default=BIOVISTA_PAPERS_PATH, help="BioVista: frozen paper manifest")
+    score.add_argument(
+        "--papers",
+        type=Path,
+        default=BIOVISTA_PAPERS_PATH,
+        help="BioVista: frozen paper manifest; papers with status ok and structures are scored, "
+        "except those with an unreadable label, which are dropped and listed in scores.json",
+    )
     score.add_argument("--paper-seconds", type=Path, help="paper datasets: a run's timing.json, for seconds per paper")
     bench = commands.add_parser("bench", help="run one tool on one crop dataset, then score and record the run")
     bench.add_argument("config", type=Path, help="benchmarks/configs/<tool>__<dataset>.yaml")

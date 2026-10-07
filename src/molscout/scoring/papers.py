@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 from molscout.predictions import Prediction
 from molscout.scoring.smiles import canonical_smiles, stereo_stripped_smiles
-from molscout.scoring.stats import macro, proportion, ratio
+from molscout.scoring.stats import macro, paper_proportion, proportion, ratio
 
 
 @dataclass(frozen=True, slots=True)
@@ -88,6 +88,10 @@ def score_papers(
     papers to report, such as dev, test and all; the default is one group, "all". `ignored` maps
     paper ID to structures that are not counted when output (see `count_paper`); with it every
     paper and group record also carries `ignored_outputs`.
+
+    A group's micro precision, recall and F1 (stereo-aware and stereo-stripped) get their 95% CI from a
+    bootstrap over that group's papers (`ci_method` "paper bootstrap"), since the molecules of one paper are
+    not independent; the valid-output rate keeps its Wilson interval.
     """
     predicted: dict[str, list[str]] = defaultdict(list)
     for prediction in predictions:
@@ -160,13 +164,14 @@ def _paper_record(result: PaperResult) -> dict[str, object]:
     }
 
 
-def _micro(counts: PaperCounts) -> dict[str, object]:
-    tp, fp, fn = counts.tp, counts.fp, counts.fn
+def _micro(per_paper: Sequence[PaperCounts]) -> dict[str, object]:
+    """Pooled precision, recall and F1 over these papers, each with a 95% CI from resampling the papers."""
+    tp = [c.tp for c in per_paper]
     return {
-        "precision": proportion(tp, tp + fp),
-        "recall": proportion(tp, tp + fn),
-        # F1 = TP / (TP + (FP + FN) / 2), so its Wilson interval uses that denominator.
-        "f1": proportion(tp, tp + (fp + fn) / 2),
+        "precision": paper_proportion(tp, [c.tp + c.fp for c in per_paper]),
+        "recall": paper_proportion(tp, [c.tp + c.fn for c in per_paper]),
+        # F1 = TP / (TP + (FP + FN) / 2): the pooled ratio of these sums, resampled like precision and recall.
+        "f1": paper_proportion(tp, [c.tp + (c.fp + c.fn) / 2 for c in per_paper]),
     }
 
 
@@ -177,20 +182,24 @@ def _pooled(counts: Iterable[PaperCounts]) -> PaperCounts:
 
 def _group_record(papers: list[str], results: Mapping[str, PaperResult]) -> dict[str, object]:
     members = [results[p] for p in papers]
-    aware = _pooled(r.stereo_aware for r in members)
-    stripped = _pooled(r.stereo_stripped for r in members)
+    per_paper_aware = [r.stereo_aware for r in members]
+    per_paper_stripped = [r.stereo_stripped for r in members]
+    aware, stripped = _pooled(per_paper_aware), _pooled(per_paper_stripped)
     rows = sum(r.rows for r in members)
     invalid_rows = sum(r.invalid_rows for r in members)
     return {
         "papers": papers,
         "molecules": aware.tp + aware.fn,
         "counts": {"tp": aware.tp, "fp": aware.fp, "fn": aware.fn},
-        "micro": _micro(aware),
+        "micro": _micro(per_paper_aware),
         "macro": {
             "precision": macro([r.stereo_aware.precision for r in members]),
             "recall": macro([r.stereo_aware.recall for r in members]),
         },
-        "stereo_stripped": {"counts": {"tp": stripped.tp, "fp": stripped.fp, "fn": stripped.fn}, **_micro(stripped)},
+        "stereo_stripped": {
+            "counts": {"tp": stripped.tp, "fp": stripped.fp, "fn": stripped.fn},
+            **_micro(per_paper_stripped),
+        },
         "valid_output_rate": proportion(rows - invalid_rows, rows),
         "papers_without_output": sum(r.rows == 0 for r in members),
         **_ignored_record(members),

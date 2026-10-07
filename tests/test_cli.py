@@ -109,19 +109,21 @@ def test_paper_valid_output_rate(papers, group, valid, rows):
     assert (rate["successes"], rate["trials"]) == (valid, rows)
 
 
-def test_paper_wilson_intervals_match_statsmodels(papers):
+def test_paper_micro_intervals_resample_papers(papers):
     scores = papers["scores"]["groups"]["all"]
-    expected = {
-        ("micro", "precision"): [0.212712716225, 0.719908462591],
-        ("micro", "recall"): [0.236593090513, 0.763406909487],
-        ("micro", "f1"): [0.224008446579, 0.741127596675],
-        ("stereo_stripped", "precision"): [0.353801174508, 0.848335289046],
-        ("stereo_stripped", "recall"): [0.396778147461, 0.892208732594],
-        ("stereo_stripped", "f1"): [0.373998167257, 0.870049529965],
-    }
-    for (section, metric), bounds in expected.items():
-        assert scores[section][metric]["ci95"] == pytest.approx(bounds, abs=1e-9), (section, metric)
-    assert scores["valid_output_rate"]["ci95"] == pytest.approx([0.453509156701, 0.882786213554], abs=1e-9)
+    for section in ("micro", "stereo_stripped"):
+        for metric in ("precision", "recall", "f1"):
+            assert scores[section][metric]["ci_method"] == "paper bootstrap", (section, metric)
+    # Precision: papers 1 and 2 are 1/2, paper 3 is 0 of 1 and paper 4 has no output (0/0, counted as 0), so no
+    # draw of four papers beats 1/2. Draws of papers 3 and 4 only (P = 1/16) give 0; draws of 1, 2 and 4 with at
+    # least one of 1 or 2 (P = 81/256 - 1/256) give 1/2. Both are over 2.5%, so the percentiles are exactly 0 and 1/2.
+    assert scores["micro"]["precision"]["ci95"] == [0.0, 0.5]
+
+
+def test_paper_valid_output_rate_keeps_the_wilson_interval(papers):
+    rate = papers["scores"]["groups"]["all"]["valid_output_rate"]
+    assert rate["ci95"] == pytest.approx([0.453509156701, 0.882786213554], abs=1e-9)
+    assert "ci_method" not in rate
 
 
 def test_paper_macro_intervals_bracket_the_mean(papers):
@@ -152,6 +154,12 @@ def test_crop_scores_match_hand_counts(crops):
     for metric, (correct, bounds) in expected.items():
         assert (scores[metric]["successes"], scores[metric]["trials"]) == (correct, 6), metric
         assert scores[metric]["ci95"] == pytest.approx(bounds, abs=1e-9), metric
+
+
+def test_crop_intervals_stay_wilson(crops):
+    assert crops["scoring"]["ci95_proportions"]["method"] == "wilson"
+    for metric in ("accuracy", "accuracy_stereo_stripped", "valid_output_rate"):
+        assert set(crops["scores"][metric]) == {"value", "ci95", "successes", "trials"}, metric
 
 
 def test_crop_report_has_seconds_per_item(crops):
@@ -321,11 +329,12 @@ def test_biovista_report_records_inputs(biovista):
     assert references["directory"] == str(BIOVISTA)
     assert references["manifest"] == str(BIOVISTA / "manifest.csv")
     assert references["manifest_sha256"] == sha256(BIOVISTA / "manifest.csv")
-    assert (references["papers"], references["papers_without_submitted"], references["labels"]) == (3, 2, 7)
+    assert (references["papers"], references["papers_without_submitted"], references["labels"]) == (3, 2, 5)
     assert references["unreadable"] == {
-        "1_aaaa:4": "NA: the label has no SMILES",
-        "2_bbbb:3": "RDKit cannot parse it; text after whitespace is part of the SMILES",
+        "6_ffff:2": "NA: the label has no SMILES",
+        "6_ffff:3": "RDKit cannot parse it; text after whitespace is part of the SMILES",
     }
+    assert (references["dropped_papers"], references["dropped_reason"]) == (["6_ffff"], "has an unreadable label")
     assert references["drawn_only"] == {"papers": 2, "labels": 3, "papers_without_drawn": ["3_cccc"]}
     assert len(references["sha256"]) == 64
 
@@ -345,6 +354,27 @@ def test_biovista_prediction_for_an_unscored_paper_is_an_error(tmp_path, capsys)
     args += ["--papers", str(BIOVISTA / "manifest.csv"), "--paper-seconds", str(seconds)]
     assert main(args) == 1
     assert "4_dddd" in capsys.readouterr().err
+
+
+def test_biovista_prediction_for_a_dropped_paper_is_an_error(tmp_path, capsys):
+    out = tmp_path / "s.json"
+    predictions = biovista_predictions(tmp_path, (*BIOVISTA_PREDICTIONS, ("6_ffff", ("CCO",))))
+    args = ["score", str(predictions), "-o", str(out), "--references", str(BIOVISTA), "--papers", str(BIOVISTA / "manifest.csv")]
+    assert main(args) == 1
+    assert "6_ffff" in capsys.readouterr().err
+    assert not out.exists()
+
+
+def test_biovista_micro_intervals_resample_each_views_papers(biovista):
+    groups, drawn = biovista["scores"]["groups"], biovista["scores"]["drawn_only"]["groups"]
+    for record in (*groups.values(), *drawn.values()):
+        for metric in ("precision", "recall", "f1"):
+            assert record["micro"][metric]["ci_method"] == "paper bootstrap"
+            assert record["stereo_stripped"][metric]["ci_method"] == "paper bootstrap"
+    # Drawn only, without the submitted version: 1_aaaa alone, so every draw is that paper and the CI is a point.
+    alone = drawn["without_submitted"]
+    assert alone["papers"] == ["1_aaaa"]
+    assert alone["micro"]["recall"]["ci95"] == [0.5, 0.5]  # tp CCO, fn benzene
 
 
 def test_paper_seconds_must_be_consistent(tmp_path, capsys):

@@ -17,7 +17,7 @@ from pathlib import Path
 
 from molscout.bench import BenchError
 from molscout.bench.config import RunConfig
-from molscout.data.biovista_truth import scored_papers
+from molscout.data.biovista_truth import benchmark_papers
 from molscout.data.internal import load_internal_split
 from molscout.hashing import sha256_file
 from molscout.predictions import Prediction, PredictionsFormatError, read_predictions
@@ -40,6 +40,8 @@ class PaperPdfs(dict[str, Path]):
 def paper_pdfs(config: RunConfig, repo_root: Path | None = None) -> PaperPdfs:
     """Paper ID to its PDF, in paper order; a missing PDF, or a BioVista PDF that is not the frozen copy, is a BenchError.
 
+    BioVista's papers are the benchmark papers (biovista_truth.benchmark_papers, read from the config's references):
+    a paper dropped for an unreadable label is not run, so it needs no PDF and its PDF is not checked.
     `repo_root` only shortens the manifest path in the error message.
     Only biovista and internal are paper datasets the harness knows; any other is a BenchError.
     """
@@ -55,8 +57,12 @@ def paper_pdfs(config: RunConfig, repo_root: Path | None = None) -> PaperPdfs:
     if repo_root is not None and config.papers.is_relative_to(repo_root):
         shown_papers = config.papers.relative_to(repo_root).as_posix()
     if config.dataset == "biovista":
+        try:
+            kept = benchmark_papers(config.references, config.papers)
+        except ValueError as exc:
+            raise BenchError(f"{run}: {exc}") from None
         names = {}
-        for paper in scored_papers(config.papers):
+        for paper in kept:
             names[paper.paper_id] = f"{paper.pdb_id}.pdf"
             pins[paper.paper_id] = paper.sha256
     elif config.dataset == "internal":

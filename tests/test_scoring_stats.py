@@ -4,7 +4,9 @@ from molscout.scoring.stats import (
     BOOTSTRAP_RESAMPLES,
     BOOTSTRAP_SEED,
     bootstrap_mean_interval,
+    bootstrap_ratio_interval,
     macro,
+    paper_proportion,
     proportion,
     ratio,
     wilson_interval,
@@ -86,3 +88,42 @@ def test_macro_record():
     assert record["value"] == 0.25
     assert record["papers"] == 4
     assert record["ci95"][0] <= 0.25 <= record["ci95"][1]
+
+
+def test_macro_interval_is_pinned():
+    # Pinned before the paper bootstrap of pooled ratios shared its resampling: the macro draw must not move.
+    assert bootstrap_mean_interval([0.13, 0.91, 0.42, 0.77, 0.26, 0.05]) == (0.18166666666666667, 0.6966666666666667)
+
+
+def test_ratio_bootstrap_pools_each_draw_and_counts_zero_over_zero_as_zero():
+    # Two papers, 1/1 and 0/0: a draw of the second twice is 0/0, so 0; any other draw is 1. P(0/0) = 1/4 > 2.5%.
+    assert bootstrap_ratio_interval([1, 0], [1, 0]) == (0.0, 1.0)
+
+
+@pytest.mark.parametrize(("numerators", "denominators"), [([2, 2, 2], [5, 5, 5]), ([3], [7])])
+def test_ratio_bootstrap_of_identical_papers_or_one_paper_is_a_point(numerators, denominators):
+    point = numerators[0] / denominators[0]
+    assert bootstrap_ratio_interval(numerators, denominators) == (point, point)
+
+
+def test_ratio_bootstrap_is_reproducible_and_seeded():
+    # Six uneven papers: with fewer, both seeds' percentiles can land on the same pooled ratio.
+    numerators, denominators = [5, 0, 2, 9, 1, 4], [7, 3, 5, 20, 11, 13]
+    assert bootstrap_ratio_interval(numerators, denominators) == bootstrap_ratio_interval(numerators, denominators)
+    assert bootstrap_ratio_interval(numerators, denominators, seed=1) != bootstrap_ratio_interval(
+        numerators, denominators, seed=2
+    )
+
+
+@pytest.mark.parametrize(("numerators", "denominators"), [([], []), ([1, 2], [3])])
+def test_ratio_bootstrap_needs_one_count_pair_per_paper(numerators, denominators):
+    with pytest.raises(ValueError):
+        bootstrap_ratio_interval(numerators, denominators)
+
+
+def test_paper_proportion_record():
+    record = paper_proportion([3, 1, 0], [4, 1.5, 2])
+    assert record["value"] == pytest.approx(4 / 7.5)
+    assert (record["successes"], record["trials"]) == (4, 7.5)
+    assert record["ci95"] == list(bootstrap_ratio_interval([3, 1, 0], [4, 1.5, 2]))
+    assert record["ci_method"] == "paper bootstrap"

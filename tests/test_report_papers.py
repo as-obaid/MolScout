@@ -313,7 +313,9 @@ def test_biovista_metrics_match_hand_computed_values(repo):
     assert (biominer["counts/tp"], biominer["counts/fp"], biominer["counts/fn"]) == (3, 3, 2)
     assert biominer["micro/precision"] == approx(0.5) and biominer["micro/recall"] == approx(0.6)
     assert biominer["micro/f1"] == approx(3 / 5.5)
-    assert 0 < biominer["micro/precision_ci_low"] < 0.5 < biominer["micro/precision_ci_high"] < 1
+    # Paper-bootstrap CI: 1_aaaa and 2_bbbb have precision 1/2 and 3_cccc no output (0/0, counted as 0). No draw beats
+    # 1/2, and a draw of 3_cccc three times (P = 1/27 > 2.5%) is 0, so the percentiles are exactly 0 and 1/2.
+    assert (biominer["micro/precision_ci_low"], biominer["micro/precision_ci_high"]) == (0.0, 0.5)
     assert biominer["micro/f1_ci_low"] < biominer["micro/f1"] < biominer["micro/f1_ci_high"]
     assert biominer["macro/precision"] == approx(1 / 3) and biominer["macro/recall"] == approx(5 / 9)
     assert "macro/precision_ci_low" in biominer and "macro/recall_ci_high" in biominer

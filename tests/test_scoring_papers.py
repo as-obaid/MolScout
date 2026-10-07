@@ -1,7 +1,9 @@
+import numpy as np
 import pytest
 
 from molscout.predictions import Prediction
 from molscout.scoring.papers import count_paper, score_papers
+from molscout.scoring.stats import wilson_interval
 
 
 def row(paper, smiles):
@@ -64,9 +66,63 @@ def test_micro_scores_pool_counts(scores):
     assert group["papers_without_output"] == 1
 
 
-def test_micro_f1_interval_is_wilson_on_its_denominator(scores):
+def test_micro_f1_counts_tp_out_of_tp_plus_half_the_errors(scores):
     # F1 = TP / (TP + (FP + FN) / 2) = 5 / 10.5
-    assert scores["groups"]["all"]["micro"]["f1"]["ci95"] == pytest.approx([0.224008446579, 0.741127596675], abs=1e-9)
+    f1 = scores["groups"]["all"]["micro"]["f1"]
+    assert (f1["successes"], f1["trials"]) == (5, 10.5)
+
+
+AWARE = {"1": (3, 3, 1), "2": (2, 2, 1), "3": (0, 1, 1), "4": (0, 0, 2)}  # tp, fp, fn from the table above
+STRIPPED = {"1": (4, 2, 0), "2": (2, 2, 1), "3": (1, 0, 0), "4": (0, 0, 2)}
+
+
+def paper_bootstrap(counts):
+    """The spec, written out: resample the papers 10,000 times (seed 6630), pool each draw, take 2.5/97.5 percentiles."""
+    table = np.array(counts, dtype=float)
+    tp, fp, fn = table[np.random.default_rng(6630).integers(0, len(table), size=(10_000, len(table)))].sum(axis=1).T
+    intervals = {}
+    for metric, denominator in (("precision", tp + fp), ("recall", tp + fn), ("f1", tp + (fp + fn) / 2)):
+        draws = np.divide(tp, denominator, out=np.zeros(len(tp)), where=denominator > 0)
+        intervals[metric] = list(np.percentile(draws, [2.5, 97.5]))
+    return intervals
+
+
+@pytest.mark.parametrize("group", ["all", "dev", "test"])
+def test_micro_intervals_are_a_bootstrap_over_the_groups_own_papers(scores, group):
+    record = scores["groups"][group]
+    papers = record["papers"]
+    for section, counts in (("micro", AWARE), ("stereo_stripped", STRIPPED)):
+        expected = paper_bootstrap([counts[p] for p in papers])
+        for metric, bounds in expected.items():
+            assert record[section][metric]["ci95"] == pytest.approx(bounds, rel=1e-12, abs=1e-12), (section, metric)
+            assert record[section][metric]["ci_method"] == "paper bootstrap"
+
+
+def test_valid_output_rate_keeps_its_wilson_interval(scores):
+    rate = scores["groups"]["all"]["valid_output_rate"]
+    assert rate["ci95"] == pytest.approx(list(wilson_interval(10, 14)), abs=1e-12)
+    assert "ci_method" not in rate
+
+
+def test_one_dominant_paper_makes_the_bootstrap_much_wider_than_wilson():
+    # Paper 0 finds all of its 100 alkanes; papers 1-9 each output one wrong structure. Pooled precision 100/109.
+    alkanes = ["C" * n for n in range(1, 101)]
+    predictions = [row("0", s) for s in alkanes] + [row(str(p), "N") for p in range(1, 10)]
+    references = {"0": alkanes, **{str(p): ["O"] for p in range(1, 10)}}
+    precision = score_papers(predictions, references)["groups"]["all"]["micro"]["precision"]
+    assert precision["value"] == pytest.approx(100 / 109)
+    assert wilson_interval(100, 109)[0] > 0.85
+    # A draw of 10 papers misses paper 0 with probability 0.9 ** 10 = 0.35 > 2.5%, and then its precision is 0.
+    assert precision["ci95"][0] == 0.0
+
+
+@pytest.mark.parametrize("papers", [["1"], ["1", "2", "3"]])
+def test_identical_papers_or_a_single_paper_give_a_zero_width_interval(papers):
+    # Each paper: TP CCO, FP CCN, FN CCC, so every draw pools to precision, recall and F1 of 1/2.
+    predictions = [row(p, s) for p in papers for s in ("CCO", "CCN")]
+    group = score_papers(predictions, {p: ["CCO", "CCC"] for p in papers})["groups"]["all"]
+    for metric in ("precision", "recall", "f1"):
+        assert group["micro"][metric]["ci95"] == [0.5, 0.5], metric
 
 
 def test_macro_averages_papers_equally(scores):

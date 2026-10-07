@@ -1,5 +1,4 @@
 smiles,ligand,backbone,groups
 CCO,1,NA,NA
 c1ccccc1,2,NA,NA
-NA,3,NA,NA
 CCCCl,4a,CC*,R=CCl

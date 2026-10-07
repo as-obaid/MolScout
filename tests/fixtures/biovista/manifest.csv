@@ -1,6 +1,7 @@
 paper_id,pdb_id,split,structures,doi,doi_source,pmid,pmcid,title,year,journal,title_match,status,source,oa_version,pdf_url,sha256,bytes,retrieved_at,detail
-1_aaaa,aaaa,test,4,10.0000/aaaa,rcsb,,,Fixture paper 1_aaaa,2020,Fixture Journal,yes,ok,openalex,publishedVersion,https://example.org/aaaa.pdf,61be55a8e2f6b4e172338bddf184d6dbee29c98853e0a0485ecee7f27b9af0b4,4,2026-10-06T00:00:00Z,
-2_bbbb,bbbb,valid,2,10.0000/bbbb,rcsb,,,Fixture paper 2_bbbb,2020,Fixture Journal,yes,ok,openalex,submittedVersion,https://example.org/bbbb.pdf,81cc5b17018674b401b42f35ba07bb79e211239c23bffe658da1577e3e646877,4,2026-10-06T00:00:00Z,
+1_aaaa,aaaa,test,3,10.0000/aaaa,rcsb,,,Fixture paper 1_aaaa,2020,Fixture Journal,yes,ok,openalex,publishedVersion,https://example.org/aaaa.pdf,61be55a8e2f6b4e172338bddf184d6dbee29c98853e0a0485ecee7f27b9af0b4,4,2026-10-06T00:00:00Z,
+2_bbbb,bbbb,valid,1,10.0000/bbbb,rcsb,,,Fixture paper 2_bbbb,2020,Fixture Journal,yes,ok,openalex,submittedVersion,https://example.org/bbbb.pdf,81cc5b17018674b401b42f35ba07bb79e211239c23bffe658da1577e3e646877,4,2026-10-06T00:00:00Z,
 3_cccc,cccc,test,1,10.0000/cccc,rcsb,,,Fixture paper 3_cccc,2020,Fixture Journal,yes,ok,openalex,publishedVersion,https://example.org/cccc.pdf,b6fbd675f98e2abd22d4ed29fdc83150fedc48597e92dd1a7a24381d44a27451,4,2026-10-06T00:00:00Z,
 4_dddd,dddd,test,2,10.0000/dddd,rcsb,,,Fixture paper 4_dddd,2020,Fixture Journal,yes,no_oa,,,,,,,no open-access PDF URL
 5_eeee,eeee,valid,0,10.0000/eeee,rcsb,,,Fixture paper 5_eeee,2020,Fixture Journal,yes,ok,openalex,publishedVersion,https://example.org/eeee.pdf,07f5937c9760f50867a78fa68982b1096cec0798448abf9395cd778fcded6f8d,4,2026-10-06T00:00:00Z,
+6_ffff,ffff,test,2,10.0000/ffff,rcsb,,,Fixture paper 6_ffff,2020,Fixture Journal,yes,ok,openalex,publishedVersion,https://example.org/ffff.pdf,f29a448b780745bf2e10667f46c442b102e75e76a46a1fff969641866225ab56,4,2026-10-06T00:00:00Z,

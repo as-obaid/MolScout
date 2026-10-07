@@ -51,15 +51,28 @@ def test_molrecbench_wild_images_match_reference_ids(wild_references):
     assert {path.stem for path in images.glob("*.png")} == set(references)
 
 
+# The 18 BioVista papers with at least one unreadable label (the 72 rows), in manifest order; they are not run or scored.
+DROPPED = [
+    "38_6s9d", "50_6rtn", "67_6ra1", "73_6r5f", "77_6r49", "102_6ql3", "111_6qfx", "149_6prf", "167_6peu",
+    "176_6p5w", "244_6nzg", "295_6n5c", "323_6mny", "427_6ic7", "448_6i18", "451_6i0c", "461_6hvw", "465_6hs0",
+]
+
+
 def test_biovista_truth_counts():
     root = RAW / "biovista"
     if not (root / biovista_truth.LABELS).is_dir():
         pytest.skip("run scripts/fetch_data.py biovista first")
-    truth = biovista_truth.load_biovista_truth(root, REPO / biovista_truth.BIOVISTA_PAPERS_PATH)
-    assert len(truth.references) == 163
-    assert len(truth.groups()["without_submitted"]) == 122
-    assert truth.labels == 3086
+    manifest = REPO / biovista_truth.BIOVISTA_PAPERS_PATH
+    truth = biovista_truth.load_biovista_truth(root, manifest)
+    assert len(biovista_truth.scored_papers(manifest)) == 163
+    assert len(truth.references) == 145
+    assert [p.paper_id for p in biovista_truth.benchmark_papers(root, manifest)] == list(truth.references)
+    assert len(truth.groups()["without_submitted"]) == 110
+    assert truth.labels == 2435
     assert len(truth.unreadable) == 72
-    assert len(truth.drawn) == 159
-    assert sum(len(smiles) for smiles in truth.drawn.values()) == 1584
-    assert [p for p in truth.references if p not in truth.drawn] == ["77_6r49", "129_6q4q", "156_6pka", "230_6o5t"]
+    assert list(truth.dropped) == DROPPED
+    assert set(truth.dropped.values()) == {"has an unreadable label"}
+    assert {row.split(":")[0] for row in truth.unreadable} == set(DROPPED)
+    assert len(truth.drawn) == 142
+    assert sum(len(smiles) for smiles in truth.drawn.values()) == 1310
+    assert [p for p in truth.references if p not in truth.drawn] == ["129_6q4q", "156_6pka", "230_6o5t"]

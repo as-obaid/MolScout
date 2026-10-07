@@ -1,4 +1,8 @@
-"""BioVista ground truth: the readable structure labels of the papers scored in the benchmark."""
+"""BioVista ground truth: the structure labels of the papers in the benchmark.
+
+A scored paper (status ok, at least one structure) with any unreadable label is dropped: it is not run and
+not scored, because a system that reads that structure correctly would be charged a false positive for it.
+"""
 
 from __future__ import annotations
 
@@ -21,6 +25,7 @@ LABEL_COLUMNS = ("smiles", "backbone")
 NO_SMILES = "NA: the label has no SMILES"
 WHITESPACE = "RDKit cannot parse it; text after whitespace is part of the SMILES"
 UNPARSABLE = "RDKit cannot parse it"
+DROPPED = "has an unreadable label"
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,13 +39,19 @@ class ScoredPaper:
 
 @dataclass(frozen=True)
 class BioVistaTruth:
-    """Readable labels per scored paper. A drawn label has backbone `NA`; the others are enumerated."""
+    """Labels per benchmark paper. A drawn label has backbone `NA`; the others are enumerated.
+
+    `papers`, `references`, `drawn`, `enumerated` and the groups hold only the benchmark papers, and `labels`
+    counts their rows. `unreadable` lists every unreadable row of the scored papers (`<paper>:<CSV line>` to
+    reason), and `dropped` maps each paper left out because of them to why.
+    """
 
     papers: tuple[ScoredPaper, ...]
     references: Mapping[str, tuple[str, ...]]
     drawn: Mapping[str, tuple[str, ...]]
     enumerated: Mapping[str, tuple[str, ...]]
     unreadable: Mapping[str, str]
+    dropped: Mapping[str, str]
     labels: int
 
     def groups(self) -> dict[str, frozenset[str]]:
@@ -70,45 +81,55 @@ def scored_papers(manifest: str | Path = BIOVISTA_PAPERS_PATH) -> tuple[ScoredPa
     return tuple(papers)
 
 
+def benchmark_papers(root: str | Path, manifest: str | Path = BIOVISTA_PAPERS_PATH) -> tuple[ScoredPaper, ...]:
+    """The papers the benchmark runs and scores: the scored papers whose every label is readable, in manifest order."""
+    return load_biovista_truth(root, manifest).papers
+
+
 def load_biovista_truth(root: str | Path, manifest: str | Path = BIOVISTA_PAPERS_PATH) -> BioVistaTruth:
     """Read every scored paper's label file; ValueError if the labels differ from the frozen manifest.
 
-    Drawn means `backbone` is exactly `NA`; any other value, blank included, is enumerated.
+    A paper with an unreadable label (`NA`, or text RDKit cannot parse) is dropped. Drawn means `backbone`
+    is exactly `NA`; any other value, blank included, is enumerated.
     """
-    papers = scored_papers(manifest)
+    kept: list[ScoredPaper] = []
     references: dict[str, tuple[str, ...]] = {}
     drawn: dict[str, tuple[str, ...]] = {}
     enumerated: dict[str, tuple[str, ...]] = {}
     unreadable: dict[str, str] = {}
+    dropped: dict[str, str] = {}
     labels = 0
-    for paper in papers:
+    for paper in scored_papers(manifest):
         rows = _read_labels(_label_path(root, paper), paper)
+        reasons = {f"{paper.paper_id}:{line}": _unreadable_reason(smiles) for line, smiles, _ in rows}
+        bad = {row: reason for row, reason in reasons.items() if reason is not None}
+        if bad:
+            unreadable.update(bad)
+            dropped[paper.paper_id] = DROPPED
+            continue
+        kept.append(paper)
         labels += len(rows)
-        readable: list[tuple[str, str]] = []
-        for line, smiles, backbone in rows:
-            reason = _unreadable_reason(smiles)
-            if reason is None:
-                readable.append((smiles.strip(), backbone))
-            else:
-                unreadable[f"{paper.paper_id}:{line}"] = reason
-        if not readable:
-            raise ValueError(f"paper {paper.paper_id}: no readable label")
+        readable = [(smiles.strip(), backbone.strip()) for _, smiles, backbone in rows]
         references[paper.paper_id] = tuple(s for s, _ in readable)
-        enumerated[paper.paper_id] = tuple(s for s, b in readable if b.strip() != "NA")
-        if any(b.strip() == "NA" for _, b in readable):
-            drawn[paper.paper_id] = tuple(s for s, b in readable if b.strip() == "NA")
+        enumerated[paper.paper_id] = tuple(s for s, b in readable if b != "NA")
+        if any(b == "NA" for _, b in readable):
+            drawn[paper.paper_id] = tuple(s for s, b in readable if b == "NA")
     return BioVistaTruth(
-        papers=papers,
+        papers=tuple(kept),
         references=MappingProxyType(references),
         drawn=MappingProxyType(drawn),
         enumerated=MappingProxyType(enumerated),
         unreadable=MappingProxyType(unreadable),
+        dropped=MappingProxyType(dropped),
         labels=labels,
     )
 
 
 def reference_set_sha256(root: str | Path, manifest: str | Path = BIOVISTA_PAPERS_PATH) -> str:
-    """sha256 over the manifest and every scored label file, as sorted `<sha256>  <relative path>` lines."""
+    """sha256 over the manifest and every scored label file, as sorted `<sha256>  <relative path>` lines.
+
+    Dropped papers' label files are included: a fix that makes a dropped paper readable changes the paper set.
+    """
     manifest = Path(manifest)
     entries = {manifest.name: sha256_file(manifest)}
     for paper in scored_papers(manifest):

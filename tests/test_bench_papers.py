@@ -1,7 +1,8 @@
 """The benchmark harness runs a fake tool on paper datasets (whole PDFs), then checks, scores and records the run.
 
-BioVista papers are the three scored papers of tests/fixtures/biovista; each PDF holds the ASCII bytes of its
-PDB ID, which is what the fixture manifest's sha256 column pins. The Internal ground truth is made here.
+BioVista papers are the three benchmark papers of tests/fixtures/biovista; each PDF holds the ASCII bytes of its
+PDB ID, which is what the fixture manifest's sha256 column pins. 6_ffff has unreadable labels, so it is dropped and
+gets no PDF. The Internal ground truth is made here.
 """
 
 import csv
@@ -176,6 +177,30 @@ def test_paper_without_molecules_is_scored_and_timed(ws):
     assert scores["papers"]["3_cccc"]["fn"] == 1  # its one label
     assert scores["groups"]["all"]["papers_without_output"] == 1
     assert scores["seconds_per_item"]["items"] == 3
+
+
+def test_a_dropped_biovista_paper_needs_no_pdf_and_is_not_run(ws):
+    assert not (ws.biovista_pdfs / "ffff.pdf").exists()
+    folder = ws.run("biovista", "--answers", str(ws.answers))
+    assert sorted(load(folder / "timing.json")["seconds"]) == list(BIOVISTA_PDFS)
+    report = load(folder / "scores.json")
+    assert sorted(report["scores"]["papers"]) == list(BIOVISTA_PDFS)
+    assert report["inputs"]["references"]["dropped_papers"] == ["6_ffff"]
+
+
+def test_a_dropped_biovista_papers_pdf_is_not_checked(ws):
+    (ws.biovista_pdfs / "ffff.pdf").write_bytes(b"not the frozen copy")
+    folder = ws.run("biovista", "--answers", str(ws.answers))
+    assert load(folder / "meta.json")["items"] == 3
+
+
+def test_biovista_labels_that_differ_from_the_manifest_stop_before_tool_runs(ws):
+    path = ws.biovista / "bioactivity_extraction" / "labels" / "6_ffff_structure.csv"
+    path.write_text(path.read_text() + "CCBr,10,NA,NA\n")
+    record = ws.root / "record.json"
+    with pytest.raises(BenchError, match=r"fake__biovista: paper 6_ffff: 3 label rows but the manifest froze 2"):
+        ws.run("biovista", "--record", str(record))
+    assert not record.exists()
 
 
 def test_biovista_pdf_sha256_mismatch_stops_before_tool_runs(ws):
