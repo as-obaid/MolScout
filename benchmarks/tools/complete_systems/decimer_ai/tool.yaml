@@ -1,0 +1,60 @@
+# Non-default settings, each with its reason (the docs' Tool Settings are built from this block):
+# - Every segment's SMILES is output (R17), as the app's code does: it runs the Image Transformer on all
+#   segments and the Image Classifier only adds a warning (resources/views/index.blade.php). Not the "only
+#   segments classified as structures" reading; run.py --drop-non-structures gives that variant.
+# - Every page and every segment is read (R18), instead of the app's cap of 10 pages (convert_pdf_to_images.py)
+#   and 20 segments (DecimerController.php), which exist to stop abuse of the public site.
+# - TensorFlow 2.7.0 (the app's pin) runs on the H200 through PTX JIT, as it has no sm_90 kernels.
+# - The CUDA 11 pip libraries (cuda-runtime 11.8, cublas, cudnn 8.9, ...) are not in the app's pins; TF 2.7
+#   needs CUDA 11 sonames and Explorer has CUDA >= 12 modules. run.py preloads them with ctypes.
+# - poppler 26.09.0 from conda-forge instead of the app image's 20.09.0, as Explorer has no pdftoppm.
+# - opencv-python-headless 4.7.0.68 instead of opencv-python 4.7.0.68 (no libGL on nodes).
+# - pyyaml 6.0.3 added: DECIMER imports it, and the app installs DECIMER with --no-deps.
+# - rdkit-pypi, jpype1 (CDK), tensorflow-addons and STOUT are left out: they serve the web page's validity,
+#   InChIKey and IUPAC display, not the PDF -> SMILES path.
+# - DECIMER Segmentation is called function by function, in the order of segment_chemical_structures, to keep
+#   the boxes the package function drops; the result is the same segments.
+# - A segment that is blank after DECIMER's preprocessing (ValueError) gets no molecule; the app's socket
+#   server would fail on it. Any other exception fails the paper.
+# - run.py works in a per-run temporary directory: the classifier writes caffeine_mod.png into the cwd for
+#   every RGBA image.
+# - Weights: Image Transformer from https://zenodo.org/record/8300489/files/models.zip (DECIMER 2.4.0's URL),
+#   Mask R-CNN from https://zenodo.org/records/10142866/files/mask_rcnn_molecule.h5.
+tool: decimer_ai
+name: DECIMER.ai
+# Package versions: DECIMER 2.4.0 (Image Transformer git 3db6954), DECIMER Segmentation 1.3.0 (git 2e0b78f),
+# DECIMER Image Classifier 1.0.1 (git 146b00b); app git 1fc858a. Weights: Image Transformer Zenodo 8300489,
+# Segmentation Zenodo 10142866, Classifier as committed in its repository.
+version: app 1fc858a (DECIMER 2.4.0 3db6954, Segmentation 1.3.0 2e0b78f, Classifier 146b00b; Zenodo 8300489 + 10142866)
+python: ${MOLSCOUT_STORE}/envs/decimer_ai/bin/python
+args:
+# pdf2image needs poppler's pdftoppm and pdfinfo, which Explorer lacks; setup.sh installs poppler
+# from conda-forge (26.09.0; the app's image has Debian bullseye's 20.09.0).
+- --poppler-path
+- ${MOLSCOUT_STORE}/envs/decimer_ai/poppler/bin
+- --device
+- gpu
+# Not passed, so default: --drop-non-structures. The app prints a SMILES for every segment, even
+# one the classifier rejects (it only adds a warning), so every SMILES is output.
+# Non-default relative to the web app, all because the app caps work to stop abuse of the public
+# site (its README and wiki describe lifting them for a local install): every page is read instead
+# of the first 10 (convert_pdf_to_images.py last_page=10), and every segment is read instead of the
+# first 20 (DecimerController.php). Segmentation, mask expansion, the classifier threshold
+# (0.000089) and 300-DPI rendering are the app's.
+checkpoints:
+- path: ${MOLSCOUT_STORE}/models/decimer_ai/DECIMER-V2/DECIMER_model
+  sha256: e32bceecf1fb8f26a371fe5ecbfc62e776982d65987ea0e61630f468e461dd70
+- path: ${MOLSCOUT_STORE}/models/decimer_ai/mask_rcnn_molecule.h5
+  sha256: d42382a22585f98d8d7c8b480d2e0fcab58a9fa503133199fac839cb0f5fd4f9
+# The classifier ships inside its package (git 146b00b); this is the folder hash of the installed copy.
+- path: ${MOLSCOUT_STORE}/envs/decimer_ai/lib/python3.9/site-packages/decimer_image_classifier/model
+  sha256: 21c24fa3d6bb67981629350a29e7d7b2cb555ce0986bcf0c7340029ae713a445
+sources:
+# the pinned upstream clone (https://github.com/OBrink/DECIMER.ai at 1fc858a35eb89de636c1002f1ca2d12afe04cdd8)
+- ${MOLSCOUT_STORE}/src/DECIMER.ai
+env:
+  # Runs are offline; every weight is already on disk.
+  HF_HUB_OFFLINE: '1'
+  TRANSFORMERS_OFFLINE: '1'
+  # DECIMER downloads its Image Transformer into pystow's folder on import; this is where setup.sh put it.
+  PYSTOW_HOME: ${MOLSCOUT_STORE}/models/decimer_ai
