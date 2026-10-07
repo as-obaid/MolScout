@@ -134,8 +134,7 @@ TYPE2_ORDER = {  # papers × seconds per paper, longest first (the placeholder r
 }
 BIOMINER = " --cpus-per-task=16 --mem=192G"
 TYPE2_WORKERS = [  # partition, workers, time limit, GRES, job name, extra options, configs
-    ("gpu", 1, "08:00:00", "gpu:h200:2", "molscout2-gpu-2gpu", BIOMINER, TYPE2_ORDER["biominer"]),
-    ("gpu-short", 1, "02:00:00", "gpu:h200:2", "molscout2-gpu-short-2gpu", BIOMINER, TYPE2_ORDER["biominer"]),
+    ("gpu-short", 2, "02:00:00", "gpu:h200:2", "molscout2-gpu-short-2gpu", BIOMINER, TYPE2_ORDER["biominer"]),
     ("gpu", 2, "08:00:00", "gpu:h200:1", "molscout2-gpu-1gpu", "", TYPE2_ORDER["others"]),
     ("gpu-interactive", 2, "02:00:00", "gpu:h200:1", "molscout2-gpu-interactive-1gpu", "", TYPE2_ORDER["others"]),
     ("sharing", 2, "01:00:00", "gpu:h200:1", "molscout2-sharing-1gpu", "", TYPE2_ORDER["others"]),
@@ -166,9 +165,10 @@ def test_complete_systems_submits_only_type2_configs(fake, tmp_path):
         for _ in range(workers)
     ]
     assert calls(fake) == expected
-    assert "molscout2-gpu-2gpu" in " ".join(calls(fake)[0])
-    assert "--gres=gpu:h200:2" in calls(fake)[0] and "--gres=gpu:h200:2" in calls(fake)[1]
-    assert "gpu: submitted 1000" in result.stdout
+    two_gpu = [call for call in calls(fake) if "--gres=gpu:h200:2" in call]
+    assert [call[2] for call in two_gpu] == ["--partition=gpu-short"] * 2  # gpu allows 1 GPU per job
+    assert "gpu-short: submitted 1000 1001" in result.stdout
+    assert "gpu: submitted 1002 1003" in result.stdout
 
 
 def test_complete_systems_tops_up_by_job_name(fake, tmp_path):
@@ -179,7 +179,7 @@ def test_complete_systems_tops_up_by_job_name(fake, tmp_path):
     assert result.returncode == 0, result.stderr
     names = [next(a for a in call if a.startswith("--job-name=")) for call in calls(fake)]
     assert names.count("--job-name=molscout2-gpu-1gpu") == 0
-    assert names.count("--job-name=molscout2-gpu-2gpu") == 1
+    assert names.count("--job-name=molscout2-gpu-short-2gpu") == 2
     assert "gpu: 2 already queued; submitted none" in result.stdout
 
 
@@ -200,7 +200,7 @@ def test_a_group_with_no_configs_submits_no_workers(fake, tmp_path):
     assert "no biominer configs: skipping its workers" in result.stdout
     assert calls(fake) == [
         expected_call(partition, limit, gres, configs, name, extra)
-        for partition, workers, limit, gres, name, extra, configs in TYPE2_WORKERS[2:]
+        for partition, workers, limit, gres, name, extra, configs in TYPE2_WORKERS[1:]
         for _ in range(workers)
     ]
     assert not any("--gres=gpu:h200:2" in call for call in calls(fake))

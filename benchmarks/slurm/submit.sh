@@ -19,10 +19,13 @@ case $kind in
         exit 2 ;;
 esac
 
-# Type 2 estimates: papers per dataset × seconds per paper (placeholders until the Task 9 smoke tests
-# are timed; update the two lines below).
+# Type 2 estimates: papers per dataset × seconds per paper, plus start-up seconds for each segment the
+# run needs (placeholders until the Task 9 smoke tests are timed; update the lines below). A segment is
+# at most TYPE2_SEGMENT_SECONDS: the shortest time limit (2 h) less the 180 s USR1 warning.
 TYPE2_PAPERS="biovista=163 internal=6"
 TYPE2_SECONDS_PER_PAPER="biominer=120 decimer_ai=60 openchemie=30"
+TYPE2_STARTUP_SECONDS="biominer=600 decimer_ai=120 openchemie=120"
+TYPE2_SEGMENT_SECONDS=7020
 
 type2=() type1=()
 for config in benchmarks/configs/*.yaml; do
@@ -30,16 +33,23 @@ for config in benchmarks/configs/*.yaml; do
 done
 
 # Estimated seconds = items × seconds per item, measured on an H200 (MolVec on a CPU); longest first.
-estimate() {  # ITEMS RATES CONFIG...: "seconds config" lines; ITEMS and RATES are "name=number ..." lists
-    local items=$1 rates=$2
-    shift 2
-    awk -v items="$items" -v rates="$rates" 'BEGIN {
+estimate() {  # ITEMS RATES STARTUPS SEGMENT CONFIG...: "seconds config" lines; the first three are
+    # "name=number ..." lists. Each started segment of SEGMENT seconds (0: one run) costs its STARTUP seconds.
+    local items=$1 rates=$2 startups=$3 segment=$4
+    shift 4
+    awk -v items="$items" -v rates="$rates" -v startups="$startups" -v segment="$segment" 'BEGIN {
         n = split(items, a, " "); for (i = 1; i <= n; i++) { split(a[i], kv, "="); count[kv[1]] = kv[2] }
         n = split(rates, a, " "); for (i = 1; i <= n; i++) { split(a[i], kv, "="); rate[kv[1]] = kv[2] }
+        n = split(startups, a, " "); for (i = 1; i <= n; i++) { split(a[i], kv, "="); startup[kv[1]] = kv[2] }
         for (i = 1; i < ARGC; i++) {
             name = ARGV[i]; sub(/.*\//, "", name); sub(/\.yaml$/, "", name); split(name, part, "__")
             if (!(part[1] in rate) || !(part[2] in count)) { print "no estimate for " ARGV[i] > "/dev/stderr"; exit 1 }
-            printf "%.0f %s\n", count[part[2]] * rate[part[1]], ARGV[i]
+            seconds = count[part[2]] * rate[part[1]]
+            if (segment > 0) {
+                segments = int((seconds + segment - 1) / segment); if (segments < 1) segments = 1
+                seconds += segments * startup[part[1]]
+            }
+            printf "%.0f %s\n", seconds, ARGV[i]
         }
     }' "$@" | sort -k1,1nr -k2,2
 }
@@ -66,7 +76,7 @@ submit() {  # PARTITION WORKERS TIME GRES NAME EXTRA CONFIG...: top the partitio
 if [ "$kind" = structure-readers ]; then
     # Estimated seconds = crops × seconds per crop.
     estimates=$(estimate "uspto=5719 uob=5740 molrecbench_wild=5024 clef=992 jpo=450" \
-        "decimer=0.51 molglyph=0.39 molscribe=0.37 molnextr=0.34 ocsrglyph=0.14 molvec=0.25" "${type1[@]}")
+        "decimer=0.51 molglyph=0.39 molscribe=0.37 molnextr=0.34 ocsrglyph=0.14 molvec=0.25" "" 0 "${type1[@]}")
     gpu=() cpu=()
     while read -r _ config; do
         case $config in
@@ -88,7 +98,7 @@ if [ "$kind" = structure-readers ]; then
         submit short 5 24:00:00 none molscout-short "" "${cpu[@]}"
     fi
 else
-    estimates=$(estimate "$TYPE2_PAPERS" "$TYPE2_SECONDS_PER_PAPER" "${type2[@]}")
+    estimates=$(estimate "$TYPE2_PAPERS" "$TYPE2_SECONDS_PER_PAPER" "$TYPE2_STARTUP_SECONDS" "$TYPE2_SEGMENT_SECONDS" "${type2[@]}")
     biominer=() others=()
     while read -r _ config; do
         case $config in
@@ -96,13 +106,13 @@ else
             *) others+=("$config") ;;
         esac
     done <<< "$estimates"
-    # BioMiner takes two cards; the others one (job names molscout2-<partition>-<gpus>gpu).
+    # BioMiner takes two cards, and only gpu-short allows 2 GPUs per job (the gpu QOS caps a job at 1 GPU,
+    # so a 2-GPU job there would pend forever); the others take one (job names molscout2-<partition>-<gpus>gpu).
     big="--cpus-per-task=16 --mem=192G"
     if [ "${#biominer[@]}" -eq 0 ]; then
         echo "no biominer configs: skipping its workers"
     else
-        submit gpu 1 08:00:00 gpu:h200:2 molscout2-gpu-2gpu "$big" "${biominer[@]}"
-        submit gpu-short 1 02:00:00 gpu:h200:2 molscout2-gpu-short-2gpu "$big" "${biominer[@]}"
+        submit gpu-short 2 02:00:00 gpu:h200:2 molscout2-gpu-short-2gpu "$big" "${biominer[@]}"
     fi
     if [ "${#others[@]}" -eq 0 ]; then
         echo "no decimer_ai or openchemie configs: skipping their workers"
