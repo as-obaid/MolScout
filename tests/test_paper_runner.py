@@ -185,3 +185,57 @@ def test_sigterm_exits_143_and_keeps_finished_papers(tmp_path):
     assert stop.value.code == 143
     done = [json.loads(line)["item_id"] for line in paper_runner.papers_log_path(checkpoint).read_text().splitlines()]
     assert done == ["p1"]
+
+
+def test_resume_holds_back_a_stopping_streak_and_runs_those_papers_again(tmp_path):
+    ids = [f"p{i}" for i in range(paper_runner.MAX_CONSECUTIVE_FAILURES + 1)]
+    listing, checkpoint = make_papers(tmp_path, ids), tmp_path / "checkpoint.csv"
+    answers = {"p0": [Molecule("C")], **{p: [Molecule("N")] for p in ids[1:]}}
+    with pytest.raises(RuntimeError, match="in a row"):
+        paper_runner.run_papers(fake(answers, fail=set(ids[1:])), parse(listing, tmp_path / "a.csv", checkpoint), warmup=False)
+    done = [json.loads(line)["item_id"] for line in paper_runner.papers_log_path(checkpoint).read_text().splitlines()]
+    assert done == ["p0"]
+    calls = []
+    paper_runner.run_papers(fake(answers, calls=calls), parse(listing, tmp_path / "b.csv", checkpoint), warmup=False)
+    assert calls == ids[1:]
+
+
+def test_resume_logs_failures_once_a_paper_succeeds_and_does_not_rerun_them(tmp_path):
+    listing, checkpoint = make_papers(tmp_path), tmp_path / "checkpoint.csv"
+    out = tmp_path / "a.csv"
+    assert paper_runner.run_papers(fake(fail={"p1", "p2"}), parse(listing, out, checkpoint), warmup=False) == 2
+    entries = [json.loads(line) for line in paper_runner.papers_log_path(checkpoint).read_text().splitlines()]
+    assert [(e["item_id"], e["rows"], e["error"]) for e in entries] == [
+        ("p1", 0, "RuntimeError: boom p1"),
+        ("p2", 0, "RuntimeError: boom p2"),
+        ("p3", 1, None),
+    ]
+    calls = []
+    paper_runner.run_papers(fake(fail={"p1", "p2"}, calls=calls), parse(listing, tmp_path / "b.csv", checkpoint))
+    assert calls == []
+    assert json.loads(paper_runner.errors_path(tmp_path / "b.csv").read_text())["failed"] == 2
+
+
+class IndexLike:
+    """Stands in for numpy.int64: not an int, but it has __index__."""
+
+    def __init__(self, value):
+        self.value = value
+
+    def __index__(self):
+        return self.value
+
+
+def test_integral_page_objects_are_accepted_and_written_as_plain_ints(tmp_path):
+    out = tmp_path / "predictions.csv"
+    answers = {"p1": [Molecule("CCO", IndexLike(7))], "p2": [], "p3": []}
+    assert paper_runner.run_papers(fake(answers), parse(make_papers(tmp_path), out), warmup=False) == 0
+    assert rows_of(out) == [("p1", "CCO", 7, None, None)]
+
+
+@pytest.mark.parametrize("page", [True, 1.0, "2", IndexLike(0)])
+def test_bool_float_text_and_small_pages_are_still_rejected(tmp_path, page):
+    out = tmp_path / "predictions.csv"
+    answers = {"p1": [Molecule("CCO", page)], "p2": [], "p3": []}
+    assert paper_runner.run_papers(fake(answers), parse(make_papers(tmp_path), out), warmup=False) == 1
+    assert json.loads(paper_runner.errors_path(out).read_text())["errors"]["p1"].startswith("ValueError")

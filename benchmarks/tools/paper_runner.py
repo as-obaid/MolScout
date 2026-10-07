@@ -14,6 +14,7 @@ import csv
 import io
 import json
 import math
+import operator
 import os
 import signal
 import sys
@@ -204,10 +205,13 @@ def _predict(predict, paper, args):
 
 
 def _check(molecule):
-    """The molecule itself, or ValueError when its page or bbox is not one the scorer can read."""
+    """The molecule (its page as a plain int), or ValueError when its page or bbox is not one the scorer can read."""
     page, bbox = molecule.page, molecule.bbox
-    if page is not None and (isinstance(page, bool) or not isinstance(page, int) or page < 1):
-        raise ValueError(f"page must be an integer >= 1, got {page!r}")
+    if page is not None:
+        # numpy integers and the like pass through operator.index; bool, floats and text do not
+        if isinstance(page, bool) or not hasattr(page, "__index__") or operator.index(page) < 1:
+            raise ValueError(f"page must be an integer >= 1, got {page!r}")
+        molecule = molecule._replace(page=operator.index(page))
     if bbox is not None:
         if len(bbox) != 4 or not all(math.isfinite(float(v)) for v in bbox):
             raise ValueError(f"bbox must be four finite numbers, got {bbox!r}")
