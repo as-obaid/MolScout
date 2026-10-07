@@ -58,3 +58,7 @@ env:
   TRANSFORMERS_OFFLINE: '1'
   # DECIMER downloads its Image Transformer into pystow's folder on import; this is where setup.sh put it.
   PYSTOW_HOME: ${MOLSCOUT_STORE}/models/decimer_ai
+lock_commands:
+# the conda poppler prefix (pdftoppm and pdfinfo), which the Python lock does not cover
+- - ls
+  - ${MOLSCOUT_STORE}/envs/decimer_ai/poppler/conda-meta

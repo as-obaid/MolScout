@@ -38,7 +38,7 @@ done
 if [[ ! -x $env/poppler/bin/pdftoppm ]]; then
     source /usr/share/Modules/init/bash
     module load miniconda3/25.9.1
-    conda create -y -q -p "$env/poppler" --override-channels -c conda-forge poppler
+    conda create -y -q -p "$env/poppler" --override-channels -c conda-forge poppler=26.09.0
 fi
 "$env/poppler/bin/pdftoppm" -v 2>&1 | head -1
 
