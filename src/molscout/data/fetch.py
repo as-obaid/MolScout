@@ -3,14 +3,18 @@
 from __future__ import annotations
 
 import hashlib
+import http.client
 import json
 import re
 import tarfile
+import time
+import urllib.error
 import urllib.request
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
+from molscout.data.httpclient import RETRY_STATUSES, USER_AGENT, NetworkError, retry_delay
 from molscout.datasets import DATASETS
 from molscout.hashing import sha256_file
 
@@ -69,13 +73,42 @@ def load_manifests(directory: str | Path) -> dict[str, DatasetManifest]:
     return {manifest.dataset: manifest for manifest in manifests}
 
 
-def download(url: str, destination: Path, *, sha256: str, timeout: float = 60.0) -> None:
-    """Stream url to a .part file and move it into place only if its sha256 matches."""
+def download(
+    url: str,
+    destination: Path,
+    *,
+    sha256: str,
+    timeout: float = 60.0,
+    attempts: int = 4,
+    sleep: Callable[[float], None] = time.sleep,
+) -> None:
+    """Stream url to a .part file and move it into place only if its sha256 matches.
+
+    HTTP 429/5xx and network errors are retried with backoff; a checksum mismatch is not.
+    """
+    for attempt in range(1, attempts + 1):
+        try:
+            _download_once(url, destination, sha256, timeout)
+            return
+        except urllib.error.HTTPError as err:
+            if err.code not in RETRY_STATUSES or attempt == attempts:
+                raise
+            delay = retry_delay(attempt, err.headers.get("Retry-After") if err.headers else None, 1.0)
+            err.close()
+        except (urllib.error.URLError, TimeoutError, ConnectionError, http.client.HTTPException) as err:
+            if attempt == attempts:
+                raise NetworkError(f"{url}: {err}") from err
+            delay = retry_delay(attempt, None, 1.0)
+        sleep(delay)
+
+
+def _download_once(url: str, destination: Path, sha256: str, timeout: float) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
     partial = destination.with_name(destination.name + ".part")
     digest = hashlib.sha256()
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     try:
-        with urllib.request.urlopen(url, timeout=timeout) as response, partial.open("wb") as out:
+        with urllib.request.urlopen(request, timeout=timeout) as response, partial.open("wb") as out:
             while chunk := response.read(CHUNK_BYTES):
                 digest.update(chunk)
                 out.write(chunk)
@@ -94,7 +127,10 @@ def extract_archive(archive: Path, destination: Path) -> None:
 
 
 def fetch_dataset(manifest: DatasetManifest, root: str | Path, *, log: Callable[[str], None] = print) -> Path:
-    """Download, verify and unpack one dataset into root/<dataset>/; skip files already verified."""
+    """Download, verify and unpack one dataset into root/<dataset>/; skip files already verified.
+
+    An archive unpacks into the folder that holds it.
+    """
     target = Path(root) / manifest.dataset
     for entry in manifest.files:
         destination = target / entry.path
@@ -104,7 +140,7 @@ def fetch_dataset(manifest: DatasetManifest, root: str | Path, *, log: Callable[
             log(f"{manifest.dataset}: downloading {entry.path} ({entry.size_bytes:,} bytes)")
             download(entry.url, destination, sha256=entry.sha256)
         if entry.extract:
-            extract_archive(destination, target)
+            extract_archive(destination, destination.parent)
     return target
 
 
