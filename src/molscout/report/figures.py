@@ -804,3 +804,7 @@ def _wrapped(label: str) -> str:
         return label
     cut = min(spaces, key=lambda index: abs(index - len(label) / 2))
     return f"{label[:cut]}<br>{label[cut + 1 :]}"
+
+
+# The house style, for the complete-system figures (report.paper_figures) to share.
+style, header, error_bars = _style, _header, _error_bars
