@@ -28,3 +28,6 @@ htmlcov/
 
 # W&B local run files
 wandb/
+
+# Docs: kept local until the public write-up
+docs/
