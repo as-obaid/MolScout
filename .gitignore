@@ -12,8 +12,13 @@ benchmarks/results/.staging-*
 benchmarks/results/.old-*
 benchmarks/results/.checkpoints/
 benchmarks/results/.claims/
-# Internal predictions are SMILES from the private papers: never committed
-benchmarks/results/*__internal/predictions.csv
+# Internal results: only these files, which hold no SMILES, are committed
+benchmarks/results/*__internal/*
+!benchmarks/results/*__internal/scores.json
+!benchmarks/results/*__internal/meta.json
+!benchmarks/results/*__internal/config.yaml
+!benchmarks/results/*__internal/timing.json
+!benchmarks/results/*__internal/errors.json
 
 # Python
 __pycache__/

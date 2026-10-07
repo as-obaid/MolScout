@@ -41,6 +41,7 @@ class Workspace:
         self.answers = root / "answers.json"
         self.markers = root / "markers"
         self.markers.mkdir(parents=True)
+        self.lock_commands: list[list[str]] = []
         (root / "pyproject.toml").write_text('[project]\nname = "molscout"\n')
         (root / "benchmarks" / "tools").mkdir(parents=True)
         for name in ("paper_runner.py", "crop_runner.py"):
@@ -82,6 +83,8 @@ class Workspace:
             "args": list(args),
             "checkpoints": [],
         }
+        if self.lock_commands:
+            data["lock_commands"] = self.lock_commands
         if sources:
             data["sources"] = [str(source) for source in sources]
         path = self.root / "configs" / f"fake__{dataset}.yaml"
@@ -245,7 +248,8 @@ def test_resumed_paper_run_matches_an_uninterrupted_one(ws):
     with pytest.raises(BenchError, match="exited with status 3"):
         ws.run("biovista", *args)
     assert not (ws.results / "fake__biovista").exists()
-    assert (ws.checkpoint("biovista") / "predictions.papers.jsonl").read_text().count("\n") == 1
+    log = (ws.checkpoint("biovista") / "predictions.papers.jsonl").read_text().splitlines()
+    assert sum('"attempted"' not in line for line in log) == 1  # one paper is done; attempted lines do not count
     folder = ws.run("biovista", *args)
     assert predicted.read_text().split() == ["1_aaaa", "2_bbbb", "3_cccc"]  # the second run did the other two
     assert not ws.checkpoint("biovista").exists()
@@ -298,7 +302,7 @@ def test_a_subfolder_of_a_clone_is_not_a_source(ws, tmp_path):
     assert not record.exists()
 
 
-def test_internal_predictions_are_gitignored_but_biovista_ones_are_not():
+def test_internal_results_are_an_allowlist_and_biovista_ones_are_not_ignored():
     if shutil.which("git") is None:
         pytest.skip("git is not available")
     root = Path(__file__).parent.parent
@@ -307,4 +311,65 @@ def test_internal_predictions_are_gitignored_but_biovista_ones_are_not():
         return subprocess.run(["git", "-C", str(root), "check-ignore", "-q", path]).returncode == 0
 
     assert ignored("benchmarks/results/foo__internal/predictions.csv")
-    assert not ignored("benchmarks/results/foo__biovista/predictions.csv")
+    assert ignored("benchmarks/results/foo__internal/stray.txt")
+    for name in ("scores.json", "meta.json", "config.yaml", "timing.json", "errors.json"):
+        assert not ignored(f"benchmarks/results/foo__internal/{name}")
+    for name in ("predictions.csv", "errors.json", "stray.txt", "scores.json"):
+        assert not ignored(f"benchmarks/results/foo__biovista/{name}")
+
+
+def test_internal_errors_json_keeps_only_the_exception_types(ws):
+    ws.set_answers(INTERNAL_ANSWERS)
+    secret = "CC(C)Nc1ccc(Br)cc1"
+    message = ws.root / "message.txt"
+    message.write_text(f"bad {secret}: {secret}")
+    folder = ws.run("internal", "--answers", str(ws.answers), "--crash", "p2", "--crash-message-file", str(message))
+    assert load(folder / "errors.json") == {"papers": 2, "failed": 1, "errors": {"p2": "ValueError"}}
+    assert load(folder / "meta.json")["tool_errors"] == 1
+    for path in folder.iterdir():
+        assert secret not in path.read_text(), path.name
+
+
+def test_biovista_errors_json_keeps_the_full_message(ws):
+    message = ws.root / "message.txt"
+    message.write_text("a: b")
+    folder = ws.run("biovista", "--answers", str(ws.answers), "--crash", "2_bbbb", "--crash-message-file", str(message))
+    assert load(folder / "errors.json")["errors"] == {"2_bbbb": "ValueError: a: b"}
+
+
+def test_files_beside_the_output_are_removed_with_a_warning(ws, capsys):
+    folder = ws.run("biovista", "--answers", str(ws.answers), "--extra-file", "extra.json")
+    assert sorted(p.name for p in folder.iterdir()) == FILES
+    err = capsys.readouterr().err
+    assert err.count("unexpected file") == 1 and "extra.json" in err
+
+
+def commit_all(root: Path) -> None:
+    subprocess.run([*GIT, "init", "-q", str(root)], check=True)
+    subprocess.run([*GIT, "-C", str(root), "add", "-A"], check=True)
+    subprocess.run([*GIT, "-C", str(root), "commit", "-q", "-m", "one"], check=True)
+
+
+@pytest.mark.parametrize("change", ["none", "lock", "edit"])
+def test_paper_checkpoint_is_keyed_on_the_environment_lock_and_tracked_edits(ws, change):
+    lock = ws.root / "lock.txt"
+    lock.write_text("v1\n")
+    ws.lock_commands = [["cat", str(lock)]]
+    commit_all(ws.root)
+    predicted = ws.root / "predicted.txt"
+    args = ("--answers", str(ws.answers), "--stop-once", str(ws.markers / "stopped"), "--predicted", str(predicted))
+    with pytest.raises(BenchError, match="exited with status 3"):
+        ws.run("biovista", *args)
+    if change == "lock":
+        lock.write_text("v2\n")
+    elif change == "edit":
+        with (ws.root / "benchmarks" / "tools" / "paper_runner.py").open("a") as handle:
+            handle.write("# edited\n")
+    folder = ws.run("biovista", *args)
+    again = predicted.read_text().split()
+    if change == "none":
+        assert again == ["1_aaaa", "2_bbbb", "3_cccc"]
+        assert len(load(folder / "meta.json")["segments"]) == 2
+    else:
+        assert again == ["1_aaaa", "1_aaaa", "2_bbbb", "3_cccc"]
+        assert len(load(folder / "meta.json")["segments"]) == 1

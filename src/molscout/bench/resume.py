@@ -36,12 +36,16 @@ class Checkpoint:
         config_text: str,
         git_commit: str | None,
         sources: Sequence[Mapping[str, object]] = (),
+        extra_key: Mapping[str, object] | None = None,
     ) -> Checkpoint:
         """The checkpoint an interrupted run of this config at this commit left, or a new, empty one.
 
         `sources` are the fingerprints of the upstream clones (meta.source_fingerprint); a run whose
         clones changed starts over, since its finished rows came from other code. Without sources the
         key is the config and the commit alone.
+
+        `extra_key` adds more entries to the key (paper runs pass the environment lock and the tracked
+        source changes); without it the key is unchanged.
 
         Any other checkpoint of the run is deleted, and the log says so.
         """
@@ -52,6 +56,8 @@ class Checkpoint:
         }
         if sources:
             key["sources"] = [dict(source) for source in sources]
+        if extra_key:
+            key.update(extra_key)
         state = _read_state(folder / STATE_FILE)
         if state is not None and {name: state.get(name) for name in key} == key:
             checkpoint = cls(folder, state)

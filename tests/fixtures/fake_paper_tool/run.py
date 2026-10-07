@@ -32,6 +32,8 @@ def main() -> int:
     parser.add_argument("--crash", default="", help="comma-separated paper IDs whose predict call raises")
     parser.add_argument("--fail", action="store_true", help="exit with status 3 before reading anything")
     parser.add_argument("--drop-timing", action="store_true", help="delete the timing file, then exit 0")
+    parser.add_argument("--crash-message-file", type=Path, help="a file holding the message of the crash for --crash")
+    parser.add_argument("--extra-file", help="write this file beside --output, as a tool that leaks one would")
     parser.add_argument("--record", type=Path, help="write argv, cwd and some environment variables here as JSON")
     parser.add_argument("--predicted", type=Path, help="append the ID of each paper predicted to this file")
     parser.add_argument(
@@ -50,6 +52,7 @@ def main() -> int:
         return 3
     answers = json.loads(args.answers.read_text(encoding="utf-8")) if args.answers else {}
     crash = {paper for paper in args.crash.split(",") if paper}
+    message = args.crash_message_file.read_text(encoding="utf-8") if args.crash_message_file else "fake crash"
     stop = args.stop_once is not None and not args.stop_once.exists()
     seen = []
 
@@ -62,10 +65,12 @@ def main() -> int:
             with args.predicted.open("a", encoding="utf-8") as handle:
                 handle.write(paper.paper_id + "\n")
         if paper.paper_id in crash:
-            raise ValueError("fake crash")
+            raise ValueError(message)
         return [tuple(molecule) for molecule in answers.get(paper.paper_id, [])]
 
     paper_runner.run_papers(predict, args, warmup=False)
+    if args.extra_file:
+        (args.output.parent / args.extra_file).write_text("{}\n", encoding="utf-8")
     if args.drop_timing:
         paper_runner.timing_path(args.output).unlink()
     return 0

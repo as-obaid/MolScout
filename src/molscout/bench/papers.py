@@ -10,6 +10,8 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
+import shutil
+import sys
 from collections.abc import Collection, Mapping, Sequence
 from pathlib import Path
 
@@ -24,6 +26,7 @@ from molscout.runs import read_paper_seconds
 TIMING_FILE = "predictions.timing.json"  # what benchmarks/tools/paper_runner.py writes beside predictions.csv
 ERRORS_KEYS = frozenset({"papers", "failed", "errors"})
 EXAMPLES_SHOWN = 10
+STAGING_FILES = frozenset({"predictions.csv", "predictions.errors.json", TIMING_FILE, "papers.csv"})
 
 
 class PaperPdfs(dict[str, Path]):
@@ -114,6 +117,33 @@ def read_timing(path: Path, run: str, paper_ids: Collection[str]) -> dict[str, f
     if extra:
         raise BenchError(f"{run}: {path.name} times {len(extra)} paper(s) not in the run, e.g. {_examples(extra)}")
     return {paper: seconds[paper] for paper in paper_ids}
+
+
+def clean_staging(staging: Path, run: str) -> None:
+    """Remove from a paper run's staging folder everything but the files of the contract, with one stderr warning.
+
+    A stray file could hold text from a private paper and would otherwise be moved into results/.
+    """
+    stray = sorted(path for path in staging.iterdir() if path.name not in STAGING_FILES)
+    if not stray:
+        return
+    for path in stray:
+        if path.is_dir() and not path.is_symlink():
+            shutil.rmtree(path, ignore_errors=True)
+        else:
+            path.unlink(missing_ok=True)
+    names = ", ".join(path.name for path in stray)
+    print(f"{run}: removed {len(stray)} unexpected file(s) run.py wrote beside predictions.csv: {names}", file=sys.stderr)
+
+
+def cut_errors_to_types(path: Path) -> None:
+    """Rewrite a paper errors file so each message is only its exception type (the text before the first ':').
+
+    Used for Internal runs: a message may quote a structure or text from a private paper.
+    """
+    data = json.loads(path.read_text(encoding="utf-8"))
+    errors = {paper: message.split(":", 1)[0] for paper, message in data["errors"].items()}
+    path.write_text(json.dumps({**data, "errors": errors}, indent=2) + "\n", encoding="utf-8")
 
 
 def read_paper_errors(path: Path, run: str, paper_ids: Collection[str]) -> int | None:

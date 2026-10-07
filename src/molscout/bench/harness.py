@@ -28,6 +28,7 @@ from molscout.bench.meta import (
     segment,
     source_fingerprint,
     source_state,
+    tracked_diff_sha256,
     utc_now,
 )
 from molscout.bench.resume import Checkpoint
@@ -95,9 +96,25 @@ def _run(config_path: str | Path, repo_root: Path, results_root: Path) -> Path:
         **environment_lock(config.python, config.lock_commands, env, config.run_dir),
         "variables": environment_variables(env, config.env),
     }
-    git = git_state(repo_root, [config.run_dir, config.path, *(repo_root / path for path in GIT_PATHS)])
+    git_paths = [repo_root / path for path in GIT_PATHS]
+    git = git_state(repo_root, [config.run_dir, config.path, *git_paths])
+    # Paper runs take hours across segments: a changed environment lock or an uncommitted edit means another run
+    extra_key = (
+        {
+            "environment_sha256": environment["sha256"],
+            "dirty_paths": git["dirty_paths"],
+            "diff_sha256": tracked_diff_sha256(repo_root, git_paths),
+        }
+        if config.kind is Kind.PAPER
+        else None
+    )
     checkpoint = Checkpoint.open(
-        results_root, config.run_name, config_text=config.text, git_commit=git["commit"], sources=fingerprints
+        results_root,
+        config.run_name,
+        config_text=config.text,
+        git_commit=git["commit"],
+        sources=fingerprints,
+        extra_key=extra_key,
     )
 
     target = results_root / config.run_name
@@ -129,6 +146,7 @@ def _run(config_path: str | Path, repo_root: Path, results_root: Path) -> Path:
         run_tool(command, config, env, checkpoint)
         segments = checkpoint.segments
         if config.kind is Kind.PAPER:
+            papers.clean_staging(staging, config.run_name)
             predictions = papers.checked_paper_predictions(predictions_path, config, item_ids)
             tool_errors = papers.read_paper_errors(staging / ERRORS_FILE, config.run_name, item_ids)
             item_seconds = papers.read_timing(staging / papers.TIMING_FILE, config.run_name, item_ids)
@@ -146,6 +164,8 @@ def _run(config_path: str | Path, repo_root: Path, results_root: Path) -> Path:
         write_scores(staging / "scores.json", _as_from_repo_root(report, target, config.references, repo_root))
         (staging / "config.yaml").write_bytes(config.text.encode("utf-8"))
         if tool_errors is not None:
+            if config.dataset == "internal":  # a message may quote a structure from a private paper
+                papers.cut_errors_to_types(staging / ERRORS_FILE)
             (staging / ERRORS_FILE).rename(staging / "errors.json")
         if config.kind is Kind.PAPER:
             (staging / papers.TIMING_FILE).rename(staging / "timing.json")

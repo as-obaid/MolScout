@@ -162,6 +162,16 @@ def git_state(repo_root: Path, paths: Sequence[Path]) -> dict[str, object]:
     return {"commit": commit.strip(), "dirty": bool(dirty), "dirty_paths": dirty}
 
 
+def tracked_diff_sha256(repo_root: Path, paths: Sequence[Path]) -> str | None:
+    """sha256 of `git diff HEAD --binary` over `paths`: the tracked edits not yet committed; None without git."""
+    git = shutil.which("git")
+    inside = [relative for relative in (_relative(path, repo_root) for path in paths) if relative is not None]
+    if git is None or not inside:
+        return None
+    diff = _quiet_bytes([git, "-C", str(repo_root), "diff", "HEAD", "--binary", "--", *inside])
+    return None if diff is None else hashlib.sha256(diff).hexdigest()
+
+
 def source_state(path: Path, run: str) -> dict[str, object]:
     """A source clone's HEAD and its uncommitted changes: tracked edits make it dirty, untracked files are counted.
 
