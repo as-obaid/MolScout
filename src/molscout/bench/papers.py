@@ -15,7 +15,7 @@ from pathlib import Path
 
 from molscout.bench import BenchError
 from molscout.bench.config import RunConfig
-from molscout.data.biovista_truth import BIOVISTA_PAPERS_PATH, scored_papers
+from molscout.data.biovista_truth import scored_papers
 from molscout.data.internal import load_internal_split
 from molscout.hashing import sha256_file
 from molscout.predictions import Prediction, PredictionsFormatError, read_predictions
@@ -26,8 +26,20 @@ ERRORS_KEYS = frozenset({"papers", "failed", "errors"})
 EXAMPLES_SHOWN = 10
 
 
-def paper_pdfs(config: RunConfig) -> dict[str, Path]:
-    """Paper ID to its PDF, in paper order; a missing PDF, or a BioVista PDF that is not the frozen copy, is a BenchError."""
+class PaperPdfs(dict[str, Path]):
+    """Paper ID to its PDF, in paper order, with the sha256 of each PDF (`digests`) so it is read only once."""
+
+    def __init__(self, paths: Mapping[str, Path], digests: Mapping[str, str]) -> None:
+        super().__init__(paths)
+        self.digests = dict(digests)
+
+
+def paper_pdfs(config: RunConfig, repo_root: Path | None = None) -> PaperPdfs:
+    """Paper ID to its PDF, in paper order; a missing PDF, or a BioVista PDF that is not the frozen copy, is a BenchError.
+
+    `repo_root` only shortens the manifest path in the error message.
+    Only biovista and internal are paper datasets the harness knows; any other is a BenchError.
+    """
     run = config.run_name
     if config.pdfs is None or config.papers is None:
         raise BenchError(f"{run}: a paper dataset needs pdfs and papers in its config")
@@ -36,29 +48,38 @@ def paper_pdfs(config: RunConfig) -> dict[str, Path]:
     if not config.pdfs.is_dir():
         raise BenchError(f"{run}: pdfs folder not found: {config.pdfs}")
     pins: dict[str, str] = {}
+    shown_papers = config.papers.as_posix()
+    if repo_root is not None and config.papers.is_relative_to(repo_root):
+        shown_papers = config.papers.relative_to(repo_root).as_posix()
     if config.dataset == "biovista":
         names = {}
         for paper in scored_papers(config.papers):
             names[paper.paper_id] = f"{paper.pdb_id}.pdf"
             pins[paper.paper_id] = paper.sha256
-    else:
+    elif config.dataset == "internal":
         names = {paper: f"{paper}.pdf" for paper in load_internal_split(config.papers).split_of}
+    else:
+        raise BenchError(f"{run}: the harness does not know the paper dataset {config.dataset!r}")
     pdfs = {paper: config.pdfs / name for paper, name in names.items()}
+    digests: dict[str, str] = {}
     for paper, path in pdfs.items():
         if not path.is_file():
             raise BenchError(f"{run}: paper {paper} has no PDF at {path}")
-        if paper in pins and (actual := sha256_file(path)) != pins[paper]:
+        digests[paper] = sha256_file(path)
+        if paper in pins and digests[paper] != pins[paper]:
             raise BenchError(
-                f"{run}: {paper} PDF {path} has sha256 {actual}, but {BIOVISTA_PAPERS_PATH.as_posix()} pins "
+                f"{run}: {paper} PDF {path} has sha256 {digests[paper]}, but {shown_papers} pins "
                 f"{pins[paper]}; restore the frozen copy (never re-fetch BioVista)"
             )
-    return pdfs
+    return PaperPdfs(pdfs, digests)
 
 
 def paper_inputs(config: RunConfig, pdfs: Mapping[str, Path]) -> dict[str, object]:
     """meta.json's `inputs` for a paper run: the PDF folder and the paper list, each with a sha256."""
-    assert config.pdfs is not None and config.papers is not None
-    lines = sorted(f"{sha256_file(path)}  {paper}\n" for paper, path in pdfs.items())
+    if config.pdfs is None or config.papers is None:
+        raise BenchError(f"{config.run_name}: a paper dataset needs pdfs and papers in its config")
+    digests = pdfs.digests if isinstance(pdfs, PaperPdfs) else {paper: sha256_file(path) for paper, path in pdfs.items()}
+    lines = sorted(f"{digests[paper]}  {paper}\n" for paper in pdfs)
     return {
         "pdfs": str(config.pdfs),
         "pdfs_sha256": hashlib.sha256("".join(lines).encode("utf-8")).hexdigest(),

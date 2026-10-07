@@ -41,6 +41,7 @@ def main() -> int:
     parser.add_argument(
         "--crash", default="", help="comma-separated crop IDs that 'raise': an empty SMILES and an entry in the errors file"
     )
+    parser.add_argument("--note", help="ignored; lets a test put any text in the command line")
     parser.add_argument("--no-errors-file", action="store_true", help="write no predictions.errors.json")
     parser.add_argument("--errors-text", help="write this as predictions.errors.json instead")
     parser.add_argument("--resume", type=Path, help="checkpoint CSV: its rows are kept, new rows are appended")

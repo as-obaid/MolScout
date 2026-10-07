@@ -4,9 +4,11 @@ BioVista papers are the three scored papers of tests/fixtures/biovista; each PDF
 PDB ID, which is what the fixture manifest's sha256 column pins. The Internal ground truth is made here.
 """
 
+import csv
 import hashlib
 import json
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -63,7 +65,7 @@ class Workspace:
     def set_answers(self, answers: dict) -> None:
         self.answers.write_text(json.dumps(answers))
 
-    def config(self, dataset: str, *args: str) -> Path:
+    def config(self, dataset: str, *args: str, sources: tuple[Path, ...] = ()) -> Path:
         paths = (
             {"pdfs": "data/raw/biovista/pdfs", "papers": "data/raw/biovista/manifest.csv", "references": "data/raw/biovista"}
             if dataset == "biovista"
@@ -80,13 +82,15 @@ class Workspace:
             "args": list(args),
             "checkpoints": [],
         }
+        if sources:
+            data["sources"] = [str(source) for source in sources]
         path = self.root / "configs" / f"fake__{dataset}.yaml"
         path.parent.mkdir(exist_ok=True)
         path.write_text("# test config\n" + yaml.safe_dump(data, sort_keys=False))
         return path
 
-    def run(self, dataset: str, *args: str) -> Path:
-        config = self.config(dataset, *args)
+    def run(self, dataset: str, *args: str, sources: tuple[Path, ...] = ()) -> Path:
+        config = self.config(dataset, *args, sources=sources)
         return run_benchmark(config, repo_root=self.root, results_root=self.results)
 
     def checkpoint(self, dataset: str) -> Path:
@@ -96,6 +100,23 @@ class Workspace:
 @pytest.fixture
 def ws(tmp_path):
     return Workspace(tmp_path / "repo")
+
+
+GIT = ("git", "-c", "user.name=Test", "-c", "user.email=test@example.com", "-c", "commit.gpgsign=false")
+
+
+def rows_without_seconds(path: Path) -> list[dict[str, str]]:
+    """The rows of a predictions.csv by column name, minus `seconds`, which is a real wall time."""
+    with path.open(newline="") as handle:
+        return [{k: v for k, v in row.items() if k != "seconds"} for row in csv.DictReader(handle)]
+
+
+def make_clone(path: Path) -> None:
+    path.mkdir(parents=True)
+    (path / "model.py").write_text("v1\n")
+    subprocess.run([*GIT, "init", "-q", str(path)], check=True)
+    subprocess.run([*GIT, "-C", str(path), "add", "model.py"], check=True)
+    subprocess.run([*GIT, "-C", str(path), "commit", "-q", "-m", "one"], check=True)
 
 
 def load(path: Path) -> dict:
@@ -149,6 +170,7 @@ def test_paper_without_molecules_is_scored_and_timed(ws):
     folder = ws.run("biovista", "--answers", str(ws.answers))
     scores = load(folder / "scores.json")["scores"]
     assert scores["papers"]["3_cccc"]["tp"] == 0
+    assert scores["papers"]["3_cccc"]["fn"] == 1  # its one label
     assert scores["groups"]["all"]["papers_without_output"] == 1
     assert scores["seconds_per_item"]["items"] == 3
 
@@ -158,7 +180,7 @@ def test_biovista_pdf_sha256_mismatch_stops_before_tool_runs(ws):
     record = ws.root / "record.json"
     with pytest.raises(BenchError, match=r"2_bbbb PDF .*bbbb\.pdf has sha256 .*never re-fetch") as error:
         ws.run("biovista", "--record", str(record))
-    assert "data/manifests/biovista_papers.csv pins 81cc5b17" in str(error.value)
+    assert "but data/raw/biovista/manifest.csv pins 81cc5b17" in str(error.value)
     assert not record.exists()
 
 
@@ -230,14 +252,59 @@ def test_resumed_paper_run_matches_an_uninterrupted_one(ws):
 
     assert len(load(folder / "meta.json")["segments"]) == 2
     resumed = {
-        "rows": [r.split(",")[:7] for r in (folder / "predictions.csv").read_text().splitlines()],
+        "rows": rows_without_seconds(folder / "predictions.csv"),
         "errors": load(folder / "errors.json"),
         "scores": {k: v for k, v in load(folder / "scores.json")["scores"].items() if k != "seconds_per_item"},
         "papers_timed": sorted(load(folder / "timing.json")["seconds"]),
     }
     clean = ws.run("biovista", *args)  # the marker exists, so this run is never stopped
-    assert [r.split(",")[:7] for r in (clean / "predictions.csv").read_text().splitlines()] == resumed["rows"]
+    assert rows_without_seconds(clean / "predictions.csv") == resumed["rows"]
     assert load(clean / "errors.json") == resumed["errors"]
     assert {k: v for k, v in load(clean / "scores.json")["scores"].items() if k != "seconds_per_item"} == resumed["scores"]
     assert sorted(load(clean / "timing.json")["seconds"]) == resumed["papers_timed"]
     assert len(load(clean / "meta.json")["segments"]) == 1
+
+
+@pytest.mark.parametrize("change", ["none", "edit", "commit"])
+def test_checkpoint_is_keyed_on_the_source_clones(ws, tmp_path, change):
+    clone = tmp_path / "upstream"
+    make_clone(clone)
+    predicted = ws.root / "predicted.txt"
+    args = ("--answers", str(ws.answers), "--stop-once", str(ws.markers / "stopped"), "--predicted", str(predicted))
+    with pytest.raises(BenchError, match="exited with status 3"):
+        ws.run("biovista", *args, sources=(clone,))
+    if change == "edit":
+        (clone / "model.py").write_text("v2\n")
+    elif change == "commit":
+        (clone / "model.py").write_text("v2\n")
+        subprocess.run([*GIT, "-C", str(clone), "commit", "-q", "-am", "two"], check=True)
+    folder = ws.run("biovista", *args, sources=(clone,))
+    again = predicted.read_text().split()
+    if change == "none":
+        assert again == ["1_aaaa", "2_bbbb", "3_cccc"]  # carried on from the checkpoint
+        assert len(load(folder / "meta.json")["segments"]) == 2
+    else:
+        assert again == ["1_aaaa", "1_aaaa", "2_bbbb", "3_cccc"]  # started over
+        assert len(load(folder / "meta.json")["segments"]) == 1
+
+
+def test_a_subfolder_of_a_clone_is_not_a_source(ws, tmp_path):
+    clone = tmp_path / "upstream"
+    make_clone(clone)
+    (clone / "sub").mkdir()
+    record = ws.root / "record.json"
+    with pytest.raises(BenchError, match=r"fake__biovista: source .*sub is not the root of a git clone"):
+        ws.run("biovista", "--record", str(record), sources=(clone / "sub",))
+    assert not record.exists()
+
+
+def test_internal_predictions_are_gitignored_but_biovista_ones_are_not():
+    if shutil.which("git") is None:
+        pytest.skip("git is not available")
+    root = Path(__file__).parent.parent
+
+    def ignored(path: str) -> bool:
+        return subprocess.run(["git", "-C", str(root), "check-ignore", "-q", path]).returncode == 0
+
+    assert ignored("benchmarks/results/foo__internal/predictions.csv")
+    assert not ignored("benchmarks/results/foo__biovista/predictions.csv")

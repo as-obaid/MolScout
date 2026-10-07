@@ -26,6 +26,7 @@ from molscout.bench.meta import (
     environment_variables,
     git_state,
     segment,
+    source_fingerprint,
     source_state,
     utc_now,
 )
@@ -81,20 +82,23 @@ def _run(config_path: str | Path, repo_root: Path, results_root: Path) -> Path:
     config = load_config(config_path, repo_root)
     check_inputs(config)
     if config.kind is Kind.PAPER:
-        pdfs = papers.paper_pdfs(config)
+        pdfs = papers.paper_pdfs(config, repo_root)
         item_ids = frozenset(pdfs)
         inputs = papers.paper_inputs(config, pdfs)
     else:
         item_ids = image_stems(config.images)
         inputs = {"images": str(config.images), "images_sha256": sha256_tree(config.images)}
-    sources = [source_state(path) for path in config.sources]
+    sources = [source_state(path, config.run_name) for path in config.sources]
+    fingerprints = [source_fingerprint(path, state) for path, state in zip(config.sources, sources, strict=True)]
     env = tool_environment(config)
     environment = {
         **environment_lock(config.python, config.lock_commands, env, config.run_dir),
         "variables": environment_variables(env, config.env),
     }
     git = git_state(repo_root, [config.run_dir, config.path, *(repo_root / path for path in GIT_PATHS)])
-    checkpoint = Checkpoint.open(results_root, config.run_name, config_text=config.text, git_commit=git["commit"])
+    checkpoint = Checkpoint.open(
+        results_root, config.run_name, config_text=config.text, git_commit=git["commit"], sources=fingerprints
+    )
 
     target = results_root / config.run_name
     results_root.mkdir(parents=True, exist_ok=True)
@@ -391,7 +395,8 @@ def _score(config: RunConfig, predictions_path: Path, item_seconds: Mapping[str,
     """score_run for the config's dataset: crops by references folder, BioVista by manifest, Internal by CSVs."""
     if config.kind is Kind.CROP:
         return score_run(predictions_path, dataset=config.dataset, references=config.references)
-    assert config.papers is not None
+    if config.papers is None:
+        raise BenchError(f"{config.run_name}: a paper dataset needs papers in its config")
     if config.dataset == "biovista":
         return score_run(
             predictions_path,
@@ -400,6 +405,8 @@ def _score(config: RunConfig, predictions_path: Path, item_seconds: Mapping[str,
             papers=config.papers,
             paper_seconds=item_seconds,
         )
+    if config.dataset != "internal":
+        raise BenchError(f"{config.run_name}: the harness cannot score the paper dataset {config.dataset!r}")
     return score_run(
         predictions_path,
         dataset=config.dataset,

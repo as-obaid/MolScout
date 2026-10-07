@@ -13,7 +13,7 @@ import io
 import json
 import os
 import shutil
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 CHECKPOINTS = ".checkpoints"
@@ -28,13 +28,30 @@ class Checkpoint:
         self._state = dict(state)
 
     @classmethod
-    def open(cls, results_root: Path, run: str, *, config_text: str, git_commit: str | None) -> Checkpoint:
+    def open(
+        cls,
+        results_root: Path,
+        run: str,
+        *,
+        config_text: str,
+        git_commit: str | None,
+        sources: Sequence[Mapping[str, object]] = (),
+    ) -> Checkpoint:
         """The checkpoint an interrupted run of this config at this commit left, or a new, empty one.
+
+        `sources` are the fingerprints of the upstream clones (meta.source_fingerprint); a run whose
+        clones changed starts over, since its finished rows came from other code. Without sources the
+        key is the config and the commit alone.
 
         Any other checkpoint of the run is deleted, and the log says so.
         """
         folder = results_root / CHECKPOINTS / run
-        key = {"config_sha256": hashlib.sha256(config_text.encode("utf-8")).hexdigest(), "git_commit": git_commit}
+        key: dict[str, object] = {
+            "config_sha256": hashlib.sha256(config_text.encode("utf-8")).hexdigest(),
+            "git_commit": git_commit,
+        }
+        if sources:
+            key["sources"] = [dict(source) for source in sources]
         state = _read_state(folder / STATE_FILE)
         if state is not None and {name: state.get(name) for name in key} == key:
             checkpoint = cls(folder, state)

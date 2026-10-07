@@ -285,7 +285,7 @@ def test_source_that_is_not_a_clone_stops_the_run(ws, tmp_path):
     plain.mkdir()
     config = ws.config("--answers", str(ws.answers), "--record", str(tmp_path / "record.json"))
     add_to_config(config, sources=[str(plain)])
-    with pytest.raises(BenchError, match=r"source .*plain is not a git clone"):
+    with pytest.raises(BenchError, match=r"fake__uspto: source .*plain is not the root of a git clone"):
         run_benchmark(config, repo_root=ws.root, results_root=ws.results)
     assert not (tmp_path / "record.json").exists()
 
@@ -297,16 +297,27 @@ def test_lock_output_redacts_credentials(ws, tmp_path):
         "print('other @ https://ghp_def@example.org/z.git')\n"
         "print('plain @ https://example.org/a/b@c')\n"
     )
-    config = ws.config("--answers", str(ws.answers))
-    add_to_config(config, lock_commands=[[sys.executable, str(script)]])
+    config = ws.config("--answers", str(ws.answers), "--note", "git+https://user:ghp_arg@github.com/x/y.git")
+    add_to_config(
+        config,
+        lock_commands=[[sys.executable, str(script)]],
+        env={"FAKE_SETTING": "https://user:ghp_env@example.org/z"},
+    )
     text = (run_benchmark(config, repo_root=ws.root, results_root=ws.results) / "meta.json").read_text()
-    [lock] = json.loads(text)["environment"]["lock_commands"]
+    meta = json.loads(text)
+    assert meta["environment"]["variables"]["FAKE_SETTING"] == "https://***@example.org/z"
+    assert "git+https://***@github.com/x/y.git" in meta["command"]
+    lock_fields = {k: meta["environment"][k] for k in ("python_version", "packages", "conda_meta", "lock_commands")}
+    digest = hashlib.sha256(json.dumps(lock_fields, sort_keys=True).encode("utf-8")).hexdigest()
+    assert meta["environment"]["sha256"] == digest  # taken after redaction
+    [lock] = meta["environment"]["lock_commands"]
     assert lock["output"] == (
         "pkg @ git+https://***@github.com/x/y.git\n"
         "other @ https://***@example.org/z.git\n"
         "plain @ https://example.org/a/b@c\n"
     )
-    assert "ghp_abc" not in text and "ghp_def" not in text
+    for token in ("ghp_abc", "ghp_def", "ghp_arg", "ghp_env"):
+        assert token not in text
 
 
 def test_meta_git_is_none_outside_a_repository(ws):

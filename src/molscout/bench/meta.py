@@ -91,7 +91,7 @@ def build_meta(
         "timing": dict(timing),
         "resources": dict(resources),
         "segments": [dict(record) for record in segments],
-        "command": list(command),
+        "command": [redact(part) for part in command],
     }
 
 
@@ -162,16 +162,17 @@ def git_state(repo_root: Path, paths: Sequence[Path]) -> dict[str, object]:
     return {"commit": commit.strip(), "dirty": bool(dirty), "dirty_paths": dirty}
 
 
-def source_state(path: Path) -> dict[str, object]:
+def source_state(path: Path, run: str) -> dict[str, object]:
     """A source clone's HEAD and its uncommitted changes: tracked edits make it dirty, untracked files are counted.
 
-    A folder that is not a git clone is a BenchError, since the run could not be tied to the code it ran.
+    A folder that is not the root of a git clone is a BenchError, since the run could not be tied to the code it ran.
     """
     git = shutil.which("git")
     commit = None if git is None else _quiet([git, "-C", str(path), "rev-parse", "HEAD"])
+    top = None if git is None else _quiet([git, "-C", str(path), "rev-parse", "--show-toplevel"])
     status = None if git is None else _quiet([git, "-C", str(path), "status", "--porcelain", "-z", "--untracked-files=all"])
-    if commit is None or status is None:
-        raise BenchError(f"source {path} is not a git clone (git rev-parse HEAD failed there); clone it with git")
+    if commit is None or status is None or top is None or Path(top.strip()).resolve() != path.resolve():
+        raise BenchError(f"{run}: source {path} is not the root of a git clone; clone it with git and name its root")
     entries = _porcelain_entries(status)
     dirty = sorted(name for code, name in entries if code != "??")
     return {
@@ -181,6 +182,34 @@ def source_state(path: Path) -> dict[str, object]:
         "dirty_paths": dirty,
         "untracked": sum(code == "??" for code, _ in entries),
     }
+
+
+def source_fingerprint(path: Path, state: Mapping[str, object]) -> dict[str, object]:
+    """What identifies the code in a source clone: its commit, its tracked changes (a hash of `git diff HEAD --binary`)
+    and the number of untracked files. Equal fingerprints mean the tool ran the same code."""
+    git = shutil.which("git")
+    diff = None if git is None else _quiet_bytes([git, "-C", str(path), "diff", "HEAD", "--binary"])
+    if diff is None:
+        raise BenchError(f"source {path}: git diff HEAD failed")
+    return {
+        "path": state["path"],
+        "commit": state["commit"],
+        "dirty_paths": state["dirty_paths"],
+        "untracked": state["untracked"],
+        "diff_sha256": hashlib.sha256(diff).hexdigest(),
+    }
+
+
+def _quiet_bytes(command: Sequence[str]) -> bytes | None:
+    try:
+        result = subprocess.run(list(command), capture_output=True, timeout=PROBE_TIMEOUT_SECONDS, check=False)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    return result.stdout if result.returncode == 0 else None
+
+
+def _redacted(value: str | None) -> str | None:
+    return None if value is None else redact(value)
 
 
 def redact(text: str) -> str:
@@ -217,10 +246,11 @@ def environment_lock(
 def environment_variables(env: Mapping[str, str], extra: Iterable[str]) -> dict[str, str | None]:
     """The RECORDED_VARIABLES and `extra` names as the tool saw them (None when unset).
 
-    A name that looks like a credential (TOKEN, SECRET, PASSWORD, KEY) is never recorded.
+    A name that looks like a credential (TOKEN, SECRET, PASSWORD, KEY) is never recorded, and a
+    value's URL credentials are redacted.
     """
     names = dict.fromkeys([*RECORDED_VARIABLES, *extra])
-    return {name: env.get(name) for name in names if not SECRET_NAME.search(name)}
+    return {name: _redacted(env.get(name)) for name in names if not SECRET_NAME.search(name)}
 
 
 def hardware() -> dict[str, object]:
