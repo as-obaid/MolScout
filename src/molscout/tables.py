@@ -17,6 +17,7 @@ POOLED_ANCHOR = "**Valid output and speed, all datasets pooled**"
 
 DATASETS = ("uspto", "uob", "jpo", "clef", "molrecbench_wild")
 COMMIT_SHOWN = 12
+PAPER_DATASETS = ("biovista", "internal")
 TOOL_ROWS = {
     "molscribe": "MolScribe",
     "molnextr": "MolNexTR",
@@ -55,7 +56,7 @@ class Run:
 def load_runs(results: Path) -> dict[tuple[str, str], Run]:
     """Every `<tool>__<dataset>/` folder under `results` that holds a scores.json, keyed by (tool, dataset).
 
-    Hidden folders are skipped: `.staging-*` and `.old-*` are what a killed harness leaves behind.
+    Paper datasets (Type 2) are skipped; see tables_papers. Hidden folders are skipped: `.staging-*` and `.old-*` are what a killed harness leaves behind.
     """
     runs: dict[tuple[str, str], Run] = {}
     for folder in sorted(Path(results).glob("*__*")):
@@ -63,6 +64,8 @@ def load_runs(results: Path) -> dict[tuple[str, str], Run]:
         if folder.name.startswith(".") or not scores_path.is_file():
             continue
         tool, dataset = folder.name.split("__", 1)
+        if dataset in PAPER_DATASETS:
+            continue
         report = json.loads(scores_path.read_text(encoding="utf-8"))
         if report["dataset"] != dataset:
             raise ValueError(f"{folder}: folder says {dataset} but scores.json says {report['dataset']}")
