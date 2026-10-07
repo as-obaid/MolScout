@@ -11,8 +11,9 @@ import numpy as np
 from rdkit import rdBase
 
 import molscout
+from molscout.datasets import DATASETS, Kind
 from molscout.hashing import sha256_file
-from molscout.scoring.stats import BOOTSTRAP_RESAMPLES, BOOTSTRAP_SEED, Z_95
+from molscout.scoring.stats import BOOTSTRAP_RESAMPLES, BOOTSTRAP_SEED, PAPER_BOOTSTRAP, Z_95
 
 
 def build_report(
@@ -38,7 +39,7 @@ def build_report(
             "numpy_version": np.__version__,
             "python_version": platform.python_version(),
             "match": "exact RDKit canonical SMILES, stereo-aware and stereo-stripped",
-            "ci95_proportions": {"method": "wilson", "z": Z_95},
+            "ci95_proportions": _proportion_intervals(dataset),
             "ci95_macro": {
                 "method": "percentile bootstrap over papers",
                 "resamples": BOOTSTRAP_RESAMPLES,
@@ -46,6 +47,17 @@ def build_report(
             },
         },
         "scores": dict(scores),
+    }
+
+
+def _proportion_intervals(dataset: str) -> dict[str, object]:
+    """How the proportion CIs were made: Wilson everywhere on crops; on papers only valid_output_rate is Wilson."""
+    wilson = {"method": "wilson", "z": Z_95}
+    if DATASETS.get(dataset) is not Kind.PAPER:
+        return wilson
+    return {
+        "micro_precision_recall_f1": {"method": PAPER_BOOTSTRAP, "resamples": BOOTSTRAP_RESAMPLES, "seed": BOOTSTRAP_SEED},
+        "valid_output_rate": wilson,
     }
 
 

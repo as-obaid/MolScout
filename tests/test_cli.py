@@ -120,6 +120,13 @@ def test_paper_micro_intervals_resample_papers(papers):
     assert scores["micro"]["precision"]["ci95"] == [0.0, 0.5]
 
 
+def test_paper_report_describes_the_paper_bootstrap(papers):
+    assert papers["scoring"]["ci95_proportions"] == {
+        "micro_precision_recall_f1": {"method": "paper bootstrap", "resamples": 10_000, "seed": 6630},
+        "valid_output_rate": {"method": "wilson", "z": 1.959963984540054},
+    }
+
+
 def test_paper_valid_output_rate_keeps_the_wilson_interval(papers):
     rate = papers["scores"]["groups"]["all"]["valid_output_rate"]
     assert rate["ci95"] == pytest.approx([0.453509156701, 0.882786213554], abs=1e-9)
@@ -157,7 +164,7 @@ def test_crop_scores_match_hand_counts(crops):
 
 
 def test_crop_intervals_stay_wilson(crops):
-    assert crops["scoring"]["ci95_proportions"]["method"] == "wilson"
+    assert crops["scoring"]["ci95_proportions"] == {"method": "wilson", "z": 1.959963984540054}
     for metric in ("accuracy", "accuracy_stereo_stripped", "valid_output_rate"):
         assert set(crops["scores"][metric]) == {"value", "ci95", "successes", "trials"}, metric
 

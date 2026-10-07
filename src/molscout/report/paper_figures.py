@@ -51,7 +51,7 @@ def view_bars(
 ) -> go.Figure:
     """Precision, recall and F1 of one dataset, a bar per system in a panel per view.
 
-    `sizes` is paper_analysis.view_sizes. The all-papers view carries Wilson 95% CIs on the pooled values; a view
+    `sizes` is paper_analysis.view_sizes. The all-papers view carries 95% CIs on the pooled values (a paper bootstrap); a view
     no system has numbers for is left out.
     """
     views = [view for view in VIEWS[dataset] if any(f"{view[2]}/f1" in row for (_, name), row in metrics.items() if name == dataset)]
