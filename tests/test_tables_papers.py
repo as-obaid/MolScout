@@ -4,6 +4,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 from molscout.predictions import Prediction, write_predictions
 from molscout.runs import score_run
 from molscout.scoring import write_scores
@@ -16,63 +18,7 @@ FIXTURES = Path(__file__).parent / "fixtures"
 TRUTH = "paperID,name of molecule,canonical_SMILES\np1,ethanol,CCO\np1,benzene,c1ccccc1\np2,ethylamine,CCN\n"
 SPLIT = "paperID,split,molecules\np1,dev,2\np2,test,1\n"
 
-TYPE2 = """
-## Type 2: Complete systems
-
-### Setup
-
-| System | Detect | Recognize | Extra | Hardware | Version |
-|:-------|:-------|:----------|:------|:---------|:--------|
-| [BioMiner](https://example.org/bm) | MolDetv2 | MolGlyph | Agents | 4× H200 | — |
-| [OpenChemIE](https://example.org/oc) | MolDet | MolScribe | Coreference | Explorer GPU | — |
-
-### Results
-
-**BioVista**
-
-| System | Precision | Recall | F1 | Macro P | Macro R | Stripped P | Stripped R | PDFs | s / paper |
-|:-------|----------:|-------:|---:|--------:|--------:|-----------:|-----------:|-----:|----------:|
-| BioMiner | — | — | — | — | — | — | — | — | — |
-| OpenChemIE | — | — | — | — | — | — | — | — | — |
-| *BioMiner, published* | — | — | *52.8* | — | — | — | — | — | — |
-
-**BioVista, drawn structures only**
-
-Drawn papers: 159.
-
-| System | Precision | Recall | F1 | Macro P | Macro R | Stripped P | Stripped R |
-|:-------|----------:|-------:|---:|--------:|--------:|-----------:|-----------:|
-| BioMiner | — | — | — | — | — | — | — |
-| OpenChemIE | — | — | — | — | — | — | — |
-
-**BioVista, without submitted versions**
-
-| System | Precision | Recall | F1 | Macro P | Macro R | Stripped P | Stripped R |
-|:-------|----------:|-------:|---:|--------:|--------:|-----------:|-----------:|
-| BioMiner | — | — | — | — | — | — | — |
-| OpenChemIE | — | — | — | — | — | — | — |
-
-**Internal**
-
-| System | Precision | Recall | F1 | Macro P | Macro R | Stripped P | Stripped R | s / paper |
-|:-------|----------:|-------:|---:|--------:|--------:|-----------:|-----------:|----------:|
-| BioMiner | — | — | — | — | — | — | — | — |
-| OpenChemIE | — | — | — | — | — | — | — | — |
-
-**Internal, by split**
-
-| System | Dev P | Dev R | Dev F1 | Test P | Test R | Test F1 |
-|:-------|------:|------:|-------:|-------:|-------:|--------:|
-| BioMiner | — | — | — | — | — | — |
-| OpenChemIE | — | — | — | — | — | — |
-
----
-
-## Type 3: AI agent
-
-| BioMiner | untouched |
-"""
-DOC = TYPE1_DOC.split("\n## Type 2")[0] + TYPE2
+DOC = TYPE1_DOC
 DASH_ROW = "| — | — | — | — | — | — | — |"
 
 
@@ -250,3 +196,23 @@ def test_make_tables_script_fills_both_types(tmp_path):
     assert "biominer__internal" in done.stdout
     assert row(doc.read_text(), 1, "BioMiner").count("—") == 0
     shutil.rmtree(results)
+
+
+def test_missing_table_anchor_is_an_error():
+    broken = DOC.replace("**Internal, by split**", "**Internal, split**")
+    with pytest.raises(ValueError, match=r"table anchor not found: \*\*Internal, by split\*\*"):
+        fill_type2(broken, {})
+
+
+def test_anchor_without_a_table_is_an_error():
+    broken = DOC.replace("**Internal, by split**", "**Internal, by split**\n\nnothing here", 1)
+    broken = broken.split("**Internal, by split**")[0] + "**Internal, by split**\n"
+    with pytest.raises(ValueError, match="no table after anchor"):
+        fill_type2(broken, {})
+
+
+def test_unknown_row_label_is_an_error_naming_label_and_table():
+    broken = DOC.replace("| OpenChemIE | — | — | — | — | — | — | — |\n\n**BioVista, without", "| Decimer.ai | — | — | — | — | — | — | — |\n\n**BioVista, without")
+    assert broken != DOC
+    with pytest.raises(ValueError, match=r"Decimer\.ai.*\*\*BioVista, drawn structures only\*\*"):
+        fill_type2(broken, {})

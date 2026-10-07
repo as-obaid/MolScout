@@ -50,7 +50,54 @@ DOC = """# Benchmarking
 
 | System | Detect | Recognize | Extra | Hardware | Version |
 |:-------|:-------|:----------|:------|:---------|:--------|
-| [OpenChemIE](https://example.org/oc) | MolDet | [MolScribe](https://example.org/molscribe) | Coreference | Explorer GPU | — |
+| [BioMiner](https://example.org/bm) | MolDetv2 | MolGlyph | Agents | 4× H200 | — |
+| [OpenChemIE](https://example.org/oc) | MolDet | MolScribe | Coreference | Explorer GPU | — |
+
+### Results
+
+**BioVista**
+
+| System | Precision | Recall | F1 | Macro P | Macro R | Stripped P | Stripped R | PDFs | s / paper |
+|:-------|----------:|-------:|---:|--------:|--------:|-----------:|-----------:|-----:|----------:|
+| BioMiner | — | — | — | — | — | — | — | — | — |
+| OpenChemIE | — | — | — | — | — | — | — | — | — |
+| *BioMiner, published* | — | — | *52.8* | — | — | — | — | — | — |
+
+**BioVista, drawn structures only**
+
+Drawn papers: 159.
+
+| System | Precision | Recall | F1 | Macro P | Macro R | Stripped P | Stripped R |
+|:-------|----------:|-------:|---:|--------:|--------:|-----------:|-----------:|
+| BioMiner | — | — | — | — | — | — | — |
+| OpenChemIE | — | — | — | — | — | — | — |
+
+**BioVista, without submitted versions**
+
+| System | Precision | Recall | F1 | Macro P | Macro R | Stripped P | Stripped R |
+|:-------|----------:|-------:|---:|--------:|--------:|-----------:|-----------:|
+| BioMiner | — | — | — | — | — | — | — |
+| OpenChemIE | — | — | — | — | — | — | — |
+
+**Internal**
+
+| System | Precision | Recall | F1 | Macro P | Macro R | Stripped P | Stripped R | s / paper |
+|:-------|----------:|-------:|---:|--------:|--------:|-----------:|-----------:|----------:|
+| BioMiner | — | — | — | — | — | — | — | — |
+| OpenChemIE | — | — | — | — | — | — | — | — |
+
+**Internal, by split**
+
+| System | Dev P | Dev R | Dev F1 | Test P | Test R | Test F1 |
+|:-------|------:|------:|-------:|-------:|-------:|--------:|
+| BioMiner | — | — | — | — | — | — |
+| OpenChemIE | — | — | — | — | — | — |
+
+---
+
+## Type 3: AI agent
+
+| BioMiner | untouched |
 """
 
 

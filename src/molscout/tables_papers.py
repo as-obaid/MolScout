@@ -104,11 +104,13 @@ def _hardware(hardware: Mapping[str, object]) -> str:
 
 
 def _rewrite_table(section: list[str], anchor: str, rewrite: Callable, runs: Mapping[tuple[str, str], PaperRun]) -> None:
-    if anchor not in section:  # a document without this table has nothing to fill
-        return
+    if anchor not in section:
+        raise ValueError(f"table anchor not found: {anchor}")
     index = section.index(anchor) + 1
-    while not section[index].startswith("|"):
+    while index < len(section) and not section[index].startswith("|"):
         index += 1
+    if index >= len(section):
+        raise ValueError(f"no table after anchor: {anchor}")
     index += 2
     row_tools = {label: tool for tool, label in SYSTEM_ROWS.items()}
     while index < len(section) and section[index].startswith("|"):
@@ -118,6 +120,8 @@ def _rewrite_table(section: list[str], anchor: str, rewrite: Callable, runs: Map
         if label in row_tools:
             tool_runs = {ds: runs[(row_tools[label], ds)] for ds in PAPER_DATASETS if (row_tools[label], ds) in runs}
             section[index] = rewrite(cells, tool_runs)
+        elif not label.startswith("*"):
+            raise ValueError(f"unknown row label {label!r} in table {anchor}; expected one of {', '.join(SYSTEM_ROWS.values())}")
         index += 1
 
 
