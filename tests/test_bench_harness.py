@@ -243,6 +243,72 @@ def test_meta_records_allow_listed_variables_and_never_secrets(ws, monkeypatch):
         assert value not in text
 
 
+def add_to_config(config: Path, **keys) -> None:
+    config.write_text(config.read_text() + yaml.safe_dump(keys))
+
+
+def git_source(path: Path) -> None:
+    """A clone-like folder with one commit."""
+    path.mkdir(parents=True)
+    (path / "model.py").write_text("print('v1')\n")
+    subprocess.run([*GIT, "init", "-q", str(path)], check=True)
+    subprocess.run([*GIT, "-C", str(path), "add", "model.py"], check=True)
+    subprocess.run([*GIT, "-C", str(path), "commit", "-q", "-m", "one"], check=True)
+
+
+def test_meta_records_each_source_clone_head_and_dirty_flag(ws, tmp_path):
+    clean, edited = tmp_path / "clean", tmp_path / "edited"
+    git_source(clean)
+    git_source(edited)
+    (edited / "model.py").write_text("print('v2')\n")
+    (edited / "notes.txt").write_text("untracked\n")
+    config = ws.config("--answers", str(ws.answers))
+    add_to_config(config, sources=[str(clean), str(edited)])
+    folder = run_benchmark(config, repo_root=ws.root, results_root=ws.results)
+
+    def head(path: Path) -> str:
+        found = subprocess.run(["git", "-C", str(path), "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
+        return found.stdout.strip()
+
+    assert json.loads((folder / "meta.json").read_text())["sources"] == [
+        {"path": str(clean), "commit": head(clean), "dirty": False, "dirty_paths": [], "untracked": 0},
+        {"path": str(edited), "commit": head(edited), "dirty": True, "dirty_paths": ["model.py"], "untracked": 1},
+    ]
+
+
+def test_a_run_without_sources_records_an_empty_list(ws):
+    assert json.loads((ws.run() / "meta.json").read_text())["sources"] == []
+
+
+def test_source_that_is_not_a_clone_stops_the_run(ws, tmp_path):
+    plain = tmp_path / "plain"
+    plain.mkdir()
+    config = ws.config("--answers", str(ws.answers), "--record", str(tmp_path / "record.json"))
+    add_to_config(config, sources=[str(plain)])
+    with pytest.raises(BenchError, match=r"source .*plain is not a git clone"):
+        run_benchmark(config, repo_root=ws.root, results_root=ws.results)
+    assert not (tmp_path / "record.json").exists()
+
+
+def test_lock_output_redacts_credentials(ws, tmp_path):
+    script = tmp_path / "lock.py"
+    script.write_text(
+        "print('pkg @ git+https://user:ghp_abc@github.com/x/y.git')\n"
+        "print('other @ https://ghp_def@example.org/z.git')\n"
+        "print('plain @ https://example.org/a/b@c')\n"
+    )
+    config = ws.config("--answers", str(ws.answers))
+    add_to_config(config, lock_commands=[[sys.executable, str(script)]])
+    text = (run_benchmark(config, repo_root=ws.root, results_root=ws.results) / "meta.json").read_text()
+    [lock] = json.loads(text)["environment"]["lock_commands"]
+    assert lock["output"] == (
+        "pkg @ git+https://***@github.com/x/y.git\n"
+        "other @ https://***@example.org/z.git\n"
+        "plain @ https://example.org/a/b@c\n"
+    )
+    assert "ghp_abc" not in text and "ghp_def" not in text
+
+
 def test_meta_git_is_none_outside_a_repository(ws):
     meta = json.loads((ws.run() / "meta.json").read_text())
     assert meta["git"] == {"commit": None, "dirty": None, "dirty_paths": None}

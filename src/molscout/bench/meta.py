@@ -44,6 +44,7 @@ RECORDED_VARIABLES = (
     "SLURM_JOB_PARTITION",
 )
 SECRET_NAME = re.compile("TOKEN|SECRET|PASSWORD|KEY", re.IGNORECASE)
+CREDENTIALS = re.compile(r"(?<![A-Za-z0-9+.-])([A-Za-z][A-Za-z0-9+.-]*://)[^/\s@]+@")  # scheme://user:token@ or scheme://token@
 SLURM_FIELDS = (
     ("job", "SLURM_JOB_ID"),
     ("array_job", "SLURM_ARRAY_JOB_ID"),
@@ -65,12 +66,14 @@ def build_meta(
     resources: Mapping[str, object],
     segments: Sequence[Mapping[str, object]],
     command: Sequence[str],
+    sources: Sequence[Mapping[str, object]] = (),
 ) -> dict[str, object]:
     """The meta.json record for one run; hardware and SLURM details are read here.
 
     `tool_errors` counts the images whose predict call raised (crop_runner's errors file), or is None
     when run.py wrote no errors file. `resources` is what run.py used: tool_peak_rss_mib,
     tool_cpu_seconds and gpu (see GpuSampler), over all `segments`, the times run.py ran (see segment).
+    `sources` is one source_state per upstream clone the config names.
     """
     checkpoints = [{"path": str(c.path), "sha256": c.sha256} for c in config.checkpoints]
     return {
@@ -81,6 +84,7 @@ def build_meta(
         "tool_errors": tool_errors,
         "inputs": dict(inputs),
         "git": dict(git),
+        "sources": [dict(source) for source in sources],
         "environment": dict(environment),
         "hardware": hardware(),
         "slurm": slurm(),
@@ -158,6 +162,32 @@ def git_state(repo_root: Path, paths: Sequence[Path]) -> dict[str, object]:
     return {"commit": commit.strip(), "dirty": bool(dirty), "dirty_paths": dirty}
 
 
+def source_state(path: Path) -> dict[str, object]:
+    """A source clone's HEAD and its uncommitted changes: tracked edits make it dirty, untracked files are counted.
+
+    A folder that is not a git clone is a BenchError, since the run could not be tied to the code it ran.
+    """
+    git = shutil.which("git")
+    commit = None if git is None else _quiet([git, "-C", str(path), "rev-parse", "HEAD"])
+    status = None if git is None else _quiet([git, "-C", str(path), "status", "--porcelain", "-z", "--untracked-files=all"])
+    if commit is None or status is None:
+        raise BenchError(f"source {path} is not a git clone (git rev-parse HEAD failed there); clone it with git")
+    entries = _porcelain_entries(status)
+    dirty = sorted(name for code, name in entries if code != "??")
+    return {
+        "path": str(path),
+        "commit": commit.strip(),
+        "dirty": bool(dirty),
+        "dirty_paths": dirty,
+        "untracked": sum(code == "??" for code, _ in entries),
+    }
+
+
+def redact(text: str) -> str:
+    """The text with the credentials of every `scheme://user:token@host` and `scheme://token@host` replaced by `***`."""
+    return CREDENTIALS.sub(r"\1***@", text)
+
+
 def environment_lock(
     python: Path, lock_commands: Sequence[Sequence[str]], env: Mapping[str, str], cwd: Path
 ) -> dict[str, object]:
@@ -167,17 +197,21 @@ def environment_lock(
     """
     version = _output([str(python), "-c", PYTHON_VERSION], env, cwd).strip()
     freeze_command, packages = _freeze(python, env, cwd)
+    conda_meta = _conda_meta(python)
     lock = {
         "python_version": version,
-        "packages": packages,
-        "conda_meta": _conda_meta(python),
+        "packages": [redact(line) for line in packages],
+        "conda_meta": None if conda_meta is None else [redact(line) for line in conda_meta],
         "lock_commands": [
-            {"command": list(command), "output": _output(command, env, cwd, merge_stderr=True)}
+            {
+                "command": [redact(part) for part in command],
+                "output": redact(_output(command, env, cwd, merge_stderr=True)),
+            }
             for command in lock_commands
         ],
     }
     digest = hashlib.sha256(json.dumps(lock, sort_keys=True).encode("utf-8")).hexdigest()
-    return {"python": str(python), "freeze_command": freeze_command, **lock, "sha256": digest}
+    return {"python": str(python), "freeze_command": [redact(part) for part in freeze_command], **lock, "sha256": digest}
 
 
 def environment_variables(env: Mapping[str, str], extra: Iterable[str]) -> dict[str, str | None]:
@@ -346,15 +380,20 @@ def _relative(path: Path, root: Path) -> str | None:
 
 def _porcelain_paths(status: str) -> list[str]:
     """Paths from `git status --porcelain -z`; a rename's original path is the field after it."""
+    return sorted(name for _, name in _porcelain_entries(status))
+
+
+def _porcelain_entries(status: str) -> list[tuple[str, str]]:
+    """(status code, path) from `git status --porcelain -z`; untracked files have the code `??`."""
     fields = iter(status.split("\0"))
-    paths = []
+    entries = []
     for field in fields:
         if not field:
             continue
-        paths.append(field[3:])
+        entries.append((field[:2], field[3:]))
         if field[0] in "RC":
             next(fields, None)
-    return sorted(paths)
+    return entries
 
 
 def _cpu_model() -> str | None:

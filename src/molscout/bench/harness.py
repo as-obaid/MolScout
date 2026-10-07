@@ -16,7 +16,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from time import perf_counter, sleep
 
-from molscout.bench import BenchError, Terminated
+from molscout.bench import BenchError, Terminated, papers
 from molscout.bench.config import RunConfig, load_config
 from molscout.bench.meta import (
     GpuSampler,
@@ -26,10 +26,12 @@ from molscout.bench.meta import (
     environment_variables,
     git_state,
     segment,
+    source_state,
     utc_now,
 )
 from molscout.bench.resume import Checkpoint
 from molscout.data import molfiles, molrecbench
+from molscout.datasets import Kind
 from molscout.hashing import sha256_tree
 from molscout.predictions import Prediction, PredictionsFormatError, read_predictions
 from molscout.runs import score_run
@@ -37,7 +39,13 @@ from molscout.scoring import check_rdkit_version, write_scores
 
 IMAGE_SUFFIXES = frozenset({".png", ".jpg", ".jpeg", ".tif", ".tiff", ".gif", ".bmp"})
 DROPPED_VARIABLES = ("PYTHONPATH", "PYTHONHOME", "VIRTUAL_ENV")
-GIT_PATHS = ("src", "pyproject.toml", "benchmarks/tools/crop_runner.py", "benchmarks/slurm/run.sbatch")
+GIT_PATHS = (
+    "src",
+    "pyproject.toml",
+    "benchmarks/tools/crop_runner.py",
+    "benchmarks/tools/paper_runner.py",
+    "benchmarks/slurm/run.sbatch",
+)
 EXAMPLES_SHOWN = 10
 ERRORS_FILE = "predictions.errors.json"  # what benchmarks/tools/crop_runner.py writes beside predictions.csv
 ERRORS_KEYS = frozenset({"images", "failed", "errors"})
@@ -51,7 +59,7 @@ def run_benchmark(config_path: str | Path, *, repo_root: str | Path, results_roo
     """Run a config's tool, check and score its predictions.csv, and return results/<tool>__<dataset>/.
 
     The folder holds predictions.csv, scores.json, config.yaml, meta.json and, when run.py writes
-    one, errors.json. Any failure raises and leaves an earlier results folder for the same run
+    them, errors.json (and, for a paper dataset, always timing.json). Any failure raises and leaves an earlier results folder for the same run
     untouched. So does SIGTERM (a SLURM time limit or scancel): while the run is in progress it
     raises Terminated, which stops the tool and removes the staging folder.
 
@@ -71,8 +79,15 @@ def _run(config_path: str | Path, repo_root: Path, results_root: Path) -> Path:
     except RuntimeError as exc:
         raise BenchError(str(exc)) from None
     config = load_config(config_path, repo_root)
-    image_ids = check_inputs(config)
-    inputs = {"images": str(config.images), "images_sha256": sha256_tree(config.images)}
+    check_inputs(config)
+    if config.kind is Kind.PAPER:
+        pdfs = papers.paper_pdfs(config)
+        item_ids = frozenset(pdfs)
+        inputs = papers.paper_inputs(config, pdfs)
+    else:
+        item_ids = image_stems(config.images)
+        inputs = {"images": str(config.images), "images_sha256": sha256_tree(config.images)}
+    sources = [source_state(path) for path in config.sources]
     env = tool_environment(config)
     environment = {
         **environment_lock(config.python, config.lock_commands, env, config.run_dir),
@@ -88,11 +103,15 @@ def _run(config_path: str | Path, repo_root: Path, results_root: Path) -> Path:
     staging.mkdir()
     try:
         predictions_path = staging / "predictions.csv"
+        if config.kind is Kind.PAPER:
+            papers.write_paper_list(staging / "papers.csv", pdfs)
+            input_option = ["--papers", str(staging / "papers.csv")]
+        else:
+            input_option = ["--images", str(config.images)]
         command = [
             str(config.python),
             "run.py",
-            "--images",
-            str(config.images),
+            *input_option,
             "--dataset",
             config.dataset,
             "--tool",
@@ -105,27 +124,41 @@ def _run(config_path: str | Path, repo_root: Path, results_root: Path) -> Path:
         ]
         run_tool(command, config, env, checkpoint)
         segments = checkpoint.segments
-        predictions = checked_predictions(predictions_path, config, image_ids)
-        tool_errors = read_tool_errors(staging / ERRORS_FILE, config, image_ids)
+        if config.kind is Kind.PAPER:
+            predictions = papers.checked_paper_predictions(predictions_path, config, item_ids)
+            tool_errors = papers.read_paper_errors(staging / ERRORS_FILE, config.run_name, item_ids)
+            item_seconds = papers.read_timing(staging / papers.TIMING_FILE, config.run_name, item_ids)
+        else:
+            predictions = checked_predictions(predictions_path, config, item_ids)
+            tool_errors = read_tool_errors(staging / ERRORS_FILE, config, item_ids)
+            item_seconds = {p.item_id: p.seconds for p in predictions}
         scoring_clock = perf_counter()
-        report = score_run(predictions_path, dataset=config.dataset, references=config.references)
+        report = _score(config, predictions_path, item_seconds)
         scoring_seconds = perf_counter() - scoring_clock
-        check_references_have_images(report, config, image_ids)
+        if config.kind is Kind.PAPER:
+            papers.check_scored_papers(report, config.run_name, item_ids)
+        else:
+            check_references_have_images(report, config, item_ids)
         write_scores(staging / "scores.json", _as_from_repo_root(report, target, config.references, repo_root))
         (staging / "config.yaml").write_bytes(config.text.encode("utf-8"))
         if tool_errors is not None:
             (staging / ERRORS_FILE).rename(staging / "errors.json")
+        if config.kind is Kind.PAPER:
+            (staging / papers.TIMING_FILE).rename(staging / "timing.json")
+            (staging / "papers.csv").unlink()  # the list given to run.py is an input, not a result
         timing = {
             "started_utc": started,
             "finished_utc": utc_now(),
             "wall_seconds": round(perf_counter() - clock, 3),
             "tool_seconds": round(math.fsum(record["tool_seconds"] for record in segments), 3),
             "scoring_seconds": round(scoring_seconds, 3),
-            "item_seconds_total": math.fsum(p.seconds for p in predictions),
+            "item_seconds_total": math.fsum(item_seconds.values())
+            if config.kind is Kind.PAPER
+            else math.fsum(p.seconds for p in predictions),
         }
         meta = build_meta(
             config,
-            items=len(image_ids),
+            items=len(item_ids),
             tool_errors=tool_errors,
             inputs=inputs,
             git=git,
@@ -134,6 +167,7 @@ def _run(config_path: str | Path, repo_root: Path, results_root: Path) -> Path:
             resources=combined_resources([record["resources"] for record in segments]),
             segments=segments,
             command=command,
+            sources=sources,
         )
         (staging / "meta.json").write_text(json.dumps(meta, indent=2, allow_nan=False) + "\n", encoding="utf-8")
         _move_into_place(staging, target)
@@ -152,8 +186,8 @@ def check_repo_root(repo_root: Path) -> None:
         )
 
 
-def check_inputs(config: RunConfig) -> frozenset[str]:
-    """Check what the run needs before the tool starts; return the crop IDs (image stems)."""
+def check_inputs(config: RunConfig) -> None:
+    """Check what the tool needs before it starts: references, run.py, its Python and its checkpoints."""
     run = config.run_name
     if not config.references.exists():
         raise BenchError(f"{run}: references not found: {config.references}")
@@ -171,7 +205,6 @@ def check_inputs(config: RunConfig) -> frozenset[str]:
                 f"{run}: checkpoint {checkpoint.path} has sha256 {actual}, but the config pins {checkpoint.sha256}; "
                 "restore the pinned weights, or update tool.yaml and regenerate the configs"
             )
-    return image_stems(config.images)
 
 
 def image_stems(directory: Path) -> frozenset[str]:
@@ -354,6 +387,28 @@ def check_references_have_images(report: Mapping[str, object], config: RunConfig
     )
 
 
+def _score(config: RunConfig, predictions_path: Path, item_seconds: Mapping[str, float]) -> dict[str, object]:
+    """score_run for the config's dataset: crops by references folder, BioVista by manifest, Internal by CSVs."""
+    if config.kind is Kind.CROP:
+        return score_run(predictions_path, dataset=config.dataset, references=config.references)
+    assert config.papers is not None
+    if config.dataset == "biovista":
+        return score_run(
+            predictions_path,
+            dataset=config.dataset,
+            references=config.references,
+            papers=config.papers,
+            paper_seconds=item_seconds,
+        )
+    return score_run(
+        predictions_path,
+        dataset=config.dataset,
+        ground_truth=config.references,
+        split=config.papers,
+        paper_seconds=item_seconds,
+    )
+
+
 def _examples(items: Sequence[str]) -> str:
     return ", ".join(items[:EXAMPLES_SHOWN])
 
@@ -365,7 +420,10 @@ def _as_from_repo_root(
     predictions = {**report["predictions"], "path": _shown(target / "predictions.csv", repo_root)}  # type: ignore[dict-item]
     inputs = dict(report["inputs"])  # type: ignore[call-overload]
     if isinstance(inputs.get("references"), Mapping):
-        inputs["references"] = {**inputs["references"], "directory": _shown(references, repo_root)}
+        shown = {**inputs["references"], "directory": _shown(references, repo_root)}
+        if "manifest" in shown:  # BioVista: the papers manifest, as `molscout score --papers` is given it
+            shown["manifest"] = _shown(Path(shown["manifest"]), repo_root)
+        inputs["references"] = shown
     return {**report, "predictions": predictions, "inputs": inputs}
 
 
