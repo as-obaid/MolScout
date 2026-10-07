@@ -248,6 +248,18 @@ def test_consistency_refuses_runs_that_do_not_record_their_commit(repo):
     ]
 
 
+def test_consistency_refuses_runs_of_one_dataset_with_different_pdf_sets(repo):
+    results = two_systems(repo)
+    path = results / "openchemie__biovista" / "meta.json"
+    meta = json.loads(path.read_text())
+    meta["inputs"]["pdfs_sha256"] = "9" * 64
+    path.write_text(json.dumps(meta))
+    problems = check_paper_consistency(load_paper_runs(results))
+    assert len(problems) == 1
+    assert problems[0].startswith("biovista: the tools ran on 2 PDF sets: ")
+    assert problems[0].endswith("999999999999 (openchemie)")
+
+
 def test_consistency_refuses_runs_scored_against_different_references(repo):
     results = two_systems(repo)
     for name, key in (("openchemie__biovista", "references"), ("openchemie__internal", "ground_truth_sha256")):
@@ -347,6 +359,14 @@ def test_a_run_without_resources_leaves_those_keys_out_and_counts_crashed_papers
     [run] = load_paper_runs(repo / "benchmarks" / "results")
     metrics = paper_metrics(run)
     assert not any(key.startswith("resources/") for key in metrics) and metrics["items/crashed"] == 1
+
+
+def test_prepare_warns_once_per_run_with_crashed_papers_and_does_not_refuse(repo, papers_publisher):
+    make_result(repo, "biominer", "biovista", BIOMINER_BIOVISTA, crashed=("3_cccc",))
+    make_result(repo, "openchemie", "biovista", OPENCHEMIE_BIOVISTA)
+    warnings = []
+    papers_publisher.prepare_papers(repo / "benchmarks" / "results", repo, warn=warnings.append)
+    assert warnings == ["biominer__biovista: 1 of 3 papers crashed; their labels count as missed"]
 
 
 def test_paper_rows_hold_every_paper_with_its_drawn_counts(repo):

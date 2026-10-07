@@ -33,6 +33,8 @@ class PaperRun:
     commit: str | None = None
     dirty: bool | None = None
     dirty_paths: tuple[str, ...] = ()
+    crashed: int = 0
+    papers: int = 0
 
     @property
     def name(self) -> str:
@@ -53,6 +55,8 @@ def load_paper_runs(results: Path) -> dict[tuple[str, str], PaperRun]:
         if report["dataset"] != dataset:
             raise ValueError(f"{folder}: folder says {dataset} but scores.json says {report['dataset']}")
         meta = json.loads((folder / "meta.json").read_text(encoding="utf-8"))
+        errors_path = folder / "errors.json"
+        errors = json.loads(errors_path.read_text(encoding="utf-8"))["errors"] if errors_path.is_file() else {}
         runs[(tool, dataset)] = PaperRun(
             tool=tool,
             dataset=dataset,
@@ -62,6 +66,8 @@ def load_paper_runs(results: Path) -> dict[tuple[str, str], PaperRun]:
             commit=meta["git"]["commit"],
             dirty=meta["git"]["dirty"],
             dirty_paths=tuple(meta["git"]["dirty_paths"] or ()),
+            crashed=len(errors),
+            papers=len(report["scores"]["papers"]),
         )
     return runs
 
@@ -73,6 +79,15 @@ def missing_paper_runs(runs: Mapping[tuple[str, str], PaperRun]) -> list[str]:
 def git_warnings(runs: Mapping[tuple[str, str], PaperRun]) -> list[str]:
     """Same checks as Type 1: uncommitted runs, and runs from several commits."""
     return _git_warnings(runs)  # type: ignore[arg-type]
+
+
+def crash_warning(name: str, crashed: int, papers: int) -> str:
+    return f"{name}: {crashed} of {papers} papers crashed; their labels count as missed"
+
+
+def crash_warnings(runs: Mapping[tuple[str, str], PaperRun]) -> list[str]:
+    """One warning per run with crashed papers: they score recall 0, so the table's numbers are deflated."""
+    return [crash_warning(run.name, run.crashed, run.papers) for run in runs.values() if run.crashed]
 
 
 def fill_type2(markdown: str, runs: Mapping[tuple[str, str], PaperRun]) -> str:

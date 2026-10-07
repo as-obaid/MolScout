@@ -32,7 +32,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"make_tables: error: {exc}", file=sys.stderr)
         return 1
     print(f"{len(runs)} runs found, {len(paper_runs)} complete-system runs found")
-    for warning in (*git_warnings(runs), *tables_papers.git_warnings(paper_runs)):
+    for warning in (*git_warnings(runs), *tables_papers.git_warnings(paper_runs), *tables_papers.crash_warnings(paper_runs)):
         print(f"make_tables: warning: {warning}", file=sys.stderr)
     for label, missing in (("missing", missing_runs(runs)), ("missing Type 2", tables_papers.missing_paper_runs(paper_runs))):
         if missing:

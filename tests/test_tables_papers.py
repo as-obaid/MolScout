@@ -10,7 +10,7 @@ from molscout.predictions import Prediction, write_predictions
 from molscout.runs import score_run
 from molscout.scoring import write_scores
 from molscout.tables import fill_type1, load_runs
-from molscout.tables_papers import fill_type2, git_warnings, load_paper_runs, missing_paper_runs
+from molscout.tables_papers import crash_warnings, fill_type2, git_warnings, load_paper_runs, missing_paper_runs
 
 from test_tables import DOC as TYPE1_DOC, H200, real_git, real_hardware
 
@@ -178,6 +178,30 @@ def test_git_warnings_cover_paper_runs(tmp_path):
     meta["git"].update(dirty=True, dirty_paths=["src/x.py"])
     meta_path.write_text(json.dumps(meta))
     assert git_warnings(load_paper_runs(tmp_path)) == ["biominer__biovista ran with uncommitted changes: src/x.py"]
+
+
+def test_crash_warnings_name_each_run_with_crashed_papers(tmp_path):
+    folder = make_paper_run(tmp_path, "biominer", "biovista")
+    make_paper_run(tmp_path, "openchemie", "biovista")
+    (folder / "errors.json").write_text(json.dumps({"papers": 3, "failed": 2, "errors": {"1_aaaa": "E: x", "2_bbbb": "E: y"}}))
+    assert crash_warnings(load_paper_runs(tmp_path)) == [
+        "biominer__biovista: 2 of 3 papers crashed; their labels count as missed"
+    ]
+
+
+def test_make_tables_script_warns_about_crashed_papers(tmp_path):
+    results = tmp_path / "results"
+    results.mkdir()
+    folder = make_paper_run(results, "biominer", "biovista")
+    (folder / "errors.json").write_text(json.dumps({"papers": 3, "failed": 1, "errors": {"1_aaaa": "E: x"}}))
+    doc = tmp_path / "Benchmarking.md"
+    doc.write_text(DOC)
+    script = Path(__file__).parent.parent / "scripts" / "make_tables.py"
+    done = subprocess.run(
+        [sys.executable, str(script), "--results", str(results), "--doc", str(doc)], capture_output=True, text=True
+    )
+    assert done.returncode == 0, done.stderr
+    assert "biominer__biovista: 1 of 3 papers crashed; their labels count as missed" in done.stderr
 
 
 def test_make_tables_script_fills_both_types(tmp_path):

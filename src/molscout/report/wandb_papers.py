@@ -53,6 +53,7 @@ from molscout.report.wandb_publish import (
     run_config,
     run_id,
 )
+from molscout.tables_papers import crash_warning
 
 GROUP = "complete-systems"
 SUMMARY_NAME = "summary-complete-systems"
@@ -87,6 +88,9 @@ def prepare_papers(
         raise InconsistentResults(problems)
     for problem in problems:
         warn(f"allowed for development: {problem}")
+    for run in runs:
+        if run.errors:
+            warn(crash_warning(run.name, len(run.errors), len(run.report["scores"]["papers"])))
     metrics = {(run.tool, run.dataset): paper_metrics(run) for run in runs}
     return PaperBenchmark(runs, metrics, {run.name: _checked_config(run) for run in runs})
 

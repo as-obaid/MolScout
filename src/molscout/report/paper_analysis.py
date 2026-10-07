@@ -171,7 +171,7 @@ def load_paper_runs(root: str | Path) -> tuple[PaperRun, ...]:
 
 def check_paper_consistency(runs: Sequence[PaperRun]) -> list[str]:
     """Why the runs are not one benchmark: several or unknown commits, uncommitted code (ours or an upstream
-    clone's), or different references within a dataset."""
+    clone's), or different references or PDF sets within a dataset."""
     problems = []
     by_commit: dict[str | None, list[str]] = defaultdict(list)
     for run in runs:
@@ -199,6 +199,13 @@ def check_paper_consistency(runs: Sequence[PaperRun]) -> list[str]:
         if len(keys) > 1:
             groups = "; ".join(f"{_short(key)} ({', '.join(tools)})" for key, tools in keys.items())
             problems.append(f"{dataset}: the tools were scored against {len(keys)} reference sets: {groups}")
+    by_pdfs: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
+    for run in runs:
+        by_pdfs[run.dataset][str((run.meta.get("inputs") or {}).get("pdfs_sha256"))].append(run.tool)
+    for dataset, keys in by_pdfs.items():
+        if len(keys) > 1:
+            groups = "; ".join(f"{_short(key)} ({', '.join(tools)})" for key, tools in keys.items())
+            problems.append(f"{dataset}: the tools ran on {len(keys)} PDF sets: {groups}")
     return problems
 
 
