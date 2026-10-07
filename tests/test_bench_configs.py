@@ -7,7 +7,7 @@ import pytest
 import yaml
 
 from molscout.bench.config import load_config
-from molscout.bench.configs import TYPE1_DATASETS, make_configs
+from molscout.bench.configs import TYPE1_DATASETS, TYPE2_DATASETS, make_configs
 
 REPO = Path(__file__).resolve().parents[1]
 SHA = "b" * 64
@@ -30,6 +30,13 @@ EXPECTED_PATHS = {
 
 def write_tool(repo: Path, data: dict) -> Path:
     path = repo / "benchmarks" / "tools" / "structure_readers" / data["tool"] / "tool.yaml"
+    path.parent.mkdir(parents=True)
+    path.write_text(yaml.safe_dump(data, sort_keys=False))
+    return path
+
+
+def write_system(repo: Path, data: dict) -> Path:
+    path = repo / "benchmarks" / "tools" / "complete_systems" / data["tool"] / "tool.yaml"
     path.parent.mkdir(parents=True)
     path.write_text(yaml.safe_dump(data, sort_keys=False))
     return path
@@ -107,8 +114,7 @@ def test_env_and_lock_commands_default_to_empty(tmp_path):
     ],
 )
 def test_bad_tool_yaml_is_rejected(tmp_path, change, message):
-    tool_yaml = tmp_path / "tool.yaml"
-    tool_yaml.write_text(yaml.safe_dump({**TOOL, **change}))
+    tool_yaml = write_tool(tmp_path, {**TOOL, **change})
     with pytest.raises(ValueError, match=message):
         make_configs(tool_yaml, tmp_path / "configs", repo_root=tmp_path)
     assert not (tmp_path / "configs").exists()
@@ -129,3 +135,58 @@ def test_script_writes_configs_for_the_given_tool_yaml(tmp_path, capsys):
     assert script.main([str(tool_yaml), "--out", str(out), "--repo-root", str(tmp_path)]) == 0
     assert sorted(p.name for p in out.iterdir()) == sorted(f"reader__{d}.yaml" for d in EXPECTED_PATHS)
     assert capsys.readouterr().out.count("wrote ") == 5
+
+
+def test_complete_system_tool_yaml_gives_two_paper_configs(tmp_path, monkeypatch):
+    monkeypatch.setenv("STORE", "/store")
+    data = {**TOOL, "tool": "system", "sources": ["${STORE}/src/System"]}
+    out = tmp_path / "configs"
+    written = make_configs(write_system(tmp_path, data), out, repo_root=tmp_path)
+    assert [p.name for p in written] == ["system__biovista.yaml", "system__internal.yaml"]
+    assert list(TYPE2_DATASETS) == ["biovista", "internal"]
+    for path in written:
+        assert path.read_text().splitlines()[0].endswith("benchmarks/tools/complete_systems/system/tool.yaml; edit that file and regenerate.")
+        config = load_config(path, tmp_path)
+        paths = TYPE2_DATASETS[config.dataset]
+        assert config.pdfs == tmp_path / paths.pdfs
+        assert config.references == tmp_path / paths.references
+        assert config.papers == tmp_path / paths.papers
+        assert config.images is None
+        assert config.run_dir == tmp_path / "benchmarks" / "tools" / "complete_systems" / "system"
+        assert config.sources == (Path("/store/src/System"),)
+        keys = list(yaml.safe_load(path.read_text()))
+        assert keys[:5] == ["tool", "name", "version", "dataset", "pdfs"]
+        assert keys[-1] == "sources"
+
+
+def test_type2_dataset_paths_are_verbatim():
+    assert {n: (p.pdfs, p.references, p.papers) for n, p in TYPE2_DATASETS.items()} == {
+        "biovista": ("data/raw/biovista/pdfs", "data/raw/biovista", "data/manifests/biovista_papers.csv"),
+        "internal": (
+            "data/internal",
+            "data/internal/ground_truth_SMILES_confirmed_1,2,4,6,16,19.csv",
+            "data/manifests/internal_split.csv",
+        ),
+    }
+
+
+def test_sources_are_written_only_when_tool_yaml_has_them(tmp_path):
+    path = make_configs(write_tool(tmp_path, TOOL), tmp_path / "configs", repo_root=tmp_path)[0]
+    assert "sources" not in yaml.safe_load(path.read_text())
+
+
+def test_regenerated_type1_configs_are_byte_identical(tmp_path):
+    tool_yaml = REPO / "benchmarks" / "tools" / "structure_readers" / "molscribe" / "tool.yaml"
+    written = make_configs(tool_yaml, tmp_path, repo_root=REPO)
+    assert len(written) == 5
+    for path in written:
+        assert path.read_bytes() == (REPO / "benchmarks" / "configs" / path.name).read_bytes()
+
+
+def test_tool_yaml_outside_the_two_folders_is_refused(tmp_path):
+    tool_yaml = tmp_path / "benchmarks" / "tools" / "elsewhere" / "reader" / "tool.yaml"
+    tool_yaml.parent.mkdir(parents=True)
+    tool_yaml.write_text(yaml.safe_dump(TOOL))
+    with pytest.raises(ValueError, match="structure_readers.*complete_systems"):
+        make_configs(tool_yaml, tmp_path / "configs", repo_root=tmp_path)
+    assert not (tmp_path / "configs").exists()

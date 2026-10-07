@@ -18,16 +18,17 @@ REQUIRED_KEYS = (
     "name",
     "version",
     "dataset",
-    "images",
     "references",
     "run_dir",
     "python",
     "args",
     "checkpoints",
 )
-OPTIONAL_KEYS = ("env", "lock_commands")
+CROP_KEYS = ("images",)
+PAPER_KEYS = ("pdfs", "papers")
+OPTIONAL_KEYS = ("env", "lock_commands", "sources")
 CHECKPOINT_KEYS = ("path", "sha256")
-TEXT_KEYS = ("tool", "name", "version", "dataset", "images", "references", "run_dir", "python")
+TEXT_KEYS = ("tool", "name", "version", "dataset", "references", "run_dir", "python")
 TOOL_NAME = re.compile(r"[a-z0-9_]+")
 SHA256 = re.compile(r"[0-9a-f]{64}")
 VARIABLE_NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
@@ -52,7 +53,9 @@ class RunConfig:
     name: str
     version: str
     dataset: str
-    images: Path
+    images: Path | None
+    pdfs: Path | None
+    papers: Path | None
     references: Path
     run_dir: Path
     python: Path
@@ -60,6 +63,11 @@ class RunConfig:
     checkpoints: tuple[Checkpoint, ...]
     env: Mapping[str, str]
     lock_commands: tuple[tuple[str, ...], ...]
+    sources: tuple[Path, ...]
+
+    @property
+    def kind(self) -> Kind:
+        return dataset_kind(self.dataset)
 
     @property
     def run_name(self) -> str:
@@ -102,6 +110,11 @@ def load_config(path: str | Path, repo_root: str | Path) -> RunConfig:
         tuple(expand(str(part), f"lock_commands[{i}]") for part in command)
         for i, command in enumerate(data.get("lock_commands") or [])
     )
+    sources = tuple(resolve(value, f"sources[{i}]") for i, value in enumerate(data.get("sources") or []))
+
+    def resolve_optional(key: str) -> Path | None:
+        return resolve(data[key], key) if key in data else None
+
     return RunConfig(
         path=path,
         text=text,
@@ -109,7 +122,9 @@ def load_config(path: str | Path, repo_root: str | Path) -> RunConfig:
         name=data["name"],
         version=data["version"],
         dataset=data["dataset"],
-        images=resolve(data["images"], "images"),
+        images=resolve_optional("images"),
+        pdfs=resolve_optional("pdfs"),
+        papers=resolve_optional("papers"),
         references=resolve(data["references"], "references"),
         run_dir=resolve(data["run_dir"], "run_dir"),
         python=resolve(data["python"], "python"),
@@ -117,27 +132,49 @@ def load_config(path: str | Path, repo_root: str | Path) -> RunConfig:
         checkpoints=checkpoints,
         env=MappingProxyType(env),
         lock_commands=lock_commands,
+        sources=sources,
     )
 
 
 def validate_config(data: object, where: str) -> None:
     """Check a config's keys and value types without expanding variables."""
-    check_keys(data, REQUIRED_KEYS, OPTIONAL_KEYS, where)
-    assert isinstance(data, dict)
-    for key in TEXT_KEYS:
-        if not isinstance(data[key], str) or not data[key].strip():
-            raise ValueError(f"{where}: {key} must be a string; quote it if YAML reads it as something else")
-    check_tool_name(data["tool"], where)
+    if not isinstance(data, dict):
+        raise ValueError(f"{where}: expected a YAML mapping")
+    if not isinstance(data.get("dataset"), str):
+        check_keys(data, REQUIRED_KEYS, OPTIONAL_KEYS + CROP_KEYS + PAPER_KEYS, where)
+        raise ValueError(f"{where}: dataset must be a string; quote it if YAML reads it as something else")
     try:
         kind = dataset_kind(data["dataset"])
     except ValueError as exc:
         raise ValueError(f"{where}: {exc}") from None
-    if kind is not Kind.CROP:
-        raise ValueError(f"{where}: {data['dataset']} is a paper dataset; the harness runs crop datasets")
+    own, other = (CROP_KEYS, PAPER_KEYS) if kind is Kind.CROP else (PAPER_KEYS, CROP_KEYS)
+    for key in other:
+        if key in data:
+            raise ValueError(f"{where}: {key} is not allowed on the {kind.value} dataset {data['dataset']}")
+    check_keys(data, REQUIRED_KEYS + own, OPTIONAL_KEYS, where)
+    _text_keys(data, TEXT_KEYS + own, where)
+    check_tool_name(data["tool"], where)
+    _check_sources(data.get("sources"), where)
     _check_args(data["args"], where)
     _check_checkpoints(data["checkpoints"], where)
     _check_env(data.get("env"), where)
     _check_lock_commands(data.get("lock_commands"), where)
+
+
+def _text_keys(data: dict, keys: tuple[str, ...], where: str) -> None:
+    for key in keys:
+        if not isinstance(data[key], str) or not data[key].strip():
+            raise ValueError(f"{where}: {key} must be a string; quote it if YAML reads it as something else")
+
+
+def _check_sources(sources: object, where: str) -> None:
+    if sources is None:
+        return
+    if not isinstance(sources, list) or not sources:
+        raise ValueError(f"{where}: sources must be a non-empty list of folders")
+    for i, source in enumerate(sources):
+        if not isinstance(source, str) or not source.strip():
+            raise ValueError(f"{where}: sources[{i}] must be a non-empty string")
 
 
 def check_keys(data: object, required: tuple[str, ...], optional: tuple[str, ...], where: str) -> None:

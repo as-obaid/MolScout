@@ -6,6 +6,7 @@ import pytest
 import yaml
 
 from molscout.bench.config import Checkpoint, load_config
+from molscout.datasets import Kind
 
 SHA = "a" * 64
 BASE = {
@@ -106,7 +107,6 @@ def test_file_name_must_match_tool_and_dataset(tmp_path, store):
 @pytest.mark.parametrize(
     ("change", "message"),
     [
-        ({"dataset": "biovista"}, "paper dataset"),
         ({"dataset": "nope"}, "unknown dataset 'nope'"),
         ({"checkpoints": [{"path": "model.pt", "sha256": "abc"}]}, "sha256 must be 64 lowercase hex"),
         ({"checkpoints": [{"path": "model.pt", "sha256": SHA, "size": 1}]}, r"unknown key\(s\): size"),
@@ -143,3 +143,65 @@ def test_invalid_yaml_is_a_value_error_naming_the_file(tmp_path):
     path.write_text("tool: [fake\n")
     with pytest.raises(ValueError, match="fake__uspto.yaml"):
         load_config(path, tmp_path)
+
+
+PAPER = {
+    "tool": "fake",
+    "name": "Fake",
+    "version": "1.0 (test)",
+    "dataset": "biovista",
+    "pdfs": "data/pdfs",
+    "references": "data/refs",
+    "papers": "data/papers.csv",
+    "run_dir": "tools/fake",
+    "python": "${STORE}/bin/python",
+    "args": [],
+    "checkpoints": [],
+    "sources": ["${STORE}/src/Fake", "vendor/fake"],
+}
+
+
+def test_paper_config_loads_with_pdfs_and_papers(tmp_path, store):
+    config = load_config(write_config(tmp_path, PAPER), tmp_path)
+    assert config.kind is Kind.PAPER
+    assert config.images is None
+    assert config.pdfs == tmp_path / "data" / "pdfs"
+    assert config.papers == tmp_path / "data" / "papers.csv"
+    assert config.references == tmp_path / "data" / "refs"
+    assert config.sources == (store / "src" / "Fake", tmp_path / "vendor" / "fake")
+
+
+def test_crop_config_has_kind_crop_and_no_sources(tmp_path, store):
+    config = load_config(write_config(tmp_path, BASE), tmp_path)
+    assert config.kind is Kind.CROP
+    assert (config.pdfs, config.papers, config.sources) == (None, None, ())
+
+
+@pytest.mark.parametrize("key", ["pdfs", "papers"])
+def test_paper_config_needs_pdfs_and_papers(tmp_path, store, key):
+    data = {k: v for k, v in PAPER.items() if k != key}
+    with pytest.raises(ValueError, match=rf"missing key\(s\): {key}"):
+        load_config(write_config(tmp_path, data), tmp_path)
+
+
+@pytest.mark.parametrize("key", ["pdfs", "papers"])
+def test_crop_config_refuses_pdfs(tmp_path, store, key):
+    with pytest.raises(ValueError, match=rf"{key}.*crop dataset"):
+        load_config(write_config(tmp_path, {**BASE, key: "data/x"}), tmp_path)
+
+
+def test_paper_config_refuses_images(tmp_path, store):
+    with pytest.raises(ValueError, match="images.*paper dataset"):
+        load_config(write_config(tmp_path, {**PAPER, "images": "data/images"}), tmp_path)
+
+
+def test_crop_config_still_needs_images(tmp_path, store):
+    data = {k: v for k, v in BASE.items() if k != "images"}
+    with pytest.raises(ValueError, match=r"missing key\(s\): images"):
+        load_config(write_config(tmp_path, data), tmp_path)
+
+
+@pytest.mark.parametrize("sources", ["src/Fake", [], ["ok", ""], ["ok", 3], [["a"]]])
+def test_sources_must_be_a_list_of_strings(tmp_path, store, sources):
+    with pytest.raises(ValueError, match="sources"):
+        load_config(write_config(tmp_path, {**PAPER, "sources": sources}), tmp_path)
