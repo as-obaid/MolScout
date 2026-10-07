@@ -17,6 +17,7 @@ import math
 import operator
 import os
 import signal
+import socket
 import sys
 from pathlib import Path
 from time import perf_counter
@@ -103,18 +104,22 @@ def run_papers(predict, args, *, warmup=True):
     of the three files is written.
 
     With --resume, each finished paper appends its rows to the checkpoint CSV and then one line
-    {"item_id", "seconds", "rows", "error"} to <checkpoint stem>.papers.jsonl; that line marks the
-    paper done. Failures in a row are held back until a paper succeeds, so the papers behind a
-    stop for failures run again. SIGTERM exits with status 143. The checkpoint is never deleted.
+    {"item_id", "seconds", "rows", "error", "host"} to <checkpoint stem>.papers.jsonl; that line
+    marks the paper done. Before predicting a paper, an {"item_id", "attempted": true} line goes
+    to the same log. Failures in a row are held back until a paper succeeds, so the papers behind
+    a stop for failures run again. On that rerun a paper that was attempted before and fails
+    again is recorded as failed at once and does not count toward the streak, so a deterministic
+    failure cannot block the run for good; a fresh streak of first attempts still stops it.
+    SIGTERM exits with status 143. The checkpoint is never deleted.
     """
     papers = read_papers(args.papers)
     checkpoint = getattr(args, "resume", None)
     if not checkpoint:
-        return _run(predict, args, papers, {}, lambda finished: None, warmup)
+        return _run(predict, args, papers, {}, lambda finished: None, lambda paper: None, set(), warmup)
     checkpoint = Path(checkpoint)
     previous = signal.signal(signal.SIGTERM, _exit_143)
     try:
-        done = _resume(checkpoint, papers)
+        done, attempted = _resume(checkpoint, papers)
         log = papers_log_path(checkpoint)
         with checkpoint.open("a", newline="", encoding="utf-8") as rows, log.open("a", encoding="utf-8") as lines:
             writer = csv.writer(rows)
@@ -125,13 +130,17 @@ def run_papers(predict, args, *, warmup=True):
                 lines.write(_log_line(finished) + "\n")  # the line is what marks the paper done
                 lines.flush()
 
-            return _run(predict, args, papers, done, append, warmup)
+            def attempt(paper):
+                lines.write(json.dumps({"item_id": paper.paper_id, "attempted": True}) + "\n")
+                lines.flush()
+
+            return _run(predict, args, papers, done, append, attempt, attempted, warmup)
     finally:
         signal.signal(signal.SIGTERM, signal.SIG_DFL if previous is None else previous)
 
 
-def _run(predict, args, papers, done, append, warmup):
-    """run_papers after the papers already done (paper ID -> finished record) are known."""
+def _run(predict, args, papers, done, append, attempt, attempted, warmup):
+    """run_papers after the papers already done (paper ID -> finished record) and attempted are known."""
     output = Path(args.output)
     part = Path(f"{output}.part")
     if done:
@@ -151,13 +160,18 @@ def _run(predict, args, papers, done, append, warmup):
             for count, paper in enumerate(papers, 1):
                 finished = done.get(paper.paper_id)
                 if finished is None:
+                    attempt(paper)
                     finished = _predict(predict, paper, args)
-                    streak.append(finished)
                     if finished["error"] is None:
+                        streak.append(finished)
                         for held in streak:
                             append(held)
                         streak = []
+                    elif paper.paper_id in attempted:  # failed in an earlier segment too: final, not a streak
+                        print(f"{paper.paper_id}: {finished['error']} (failed again on resume)", file=sys.stderr)
+                        append(finished)
                     else:
+                        streak.append(finished)
                         print(f"{paper.paper_id}: {finished['error']}", file=sys.stderr)
                         if len(streak) >= MAX_CONSECUTIVE_FAILURES:
                             raise RuntimeError(
@@ -201,7 +215,9 @@ def _predict(predict, paper, args):
         ]
         for m in molecules
     ]
-    return {"item_id": paper.paper_id, "seconds": seconds, "rows": rows, "error": error}
+    return {
+        "item_id": paper.paper_id, "seconds": seconds, "rows": rows, "error": error, "host": socket.gethostname(),
+    }
 
 
 def _check(molecule):
@@ -223,12 +239,13 @@ def _check(molecule):
 def _log_line(finished):
     return json.dumps(
         {"item_id": finished["item_id"], "seconds": finished["seconds"],
-         "rows": len(finished["rows"]), "error": finished["error"]}
+         "rows": len(finished["rows"]), "error": finished["error"], "host": finished.get("host")}
     )
 
 
 def _resume(checkpoint, papers):
-    """The papers already done in a checkpoint (paper ID -> finished record).
+    """(done, attempted): the papers already done in a checkpoint (paper ID -> finished record), and
+    the IDs of papers with an "attempted" log line that are not done.
 
     A paper is done when its log line is complete and its row count equals the rows the CSV holds
     for it. Rows of papers not done and a last line that a kill cut short are dropped, and both
@@ -245,12 +262,15 @@ def _resume(checkpoint, papers):
         held.setdefault(row[1], []).append(row)
     log = papers_log_path(checkpoint)
     lines = log.read_text(encoding="utf-8").split("\n")[:-1] if log.exists() else []
-    entries = {}
+    entries, tried = {}, set()
     for line in lines:  # split leaves "" after the last newline, or a line cut short: [:-1] drops it
         entry = json.loads(line)
         if entry["item_id"] not in ids:
             raise ValueError(f"{log} has a line for paper {entry['item_id']!r}, which is not in the papers list")
-        entries[entry["item_id"]] = entry
+        if entry.get("attempted"):
+            tried.add(entry["item_id"])
+        else:
+            entries[entry["item_id"]] = entry
     done = {}
     for paper in papers:
         entry = entries.get(paper.paper_id)
@@ -258,9 +278,13 @@ def _resume(checkpoint, papers):
         if entry is not None and entry["rows"] == len(rows):
             done[paper.paper_id] = {
                 "item_id": paper.paper_id, "seconds": entry["seconds"], "rows": rows, "error": entry["error"],
+                "host": entry.get("host"),
             }
     table = io.StringIO()
     csv.writer(table).writerows([COLUMNS, *(row for finished in done.values() for row in finished["rows"])])
     _replace(checkpoint, table.getvalue())
-    _replace(log, "".join(_log_line(finished) + "\n" for finished in done.values()))
-    return done
+    attempted = {pid for pid in tried if pid not in done}
+    kept = [_log_line(finished) for finished in done.values()]
+    kept += [json.dumps({"item_id": pid, "attempted": True}) for pid in sorted(attempted)]
+    _replace(log, "".join(line + "\n" for line in kept))
+    return done, attempted

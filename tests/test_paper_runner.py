@@ -4,6 +4,7 @@ import csv
 import json
 import os
 import signal
+import socket
 import sys
 from pathlib import Path
 
@@ -49,6 +50,14 @@ def fake(answers=ANSWERS, fail=(), calls=None):
         return answers[paper.paper_id]
 
     return predict
+
+
+def log_lines(checkpoint):
+    return [json.loads(line) for line in paper_runner.papers_log_path(checkpoint).read_text().splitlines()]
+
+
+def done_lines(checkpoint):
+    return [entry for entry in log_lines(checkpoint) if not entry.get("attempted")]
 
 
 def rows_of(path):
@@ -158,6 +167,7 @@ def test_resume_drops_rows_of_unfinished_paper(tmp_path):
     paper_runner.run_papers(fake(), parse(listing, tmp_path / "a.csv", checkpoint), warmup=False)
     log = paper_runner.papers_log_path(checkpoint)
     lines = log.read_text().splitlines(keepends=True)
+    lines = [line for line in lines if '"attempted"' not in line]
     log.write_text(lines[0] + lines[1][: len(lines[1]) // 2])  # p1 done; p2's line cut short; p3 has rows, no line
     calls = []
     paper_runner.run_papers(fake(calls=calls), parse(listing, tmp_path / "b.csv", checkpoint), warmup=False)
@@ -183,7 +193,7 @@ def test_sigterm_exits_143_and_keeps_finished_papers(tmp_path):
     with pytest.raises(SystemExit) as stop:
         paper_runner.run_papers(terminated, parse(listing, tmp_path / "a.csv", checkpoint), warmup=False)
     assert stop.value.code == 143
-    done = [json.loads(line)["item_id"] for line in paper_runner.papers_log_path(checkpoint).read_text().splitlines()]
+    done = [entry["item_id"] for entry in done_lines(checkpoint)]
     assert done == ["p1"]
 
 
@@ -193,7 +203,7 @@ def test_resume_holds_back_a_stopping_streak_and_runs_those_papers_again(tmp_pat
     answers = {"p0": [Molecule("C")], **{p: [Molecule("N")] for p in ids[1:]}}
     with pytest.raises(RuntimeError, match="in a row"):
         paper_runner.run_papers(fake(answers, fail=set(ids[1:])), parse(listing, tmp_path / "a.csv", checkpoint), warmup=False)
-    done = [json.loads(line)["item_id"] for line in paper_runner.papers_log_path(checkpoint).read_text().splitlines()]
+    done = [entry["item_id"] for entry in done_lines(checkpoint)]
     assert done == ["p0"]
     calls = []
     paper_runner.run_papers(fake(answers, calls=calls), parse(listing, tmp_path / "b.csv", checkpoint), warmup=False)
@@ -204,7 +214,7 @@ def test_resume_logs_failures_once_a_paper_succeeds_and_does_not_rerun_them(tmp_
     listing, checkpoint = make_papers(tmp_path), tmp_path / "checkpoint.csv"
     out = tmp_path / "a.csv"
     assert paper_runner.run_papers(fake(fail={"p1", "p2"}), parse(listing, out, checkpoint), warmup=False) == 2
-    entries = [json.loads(line) for line in paper_runner.papers_log_path(checkpoint).read_text().splitlines()]
+    entries = done_lines(checkpoint)
     assert [(e["item_id"], e["rows"], e["error"]) for e in entries] == [
         ("p1", 0, "RuntimeError: boom p1"),
         ("p2", 0, "RuntimeError: boom p2"),
@@ -214,6 +224,67 @@ def test_resume_logs_failures_once_a_paper_succeeds_and_does_not_rerun_them(tmp_
     paper_runner.run_papers(fake(fail={"p1", "p2"}, calls=calls), parse(listing, tmp_path / "b.csv", checkpoint))
     assert calls == []
     assert json.loads(paper_runner.errors_path(tmp_path / "b.csv").read_text())["failed"] == 2
+
+
+def streak_setup(tmp_path):
+    ids = [f"p{i}" for i in range(paper_runner.MAX_CONSECUTIVE_FAILURES + 2)]
+    answers = {p: [Molecule("N")] for p in ids}
+    return ids, make_papers(tmp_path, ids), tmp_path / "checkpoint.csv", answers
+
+
+def test_a_deterministic_streak_is_recorded_as_failed_on_resume(tmp_path):
+    ids, listing, checkpoint, answers = streak_setup(tmp_path)
+    streak = set(ids[: paper_runner.MAX_CONSECUTIVE_FAILURES])
+    with pytest.raises(RuntimeError, match="in a row"):
+        paper_runner.run_papers(fake(answers, fail=streak), parse(listing, tmp_path / "a.csv", checkpoint), warmup=False)
+    assert done_lines(checkpoint) == []
+    assert [e["item_id"] for e in log_lines(checkpoint)] == ids[: paper_runner.MAX_CONSECUTIVE_FAILURES]
+    out = tmp_path / "b.csv"
+    assert paper_runner.run_papers(fake(answers, fail=streak), parse(listing, out, checkpoint), warmup=False) == len(streak)
+    errors = json.loads(paper_runner.errors_path(out).read_text())
+    assert errors["failed"] == len(streak) and set(errors["errors"]) == streak
+    assert set(json.loads(paper_runner.timing_path(out).read_text())["seconds"]) == set(ids)
+    assert {row[0] for row in rows_of(out)} == set(ids) - streak
+
+
+def test_a_transient_streak_yields_its_molecules_on_resume(tmp_path):
+    ids, listing, checkpoint, answers = streak_setup(tmp_path)
+    streak = set(ids[: paper_runner.MAX_CONSECUTIVE_FAILURES])
+    with pytest.raises(RuntimeError, match="in a row"):
+        paper_runner.run_papers(fake(answers, fail=streak), parse(listing, tmp_path / "a.csv", checkpoint), warmup=False)
+    out = tmp_path / "b.csv"
+    assert paper_runner.run_papers(fake(answers), parse(listing, out, checkpoint), warmup=False) == 0
+    assert json.loads(paper_runner.errors_path(out).read_text())["errors"] == {}
+    assert {row[0] for row in rows_of(out)} == set(ids)
+
+
+def test_a_fresh_streak_on_resume_still_stops_the_run(tmp_path):
+    n = paper_runner.MAX_CONSECUTIVE_FAILURES
+    ids = [f"p{i}" for i in range(2 * n)]
+    listing, checkpoint = make_papers(tmp_path, ids), tmp_path / "checkpoint.csv"
+    answers = {p: [Molecule("N")] for p in ids}
+    with pytest.raises(RuntimeError, match="in a row"):
+        paper_runner.run_papers(fake(answers, fail=set(ids[:n])), parse(listing, tmp_path / "a.csv", checkpoint), warmup=False)
+    calls = []
+    with pytest.raises(RuntimeError, match="in a row"):  # the first n fail again (final); the next n are first attempts
+        paper_runner.run_papers(
+            fake(answers, fail=set(ids), calls=calls), parse(listing, tmp_path / "b.csv", checkpoint), warmup=False
+        )
+    assert calls == ids
+    assert [e["item_id"] for e in done_lines(checkpoint)] == ids[:n]
+
+
+def test_done_lines_name_the_host_and_attempts_are_logged_before_the_paper_runs(tmp_path):
+    listing, checkpoint = make_papers(tmp_path), tmp_path / "checkpoint.csv"
+    seen = []
+
+    def spy(paper):
+        seen.append([e["item_id"] for e in log_lines(checkpoint) if e.get("attempted")])
+        return ANSWERS[paper.paper_id]
+
+    paper_runner.run_papers(spy, parse(listing, tmp_path / "a.csv", checkpoint), warmup=False)
+    assert seen == [["p1"], ["p1", "p2"], ["p1", "p2", "p3"]]
+    assert {e["host"] for e in done_lines(checkpoint)} == {socket.gethostname()}
 
 
 class IndexLike:

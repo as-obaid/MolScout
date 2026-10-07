@@ -4,7 +4,7 @@
 # done: results at HEAD with no uncommitted changes. running: claimed by a live job. failed: given up
 # after 2 failures at HEAD. partial: a checkpoint is left. stale: results a worker will redo.
 # Checkpoint rows are counted by line; a complete system (paper config) shows its finished papers, counted
-# from .checkpoints/<run>/predictions.papers.jsonl.
+# from .checkpoints/<run>/predictions.papers.jsonl (lines marking an attempt are not counted).
 set -euo pipefail
 kind=${1:-both}
 case $kind in
@@ -64,7 +64,7 @@ print(git.get("commit") or "unknown", "dirty" if git.get("dirty") is not False e
         state=pending
     fi
     if [ -n "$papers" ]; then
-        if [ -f "${checkpoint%.csv}.papers.jsonl" ]; then add "$(grep -c . "${checkpoint%.csv}.papers.jsonl" || true) papers"; fi
+        if [ -f "${checkpoint%.csv}.papers.jsonl" ]; then add "$(grep -v '"attempted"' "${checkpoint%.csv}.papers.jsonl" | grep -c . || true) papers"; fi
     elif [ -f "$checkpoint" ]; then
         rows=$(($(wc -l < "$checkpoint") - 1))
         add "$((rows > 0 ? rows : 0))/$(images "$config") rows"
