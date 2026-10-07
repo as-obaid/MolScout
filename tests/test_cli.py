@@ -265,3 +265,93 @@ def test_unwritable_output_is_reported(tmp_path, capsys):
 def test_unreadable_predictions_are_reported(tmp_path, capsys):
     assert main(["score", str(tmp_path), *map(str, CROP_ARGS), "-o", str(tmp_path / "scores.json")]) == 1
     assert "molscout score: error:" in capsys.readouterr().err
+
+
+BIOVISTA = Path(__file__).parent / "fixtures" / "biovista"
+BIOVISTA_PREDICTIONS = (
+    ("1_aaaa", ("CCO", "OCC", "C1CC", "CCCCl")),
+    ("2_bbbb", ("CCN", "CCO")),
+    ("3_cccc", ("CCCl",)),
+)
+
+
+def biovista_predictions(directory, rows=BIOVISTA_PREDICTIONS):
+    path = directory / "predictions.csv"
+    lines = [HEADER] + [f"biovista,{paper},{s},1,,,T 1,1" for paper, smiles in rows for s in smiles]
+    path.write_text("\n".join(lines) + "\n")
+    return path
+
+
+def score_biovista(directory, *args, rows=BIOVISTA_PREDICTIONS):
+    return score(
+        directory,
+        biovista_predictions(directory, rows),
+        "--references",
+        BIOVISTA,
+        "--papers",
+        BIOVISTA / "manifest.csv",
+        *args,
+    )
+
+
+@pytest.fixture(scope="module")
+def biovista(tmp_path_factory):
+    return score_biovista(tmp_path_factory.mktemp("biovista"))
+
+
+def group_counts(record):
+    return {k: record["counts"][k] for k in ("tp", "fp", "fn")}
+
+
+def test_score_biovista_views_and_groups(biovista):
+    scores = biovista["scores"]
+    assert group_counts(scores["groups"]["all"]) == {"tp": 4, "fp": 2, "fn": 1}
+    assert group_counts(scores["groups"]["without_submitted"]) == {"tp": 3, "fp": 1, "fn": 1}
+    assert "ignored_outputs" not in scores["groups"]["all"]
+    drawn = scores["drawn_only"]
+    assert set(drawn["papers"]) == {"1_aaaa", "2_bbbb"}
+    assert group_counts(drawn["groups"]["all"]) == {"tp": 2, "fp": 2, "fn": 1}
+    assert drawn["groups"]["all"]["ignored_outputs"] == 1
+    assert group_counts(drawn["groups"]["without_submitted"]) == {"tp": 1, "fp": 1, "fn": 1}
+    assert drawn["groups"]["without_submitted"]["ignored_outputs"] == 1
+
+
+def test_biovista_report_records_inputs(biovista):
+    references = biovista["inputs"]["references"]
+    assert references["directory"] == str(BIOVISTA)
+    assert references["manifest"] == str(BIOVISTA / "manifest.csv")
+    assert references["manifest_sha256"] == sha256(BIOVISTA / "manifest.csv")
+    assert (references["papers"], references["papers_without_submitted"], references["labels"]) == (3, 2, 7)
+    assert references["unreadable"] == {
+        "1_aaaa:4": "NA: the label has no SMILES",
+        "2_bbbb:3": "RDKit cannot parse it; text after whitespace is part of the SMILES",
+    }
+    assert references["drawn_only"] == {"papers": 2, "labels": 3, "papers_without_drawn": ["3_cccc"]}
+    assert len(references["sha256"]) == 64
+
+
+def test_biovista_paper_seconds(tmp_path):
+    seconds = tmp_path / "timing.json"
+    seconds.write_text('{"papers": 3, "seconds": {"1_aaaa": 2, "2_bbbb": 4, "3_cccc": 6}}')
+    report = score_biovista(tmp_path, "--paper-seconds", seconds)
+    assert report["scores"]["seconds_per_item"] == {"mean": 4.0, "median": 4.0, "items": 3, "total": 12.0}
+
+
+def test_biovista_prediction_for_an_unscored_paper_is_an_error(tmp_path, capsys):
+    seconds = tmp_path / "timing.json"
+    seconds.write_text('{"papers": 3, "seconds": {"1_aaaa": 2, "2_bbbb": 4, "3_cccc": 6}}')
+    predictions = biovista_predictions(tmp_path, (*BIOVISTA_PREDICTIONS, ("4_dddd", ("CCO",))))
+    args = ["score", str(predictions), "-o", str(tmp_path / "s.json"), "--references", str(BIOVISTA)]
+    args += ["--papers", str(BIOVISTA / "manifest.csv"), "--paper-seconds", str(seconds)]
+    assert main(args) == 1
+    assert "4_dddd" in capsys.readouterr().err
+
+
+def test_paper_seconds_must_be_consistent(tmp_path, capsys):
+    seconds = tmp_path / "timing.json"
+    seconds.write_text('{"papers": 2, "seconds": {"1_aaaa": 2}}')
+    predictions = biovista_predictions(tmp_path)
+    args = ["score", str(predictions), "-o", str(tmp_path / "s.json"), "--references", str(BIOVISTA)]
+    args += ["--papers", str(BIOVISTA / "manifest.csv"), "--paper-seconds", str(seconds)]
+    assert main(args) == 1
+    assert "papers" in capsys.readouterr().err

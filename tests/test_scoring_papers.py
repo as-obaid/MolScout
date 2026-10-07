@@ -1,7 +1,7 @@
 import pytest
 
 from molscout.predictions import Prediction
-from molscout.scoring.papers import score_papers
+from molscout.scoring.papers import count_paper, score_papers
 
 
 def row(paper, smiles):
@@ -139,3 +139,43 @@ def test_unparsable_reference_raises_with_paper():
 def test_non_ascii_digits_in_paper_ids_do_not_crash():
     papers = score_papers([], {"\u00b2": ["CCO"], "10": ["CCO"], "9": ["CCO"]})["papers"]
     assert list(papers) == ["9", "10", "\u00b2"]
+
+
+def test_ignored_output_is_neither_tp_nor_fp():
+    result = count_paper(["CCO", "CCCl"], ["CCO"], ignored=["CCCl"])
+    assert (result.stereo_aware.tp, result.stereo_aware.fp, result.stereo_aware.fn) == (1, 0, 0)
+    assert result.ignored_outputs == 1
+
+
+def test_ignored_that_is_also_a_reference_still_counts_as_tp():
+    result = count_paper(["CCO"], ["CCO"], ignored=["CCO"])
+    assert (result.stereo_aware.tp, result.stereo_aware.fp, result.stereo_aware.fn) == (1, 0, 0)
+    assert result.ignored_outputs == 0
+
+
+def test_ignored_applies_per_view():
+    result = count_paper(["C[C@H](N)O"], ["CC"], ignored=["CC(N)O"])
+    assert result.stereo_aware.fp == 1
+    assert result.stereo_stripped.fp == 0
+    assert result.ignored_outputs == 0
+
+
+def test_unparsable_ignored_structure_is_an_error():
+    with pytest.raises(ValueError, match="ignored"):
+        count_paper(["CCO"], ["CCO"], ignored=["not_a_smiles"])
+
+
+def test_no_ignored_leaves_records_unchanged():
+    report = score_papers([row("1", "CCO")], {"1": ["CCO"]})
+    assert "ignored_outputs" not in report["papers"]["1"]
+    assert "ignored_outputs" not in report["groups"]["all"]
+
+
+def test_score_papers_with_ignored_reports_counts_per_paper_and_group():
+    report = score_papers(
+        [row("1", "CCO"), row("1", "CCCl"), row("2", "CC")], {"1": ["CCO"], "2": ["CC"]}, ignored={"1": ["CCCl"], "2": []}
+    )
+    assert report["papers"]["1"]["ignored_outputs"] == 1
+    assert report["papers"]["2"]["ignored_outputs"] == 0
+    assert report["groups"]["all"]["ignored_outputs"] == 1
+    assert report["groups"]["all"]["counts"] == {"tp": 2, "fp": 0, "fn": 0}

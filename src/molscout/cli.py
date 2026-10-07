@@ -10,7 +10,8 @@ from pathlib import Path
 from molscout.bench import BenchError, Terminated
 from molscout.bench.harness import run_benchmark
 from molscout.data.internal import GROUND_TRUTH_PATH, SPLIT_PATH
-from molscout.runs import score_run
+from molscout.data.biovista_truth import BIOVISTA_PAPERS_PATH
+from molscout.runs import read_paper_seconds, score_run
 from molscout.scoring import write_scores
 
 
@@ -24,10 +25,13 @@ def main(argv: list[str] | None = None) -> int:
     score.add_argument(
         "--references",
         type=Path,
-        help="crop datasets: directory of reference .mol/.sdf files, or the MolRecBench-Wild root",
+        help="crop datasets: directory of reference .mol/.sdf files, or the MolRecBench-Wild root; "
+        "BioVista: the dataset root (data/raw/biovista)",
     )
     score.add_argument("--ground-truth", type=Path, default=GROUND_TRUTH_PATH, help="internal: ground-truth CSV")
     score.add_argument("--split", type=Path, default=SPLIT_PATH, help="internal: dev/test split manifest")
+    score.add_argument("--papers", type=Path, default=BIOVISTA_PAPERS_PATH, help="BioVista: frozen paper manifest")
+    score.add_argument("--paper-seconds", type=Path, help="paper datasets: a run's timing.json, for seconds per paper")
     bench = commands.add_parser("bench", help="run one tool on one crop dataset, then score and record the run")
     bench.add_argument("config", type=Path, help="benchmarks/configs/<tool>__<dataset>.yaml")
     bench.add_argument(
@@ -53,6 +57,8 @@ def _score(args: argparse.Namespace) -> dict[str, object]:
         references=args.references,
         ground_truth=args.ground_truth,
         split=args.split,
+        papers=args.papers,
+        paper_seconds=None if args.paper_seconds is None else read_paper_seconds(args.paper_seconds),
     )
 
 

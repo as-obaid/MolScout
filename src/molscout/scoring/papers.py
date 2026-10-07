@@ -37,30 +37,42 @@ class PaperResult:
     invalid_outputs: int
     rows: int
     invalid_rows: int
+    ignored_outputs: int | None = None
 
 
-def count_paper(predicted: Sequence[str], reference: Sequence[str]) -> PaperResult:
+def count_paper(
+    predicted: Sequence[str], reference: Sequence[str], ignored: Collection[str] | None = None
+) -> PaperResult:
     """Match one paper's predicted SMILES against its reference SMILES.
 
     Both sides collapse to unique canonical SMILES. Each distinct unparsable
     output, compared after trimming whitespace, is one false positive.
+
+    `ignored` lists structures that are neither right nor wrong to output. In each view an
+    output that matches one of them and no reference is dropped before counting;
+    `ignored_outputs` is the stereo-aware number dropped. Without `ignored` the result has no
+    such count.
     """
-    truth = set()
-    for smiles in reference:
-        canonical = canonical_smiles(smiles)
-        if canonical is None:
-            raise ValueError(f"reference SMILES {smiles!r} cannot be parsed by RDKit")
-        truth.add(canonical)
+    truth = _canonical_set(reference, "reference")
+    skip = None if ignored is None else _canonical_set(ignored, "ignored")
     parsed = [(smiles, canonical_smiles(smiles)) for smiles in predicted]
     found = {canonical for _, canonical in parsed if canonical is not None}
     invalid = {smiles.strip() for smiles, canonical in parsed if canonical is None}
+    found_stripped, truth_stripped = _stripped(found), _stripped(truth)
+    dropped = 0
+    if skip is not None:
+        skipped = skip - truth
+        dropped = len(found & skipped)
+        found = found - skipped
+        found_stripped = found_stripped - (_stripped(skip) - truth_stripped)
     return PaperResult(
         stereo_aware=_counts(found, truth, len(invalid)),
-        stereo_stripped=_counts(_stripped(found), _stripped(truth), len(invalid)),
+        stereo_stripped=_counts(found_stripped, truth_stripped, len(invalid)),
         valid_outputs=len(found),
         invalid_outputs=len(invalid),
         rows=len(parsed),
         invalid_rows=sum(canonical is None for _, canonical in parsed),
+        ignored_outputs=None if skip is None else dropped,
     )
 
 
@@ -68,11 +80,14 @@ def score_papers(
     predictions: Sequence[Prediction],
     references: Mapping[str, Sequence[str]],
     groups: Mapping[str, Collection[str]] | None = None,
+    ignored: Mapping[str, Collection[str]] | None = None,
 ) -> dict[str, object]:
     """Score whole-PDF predictions per paper, then pool them for each group of papers.
 
     `references` maps paper ID to its reference SMILES. `groups` names the sets of
-    papers to report, such as dev, test and all; the default is one group, "all".
+    papers to report, such as dev, test and all; the default is one group, "all". `ignored` maps
+    paper ID to structures that are not counted when output (see `count_paper`); with it every
+    paper and group record also carries `ignored_outputs`.
     """
     predicted: dict[str, list[str]] = defaultdict(list)
     for prediction in predictions:
@@ -92,7 +107,9 @@ def score_papers(
     results: dict[str, PaperResult] = {}
     for paper in _ordered(references):
         try:
-            results[paper] = count_paper(predicted.get(paper, []), references[paper])
+            results[paper] = count_paper(
+                predicted.get(paper, []), references[paper], None if ignored is None else ignored.get(paper, ())
+            )
         except ValueError as exc:
             raise ValueError(f"paper {paper!r}: {exc}") from exc
     return {
@@ -100,6 +117,16 @@ def score_papers(
         "papers": {paper: _paper_record(result) for paper, result in results.items()},
         "groups": {name: _group_record(_ordered(papers), results) for name, papers in named.items()},
     }
+
+
+def _canonical_set(smiles_list: Iterable[str], role: str) -> set[str]:
+    canonicals = set()
+    for smiles in smiles_list:
+        canonical = canonical_smiles(smiles)
+        if canonical is None:
+            raise ValueError(f"{role} SMILES {smiles!r} cannot be parsed by RDKit")
+        canonicals.add(canonical)
+    return canonicals
 
 
 def _counts(found: set[str], truth: set[str], invalid: int) -> PaperCounts:
@@ -129,6 +156,7 @@ def _paper_record(result: PaperResult) -> dict[str, object]:
         "invalid_outputs": result.invalid_outputs,
         "rows": result.rows,
         "invalid_rows": result.invalid_rows,
+        **({} if result.ignored_outputs is None else {"ignored_outputs": result.ignored_outputs}),
     }
 
 
@@ -165,4 +193,11 @@ def _group_record(papers: list[str], results: Mapping[str, PaperResult]) -> dict
         "stereo_stripped": {"counts": {"tp": stripped.tp, "fp": stripped.fp, "fn": stripped.fn}, **_micro(stripped)},
         "valid_output_rate": proportion(rows - invalid_rows, rows),
         "papers_without_output": sum(r.rows == 0 for r in members),
+        **_ignored_record(members),
     }
+
+
+def _ignored_record(members: Sequence[PaperResult]) -> dict[str, object]:
+    if all(r.ignored_outputs is None for r in members):
+        return {}
+    return {"ignored_outputs": sum(r.ignored_outputs or 0 for r in members)}
