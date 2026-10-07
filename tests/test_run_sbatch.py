@@ -354,3 +354,12 @@ def test_gives_up_after_three_excluded_nodes(worker):
     assert result.returncode == 1
     assert "giving up" in result.stdout
     assert worker.calls() == [] and worker.sbatch() == []
+
+
+def test_a_refused_bad_gpu_resubmission_fails_the_worker(worker):
+    gpu_job(worker, smi=GPU_BROKEN)
+    (worker.fake / "sbatch.refuse").touch()
+    result = worker.run("a b")
+    assert result.returncode == 1
+    assert "resubmit failed: sbatch: error: QOSMaxSubmitJobPerUserLimit" in result.stdout
+    assert worker.calls() == []

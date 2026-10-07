@@ -74,11 +74,19 @@ if [ "$kind" = structure-readers ]; then
             *) gpu+=("$config") ;;
         esac
     done <<< "$estimates"
-    submit gpu 4 08:00:00 gpu:h200:1 molscout-gpu "" "${gpu[@]}"
-    submit gpu-short 2 02:00:00 gpu:h200:1 molscout-gpu-short "" "${gpu[@]}"
-    submit gpu-interactive 2 02:00:00 gpu:h200:1 molscout-gpu-interactive "" "${gpu[@]}"
-    submit sharing 2 01:00:00 gpu:h200:1 molscout-sharing "" "${gpu[@]}"
-    submit short 5 24:00:00 none molscout-short "" "${cpu[@]}"
+    if [ "${#gpu[@]}" -eq 0 ]; then
+        echo "no GPU configs: skipping their workers"
+    else
+        submit gpu 4 08:00:00 gpu:h200:1 molscout-gpu "" "${gpu[@]}"
+        submit gpu-short 2 02:00:00 gpu:h200:1 molscout-gpu-short "" "${gpu[@]}"
+        submit gpu-interactive 2 02:00:00 gpu:h200:1 molscout-gpu-interactive "" "${gpu[@]}"
+        submit sharing 2 01:00:00 gpu:h200:1 molscout-sharing "" "${gpu[@]}"
+    fi
+    if [ "${#cpu[@]}" -eq 0 ]; then
+        echo "no molvec configs: skipping its workers"
+    else
+        submit short 5 24:00:00 none molscout-short "" "${cpu[@]}"
+    fi
 else
     estimates=$(estimate "$TYPE2_PAPERS" "$TYPE2_SECONDS_PER_PAPER" "${type2[@]}")
     biominer=() others=()
@@ -90,9 +98,17 @@ else
     done <<< "$estimates"
     # BioMiner takes two cards; the others one (job names molscout2-<partition>-<gpus>gpu).
     big="--cpus-per-task=16 --mem=192G"
-    submit gpu 1 08:00:00 gpu:h200:2 molscout2-gpu-2gpu "$big" "${biominer[@]}"
-    submit gpu-short 1 02:00:00 gpu:h200:2 molscout2-gpu-short-2gpu "$big" "${biominer[@]}"
-    submit gpu 2 08:00:00 gpu:h200:1 molscout2-gpu-1gpu "" "${others[@]}"
-    submit gpu-interactive 2 02:00:00 gpu:h200:1 molscout2-gpu-interactive-1gpu "" "${others[@]}"
-    submit sharing 2 01:00:00 gpu:h200:1 molscout2-sharing-1gpu "" "${others[@]}"
+    if [ "${#biominer[@]}" -eq 0 ]; then
+        echo "no biominer configs: skipping its workers"
+    else
+        submit gpu 1 08:00:00 gpu:h200:2 molscout2-gpu-2gpu "$big" "${biominer[@]}"
+        submit gpu-short 1 02:00:00 gpu:h200:2 molscout2-gpu-short-2gpu "$big" "${biominer[@]}"
+    fi
+    if [ "${#others[@]}" -eq 0 ]; then
+        echo "no decimer_ai or openchemie configs: skipping their workers"
+    else
+        submit gpu 2 08:00:00 gpu:h200:1 molscout2-gpu-1gpu "" "${others[@]}"
+        submit gpu-interactive 2 02:00:00 gpu:h200:1 molscout2-gpu-interactive-1gpu "" "${others[@]}"
+        submit sharing 2 01:00:00 gpu:h200:1 molscout2-sharing-1gpu "" "${others[@]}"
+    fi
 fi

@@ -109,7 +109,8 @@ bad_gpu_resubmit() {  # this node'"'"'s GPUs are bad: resubmit the worker exclud
     if out=$(MOLSCOUT_RESUBMIT=$options sbatch $options benchmarks/slurm/run.sbatch "${configs[@]}" 2>&1); then
         log "resubmitted without $node: $out"
     else
-        log "resubmission refused: $out"
+        log "resubmit failed: $out"
+        return 1
     fi
 }
 
@@ -143,7 +144,7 @@ worker() {
     local head config run failures status
     if ! gpu_ok; then
         log "bad GPU on $(hostname -s): $gpu_why"
-        if [ -n "${MOLSCOUT_RESUBMIT:-}" ]; then bad_gpu_resubmit; fi
+        if [ -n "${MOLSCOUT_RESUBMIT:-}" ]; then bad_gpu_resubmit || exit 1; fi
         exit 0
     fi
     head=$(git rev-parse HEAD 2>/dev/null || true)

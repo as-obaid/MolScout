@@ -189,3 +189,18 @@ def test_structure_readers_never_submits_type2_configs(fake, tmp_path):
     assert result.returncode == 0, result.stderr
     paths = {arg for call in calls(fake) for arg in call if arg.startswith("benchmarks/configs/")}
     assert paths == {f"benchmarks/configs/{stem}.yaml" for stem in GPU_ORDER + MOLVEC_ORDER}
+
+
+def test_a_group_with_no_configs_submits_no_workers(fake, tmp_path):
+    root = type_repo(tmp_path)
+    for config in (root / "benchmarks" / "configs").glob("biominer__*.yaml"):
+        config.unlink()
+    result = submit(fake, "complete-systems", cwd=root)
+    assert result.returncode == 0, result.stderr
+    assert "no biominer configs: skipping its workers" in result.stdout
+    assert calls(fake) == [
+        expected_call(partition, limit, gres, configs, name, extra)
+        for partition, workers, limit, gres, name, extra, configs in TYPE2_WORKERS[2:]
+        for _ in range(workers)
+    ]
+    assert not any("--gres=gpu:h200:2" in call for call in calls(fake))
