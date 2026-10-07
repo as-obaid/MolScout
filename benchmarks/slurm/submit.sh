@@ -1,40 +1,55 @@
 #!/bin/bash
-# Fill every H200 partition with benchmark workers up to the per-user running limits, and the CPU
-# queue with MolVec workers. Each worker gets every config of its kind, longest first, and runs those
-# not done and not claimed (see run.sbatch); running this again only tops up partitions with fewer
-# workers than their limit. Run from the repository root:
-#   bash benchmarks/slurm/submit.sh
+# Fill the H200 partitions with benchmark workers up to the per-user running limits. Each worker gets
+# every config of its kind, longest first, and runs those not done and not claimed (see run.sbatch);
+# running this again only tops up partitions with fewer workers than their limit. Run from the
+# repository root, with the kind of configs to submit (no argument is an error, so Type 1 runs are
+# never resubmitted by accident):
+#   bash benchmarks/slurm/submit.sh structure-readers   # Type 1: the 30 configs, MolVec on the CPU queue
+#   bash benchmarks/slurm/submit.sh complete-systems    # Type 2: the 6 configs, recognised by run_dir
 set -euo pipefail
 if [ ! -f pyproject.toml ] || [ ! -f benchmarks/slurm/run.sbatch ]; then
     echo "run benchmarks/slurm/submit.sh from the repository root" >&2
     exit 2
 fi
+kind=${1:-}
+case $kind in
+    structure-readers | complete-systems) ;;
+    *)
+        echo "usage: bash benchmarks/slurm/submit.sh structure-readers|complete-systems" >&2
+        exit 2 ;;
+esac
 
-# Estimated seconds = crops × seconds per crop, measured on an H200 (MolVec on a CPU).
-estimates=$(awk 'BEGIN {
-    crops["uspto"] = 5719; crops["uob"] = 5740; crops["molrecbench_wild"] = 5024; crops["clef"] = 992; crops["jpo"] = 450
-    rate["decimer"] = 0.51; rate["molglyph"] = 0.39; rate["molscribe"] = 0.37; rate["molnextr"] = 0.34
-    rate["ocsrglyph"] = 0.14; rate["molvec"] = 0.25
-    for (i = 1; i < ARGC; i++) {
-        name = ARGV[i]; sub(/.*\//, "", name); sub(/\.yaml$/, "", name); split(name, part, "__")
-        if (!(part[1] in rate) || !(part[2] in crops)) { print "no estimate for " ARGV[i] > "/dev/stderr"; exit 1 }
-        printf "%.0f %s\n", crops[part[2]] * rate[part[1]], ARGV[i]
-    }
-}' benchmarks/configs/*.yaml | sort -k1,1nr -k2,2)
-gpu=() cpu=()
-while read -r _ config; do
-    case $config in
-        */molvec__*) cpu+=("$config") ;;
-        *) gpu+=("$config") ;;
-    esac
-done <<< "$estimates"
+# Type 2 estimates: papers per dataset × seconds per paper (placeholders until the Task 9 smoke tests
+# are timed; update the two lines below).
+TYPE2_PAPERS="biovista=163 internal=6"
+TYPE2_SECONDS_PER_PAPER="biominer=120 decimer_ai=60 openchemie=30"
 
-submit() {  # PARTITION WORKERS TIME GRES CONFIG...: top the partition up to WORKERS molscout workers
-    local partition=$1 workers=$2 options queued i id ids="" note=""
-    options="--partition=$1 --gres=$4 --time=$3 --signal=B:USR1@180 --job-name=molscout-$1"
-    options="$options --output=benchmarks/slurm/logs/%x_%j.out --error=benchmarks/slurm/logs/%x_%j.err"
-    shift 4
-    queued=$(($(squeue -h -u "$(id -un)" -n "molscout-$partition" -o %i | wc -l)))
+type2=() type1=()
+for config in benchmarks/configs/*.yaml; do
+    if grep -q '^run_dir:.*complete_systems' "$config"; then type2+=("$config"); else type1+=("$config"); fi
+done
+
+# Estimated seconds = items × seconds per item, measured on an H200 (MolVec on a CPU); longest first.
+estimate() {  # ITEMS RATES CONFIG...: "seconds config" lines; ITEMS and RATES are "name=number ..." lists
+    local items=$1 rates=$2
+    shift 2
+    awk -v items="$items" -v rates="$rates" 'BEGIN {
+        n = split(items, a, " "); for (i = 1; i <= n; i++) { split(a[i], kv, "="); count[kv[1]] = kv[2] }
+        n = split(rates, a, " "); for (i = 1; i <= n; i++) { split(a[i], kv, "="); rate[kv[1]] = kv[2] }
+        for (i = 1; i < ARGC; i++) {
+            name = ARGV[i]; sub(/.*\//, "", name); sub(/\.yaml$/, "", name); split(name, part, "__")
+            if (!(part[1] in rate) || !(part[2] in count)) { print "no estimate for " ARGV[i] > "/dev/stderr"; exit 1 }
+            printf "%.0f %s\n", count[part[2]] * rate[part[1]], ARGV[i]
+        }
+    }' "$@" | sort -k1,1nr -k2,2
+}
+
+submit() {  # PARTITION WORKERS TIME GRES NAME EXTRA CONFIG...: top the partition up to WORKERS workers named NAME
+    local partition=$1 workers=$2 options queued i id ids="" note="" name=$5 extra=$6
+    options="--partition=$1 --gres=$4 --time=$3 --signal=B:USR1@180 --job-name=$name"
+    options="$options${extra:+ $extra} --output=benchmarks/slurm/logs/%x_%j.out --error=benchmarks/slurm/logs/%x_%j.err"
+    shift 6
+    queued=$(($(squeue -h -u "$(id -un)" -n "$name" -o %i | wc -l)))
     for ((i = queued; i < workers; i++)); do
         # shellcheck disable=SC2086  # options holds several words
         if id=$(sbatch --parsable --export="ALL,MOLSCOUT_RESUBMIT=$options" $options benchmarks/slurm/run.sbatch "$@" 2>&1)
@@ -48,8 +63,36 @@ submit() {  # PARTITION WORKERS TIME GRES CONFIG...: top the partition up to WOR
     echo "$partition: ${note}submitted${ids:- none}"
 }
 
-submit gpu 4 08:00:00 gpu:h200:1 "${gpu[@]}"
-submit gpu-short 2 02:00:00 gpu:h200:1 "${gpu[@]}"
-submit gpu-interactive 2 02:00:00 gpu:h200:1 "${gpu[@]}"
-submit sharing 2 01:00:00 gpu:h200:1 "${gpu[@]}"
-submit short 5 24:00:00 none "${cpu[@]}"
+if [ "$kind" = structure-readers ]; then
+    # Estimated seconds = crops × seconds per crop.
+    estimates=$(estimate "uspto=5719 uob=5740 molrecbench_wild=5024 clef=992 jpo=450" \
+        "decimer=0.51 molglyph=0.39 molscribe=0.37 molnextr=0.34 ocsrglyph=0.14 molvec=0.25" "${type1[@]}")
+    gpu=() cpu=()
+    while read -r _ config; do
+        case $config in
+            */molvec__*) cpu+=("$config") ;;
+            *) gpu+=("$config") ;;
+        esac
+    done <<< "$estimates"
+    submit gpu 4 08:00:00 gpu:h200:1 molscout-gpu "" "${gpu[@]}"
+    submit gpu-short 2 02:00:00 gpu:h200:1 molscout-gpu-short "" "${gpu[@]}"
+    submit gpu-interactive 2 02:00:00 gpu:h200:1 molscout-gpu-interactive "" "${gpu[@]}"
+    submit sharing 2 01:00:00 gpu:h200:1 molscout-sharing "" "${gpu[@]}"
+    submit short 5 24:00:00 none molscout-short "" "${cpu[@]}"
+else
+    estimates=$(estimate "$TYPE2_PAPERS" "$TYPE2_SECONDS_PER_PAPER" "${type2[@]}")
+    biominer=() others=()
+    while read -r _ config; do
+        case $config in
+            */biominer__*) biominer+=("$config") ;;
+            *) others+=("$config") ;;
+        esac
+    done <<< "$estimates"
+    # BioMiner takes two cards; the others one (job names molscout2-<partition>-<gpus>gpu).
+    big="--cpus-per-task=16 --mem=192G"
+    submit gpu 1 08:00:00 gpu:h200:2 molscout2-gpu-2gpu "$big" "${biominer[@]}"
+    submit gpu-short 1 02:00:00 gpu:h200:2 molscout2-gpu-short-2gpu "$big" "${biominer[@]}"
+    submit gpu 2 08:00:00 gpu:h200:1 molscout2-gpu-1gpu "" "${others[@]}"
+    submit gpu-interactive 2 02:00:00 gpu:h200:1 molscout2-gpu-interactive-1gpu "" "${others[@]}"
+    submit sharing 2 01:00:00 gpu:h200:1 molscout2-sharing-1gpu "" "${others[@]}"
+fi

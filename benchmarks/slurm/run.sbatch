@@ -9,6 +9,8 @@
 # claimed, and gives up on a config after 2 failures at HEAD. USR1 (--signal=B:USR1@180) means the time
 # limit is near: the run stops, keeping its checkpoint, and the worker resubmits itself with
 # sbatch $MOLSCOUT_RESUBMIT. TERM (scancel) stops it the same way without resubmitting.
+# A GPU job first checks its GPUs (gpu_ok). On a bad GPU a worker resubmits itself excluding the node
+# (up to 3 nodes) and exits 0 without claiming anything; a single or array run exits 3.
 #SBATCH --job-name=molscout-bench
 #SBATCH --account=ostadabbas
 #SBATCH --partition=gpu
@@ -48,6 +50,69 @@ alive() {  # whether job $1 is queued or running; when squeue cannot tell, it is
     esac
 }
 
+cuda_probe_py='
+import ctypes, sys
+cuda = ctypes.CDLL("libcuda.so.1")
+if cuda.cuInit(0) != 0:
+    sys.exit("cuInit failed")
+count = ctypes.c_int()
+if cuda.cuDeviceGetCount(ctypes.byref(count)) != 0:
+    sys.exit("cuDeviceGetCount failed")
+if count.value != int(sys.argv[1]):
+    sys.exit("CUDA sees %d device(s), expected %s" % (count.value, sys.argv[1]))'
+
+gpu_ok() {  # whether a GPU job'"'"'s GPUs work; CPU jobs (no CUDA_VISIBLE_DEVICES) pass. Sets gpu_why.
+    gpu_why=
+    [ -n "${CUDA_VISIBLE_DEVICES:-}" ] || return 0
+    local expected utilization line limit=()
+    expected=$(echo "$CUDA_VISIBLE_DEVICES" | tr ',' '\n' | grep -c .) || expected=0
+    if command -v timeout > /dev/null; then limit=(timeout 60); fi
+    if ! utilization=$("${limit[@]}" nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits 2>&1); then
+        gpu_why="nvidia-smi failed: $(echo "$utilization" | head -c 200 | tr '\n' ' ')"
+        return 1
+    fi
+    local seen=0
+    while IFS= read -r line; do
+        [ -n "${line//[[:space:]]/}" ] || continue
+        if [[ ! ${line//[[:space:]]/} =~ ^[0-9]+$ ]]; then gpu_why="nvidia-smi reports $line"; return 1; fi
+        seen=$((seen + 1))
+    done <<< "$utilization"
+    if [ "$seen" -ne "$expected" ]; then
+        gpu_why="nvidia-smi lists $seen of $expected GPU(s)"
+        return 1
+    fi
+    local out
+    if [ -n "${MOLSCOUT_CUDA_PROBE:-}" ]; then
+        # shellcheck disable=SC2086  # the probe may be a command with arguments
+        out=$($MOLSCOUT_CUDA_PROBE "$expected" 2>&1) || { gpu_why="CUDA probe failed: ${out:-no output}"; return 1; }
+    else
+        out=$(python3 -c "$cuda_probe_py" "$expected" 2>&1) || { gpu_why="CUDA probe failed: ${out##*$'\n'}"; return 1; }
+    fi
+}
+
+bad_gpu_resubmit() {  # this node'"'"'s GPUs are bad: resubmit the worker excluding it, or give up after 3 nodes
+    local node options word excluded="" rest=() out
+    node=$(hostname -s)
+    for word in ${MOLSCOUT_RESUBMIT:-}; do
+        case $word in
+            --exclude=*) excluded=${word#--exclude=} ;;
+            *) rest+=("$word") ;;
+        esac
+    done
+    if [ -n "$excluded" ] && [ "$(echo "$excluded" | tr ',' '\n' | grep -c .)" -ge 3 ]; then
+        log "giving up: 3 nodes are already excluded ($excluded)"
+        exit 1
+    fi
+    options="${rest[*]:-} --exclude=${excluded:+$excluded,}$node"
+    options=${options# }
+    # shellcheck disable=SC2086  # options holds several words; --export=ALL would split the node list at commas
+    if out=$(MOLSCOUT_RESUBMIT=$options sbatch $options benchmarks/slurm/run.sbatch "${configs[@]}" 2>&1); then
+        log "resubmitted without $node: $out"
+    else
+        log "resubmission refused: $out"
+    fi
+}
+
 claim() {  # claim run $1 for this job; a claim whose job has ended is taken over. Sets owner.
     local dir=$claims/$1
     owner=
@@ -76,6 +141,11 @@ stop() {  # trap: $1 is USR1 (the time limit is near) or TERM (scancel); the run
 
 worker() {
     local head config run failures status
+    if ! gpu_ok; then
+        log "bad GPU on $(hostname -s): $gpu_why"
+        if [ -n "${MOLSCOUT_RESUBMIT:-}" ]; then bad_gpu_resubmit; fi
+        exit 0
+    fi
     head=$(git rev-parse HEAD 2>/dev/null || true)
     stopped='' bench=''
     trap 'stop USR1' USR1
@@ -146,6 +216,10 @@ elif [ "${#configs[@]}" -gt 1 ] || [ -n "${MOLSCOUT_RESUBMIT:-}" ]; then
     exit 0
 else
     config=${configs[0]}
+fi
+if ! gpu_ok; then
+    echo "bad GPU on $(hostname -s): $gpu_why" >&2
+    exit 3
 fi
 echo "bench $config on $(hostname) at $(date -Is)"
 "$molscout" bench "$config"

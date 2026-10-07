@@ -1,10 +1,18 @@
 #!/bin/bash
 # Where each benchmark run stands, then the molscout jobs in the queue. Run from the repository root:
-#   bash benchmarks/slurm/status.sh
+#   bash benchmarks/slurm/status.sh [structure-readers|complete-systems]   (default: both)
 # done: results at HEAD with no uncommitted changes. running: claimed by a live job. failed: given up
 # after 2 failures at HEAD. partial: a checkpoint is left. stale: results a worker will redo.
-# Checkpoint rows are counted by line.
+# Checkpoint rows are counted by line; a complete system (paper config) shows its finished papers, counted
+# from .checkpoints/<run>/predictions.papers.jsonl.
 set -euo pipefail
+kind=${1:-both}
+case $kind in
+    both | structure-readers | complete-systems) ;;
+    *)
+        echo "usage: bash benchmarks/slurm/status.sh [structure-readers|complete-systems]" >&2
+        exit 2 ;;
+esac
 results=benchmarks/results
 claims=$results/.claims
 head=$(git rev-parse HEAD 2>/dev/null || true)
@@ -23,6 +31,9 @@ printf '%-30s %-8s %s\n' RUN STATE DETAIL
 states=""
 for config in benchmarks/configs/*.yaml; do
     run=$(basename "$config" .yaml)
+    if grep -q '^run_dir:.*complete_systems' "$config"; then papers=1; else papers=""; fi
+    if [ "$kind" = structure-readers ] && [ -n "$papers" ]; then continue; fi
+    if [ "$kind" = complete-systems ] && [ -z "$papers" ]; then continue; fi
     meta=$results/$run/meta.json
     checkpoint=$results/.checkpoints/$run/predictions.csv
     commit="" partition="" detail=""
@@ -52,7 +63,9 @@ print(git.get("commit") or "unknown", "dirty" if git.get("dirty") is not False e
     else
         state=pending
     fi
-    if [ -f "$checkpoint" ]; then
+    if [ -n "$papers" ]; then
+        if [ -f "${checkpoint%.csv}.papers.jsonl" ]; then add "$(grep -c . "${checkpoint%.csv}.papers.jsonl" || true) papers"; fi
+    elif [ -f "$checkpoint" ]; then
         rows=$(($(wc -l < "$checkpoint") - 1))
         add "$((rows > 0 ? rows : 0))/$(images "$config") rows"
     fi

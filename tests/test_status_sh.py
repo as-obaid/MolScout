@@ -57,3 +57,48 @@ def test_status_shows_each_run_and_the_molscout_jobs(tmp_path):
         ["running__x", "running", "job 111 (gpu-short), 1/3 rows"],
     ]
     assert result.stdout.splitlines()[-2:] == ["JOBID NAME PARTITION", "111 molscout-gpu-short gpu-short"]
+
+
+def paper_repo(tmp_path):
+    root, fake = tmp_path / "repo", tmp_path / "bin"
+    configs = root / "benchmarks" / "configs"
+    for folder in (configs, fake):
+        folder.mkdir(parents=True)
+    (configs / "t1__x.yaml").write_text("tool: t1\nrun_dir: benchmarks/tools/structure_readers/t1\nimages: nowhere\n")
+    (configs / "sys__biovista.yaml").write_text("tool: sys\nrun_dir: benchmarks/tools/complete_systems/sys\n")
+    (configs / "sys__internal.yaml").write_text("tool: sys\nrun_dir: benchmarks/tools/complete_systems/sys\n")
+    checkpoint = root / "benchmarks" / "results" / ".checkpoints" / "sys__biovista"
+    checkpoint.mkdir(parents=True)
+    (checkpoint / "predictions.csv").write_text("header\nrow\nrow\nrow\n")
+    (checkpoint / "predictions.papers.jsonl").write_text('{"item_id": "p1"}\n{"item_id": "p2"}\n')
+    for name, text in {"squeue": FAKE_SQUEUE, "git": FAKE_GIT}.items():
+        (fake / name).write_text(text)
+        (fake / name).chmod(0o755)
+    return root, {**os.environ, "PATH": f"{fake}{os.pathsep}{os.environ['PATH']}"}
+
+
+def status(root, env, *args):
+    return subprocess.run(["bash", str(SCRIPT), *args], cwd=root, env=env, capture_output=True, text=True)
+
+
+def test_a_paper_run_shows_its_finished_papers(tmp_path):
+    root, env = paper_repo(tmp_path)
+    result = status(root, env)
+    assert result.returncode == 0, result.stderr
+    table = [line.split(None, 2) for line in result.stdout.splitlines()]
+    assert ["sys__biovista", "partial", "2 papers"] in table
+    assert ["sys__internal", "pending"] in table
+    assert any(row[0] == "t1__x" for row in table)
+
+
+def test_status_can_show_one_kind_of_run(tmp_path):
+    root, env = paper_repo(tmp_path)
+    systems = status(root, env, "complete-systems").stdout
+    assert "sys__biovista" in systems and "t1__x" not in systems
+    readers = status(root, env, "structure-readers").stdout
+    assert "t1__x" in readers and "sys__biovista" not in readers
+
+
+def test_status_rejects_an_unknown_kind(tmp_path):
+    root, env = paper_repo(tmp_path)
+    assert status(root, env, "everything").returncode == 2

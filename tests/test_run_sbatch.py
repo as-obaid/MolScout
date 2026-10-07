@@ -16,7 +16,7 @@ SCRIPT = Path(__file__).resolve().parents[1] / "benchmarks" / "slurm" / "run.sba
 
 
 def run(*configs: str, task: str | None = None, tmp_path: Path):
-    env = {k: v for k, v in os.environ.items() if k not in ("SLURM_ARRAY_TASK_ID", "MOLSCOUT_RESUBMIT")}
+    env = {k: v for k, v in os.environ.items() if k not in ("SLURM_ARRAY_TASK_ID", "MOLSCOUT_RESUBMIT", "CUDA_VISIBLE_DEVICES")}
     env.update(MOLSCOUT="echo", SLURM_SUBMIT_DIR=str(tmp_path), MOLSCOUT_STORE=str(tmp_path / "store"))
     if task is not None:
         env["SLURM_ARRAY_TASK_ID"] = task
@@ -80,6 +80,7 @@ import json, os, pathlib, sys
 fake = pathlib.Path(os.environ["FAKE"])
 with (fake / "sbatch").open("a") as log:
     log.write(json.dumps(sys.argv[1:]) + "\\n")
+(fake / "sbatch.env").write_text(os.environ.get("MOLSCOUT_RESUBMIT", ""))
 if (fake / "sbatch.refuse").exists():
     sys.exit("sbatch: error: QOSMaxSubmitJobPerUserLimit")
 print("Submitted batch job 900")
@@ -105,7 +106,7 @@ class Worker:
             (self.bin / name).write_text(text)
             (self.bin / name).chmod(0o755)
         self.env = {
-            **{k: v for k, v in os.environ.items() if not k.startswith("SLURM_")},
+            **{k: v for k, v in os.environ.items() if not k.startswith("SLURM_") and k != "CUDA_VISIBLE_DEVICES"},
             "PATH": f"{self.bin}{os.pathsep}{os.environ['PATH']}",
             "HOME": str(tmp_path),
             "MOLSCOUT": str(self.bin / "molscout"),
@@ -244,3 +245,112 @@ def test_one_config_is_a_worker_only_when_submitted_to_resubmit(worker):
     del worker.env["MOLSCOUT_RESUBMIT"]
     assert worker.run("a").returncode == 0
     assert worker.calls() == ["bench a"]
+
+
+GPU_HEALTHY = "#!/bin/bash\necho 0\n"
+GPU_BROKEN = "#!/bin/bash\necho '[GPU requires reset]'\n"
+
+
+def fake_nvidia_smi(worker, text: str) -> None:
+    (worker.bin / "nvidia-smi").write_text(text)
+    (worker.bin / "nvidia-smi").chmod(0o755)
+
+
+def gpu_job(worker, *, smi: str | None = GPU_HEALTHY, probe: str = "true", devices: str = "0") -> None:
+    if smi is not None:
+        fake_nvidia_smi(worker, smi)
+    worker.env.update(CUDA_VISIBLE_DEVICES=devices, MOLSCOUT_CUDA_PROBE=probe)
+
+
+def host() -> str:
+    return subprocess.run(["hostname", "-s"], capture_output=True, text=True, check=True).stdout.strip()
+
+
+def test_bad_gpu_resubmits_excluding_the_node_without_claiming(worker):
+    gpu_job(worker, smi=GPU_BROKEN)
+    worker.env["MOLSCOUT_RESUBMIT"] = "--partition=gpu --exclude=d4072"
+    result = worker.run("a b")
+    assert result.returncode == 0, result.stderr
+    assert worker.calls() == []
+    assert not worker.claims.exists()
+    options = f"--partition=gpu --exclude=d4072,{host()}"
+    assert worker.sbatch() == [[*options.split(), "benchmarks/slurm/run.sbatch", *worker.configs("a b")]]
+    assert (worker.fake / "sbatch.env").read_text() == options
+    assert f"bad GPU on {host()}: " in result.stdout
+    assert "[GPU requires reset]" in result.stdout
+
+
+def test_bad_gpu_adds_an_exclude_when_there_is_none(worker):
+    gpu_job(worker, smi=GPU_BROKEN)
+    assert worker.run("a b").returncode == 0
+    options = f"{RESUBMIT} --exclude={host()}"
+    assert worker.sbatch() == [[*options.split(), "benchmarks/slurm/run.sbatch", *worker.configs("a b")]]
+
+
+def test_cuda_probe_failure_is_a_bad_gpu(worker):
+    gpu_job(worker, probe="false")
+    result = worker.run("a b")
+    assert result.returncode == 0, result.stderr
+    assert worker.calls() == []
+    assert f"bad GPU on {host()}: " in result.stdout
+    assert len(worker.sbatch()) == 1
+
+
+def test_the_probe_is_told_how_many_gpus_to_expect(worker):
+    gpu_job(worker, smi="#!/bin/bash\necho 0\necho 5\n", devices="0,1")
+    probe = worker.bin / "probe"
+    probe.write_text('#!/bin/bash\necho "probe $*" >> "$FAKE/probe"\n')
+    probe.chmod(0o755)
+    worker.env["MOLSCOUT_CUDA_PROBE"] = str(probe)
+    assert worker.run("a b").returncode == 0
+    assert (worker.fake / "probe").read_text() == "probe 2\n"
+    assert worker.calls() == ["bench a", "bench b"]
+
+
+def test_a_gpu_missing_from_nvidia_smi_is_a_bad_gpu(worker):
+    gpu_job(worker, devices="0,1")  # the fake lists one GPU
+    result = worker.run("a b")
+    assert worker.calls() == [] and len(worker.sbatch()) == 1
+    assert "bad GPU" in result.stdout
+
+
+def test_healthy_gpu_runs_the_worker(worker):
+    gpu_job(worker)
+    result = worker.run("a b")
+    assert result.returncode == 0, result.stderr
+    assert worker.calls() == ["bench a", "bench b"]
+    assert "bad GPU" not in result.stdout
+    assert worker.sbatch() == []
+
+
+def test_cpu_job_skips_the_gpu_check(worker):
+    result = worker.run("a b")  # no CUDA_VISIBLE_DEVICES, no nvidia-smi
+    assert result.returncode == 0, result.stderr
+    assert worker.calls() == ["bench a", "bench b"]
+
+
+def test_single_run_on_bad_gpu_exits_3(worker):
+    gpu_job(worker, smi=GPU_BROKEN)
+    del worker.env["MOLSCOUT_RESUBMIT"]
+    result = worker.run("a")
+    assert result.returncode == 3
+    assert f"bad GPU on {host()}" in result.stderr
+    assert worker.calls() == [] and worker.sbatch() == []
+
+
+def test_array_run_on_bad_gpu_exits_3(worker):
+    gpu_job(worker, smi=GPU_BROKEN)
+    del worker.env["MOLSCOUT_RESUBMIT"]
+    worker.env["SLURM_ARRAY_TASK_ID"] = "1"
+    result = worker.run("a b")
+    assert result.returncode == 3
+    assert worker.calls() == []
+
+
+def test_gives_up_after_three_excluded_nodes(worker):
+    gpu_job(worker, smi=GPU_BROKEN)
+    worker.env["MOLSCOUT_RESUBMIT"] = "--partition=gpu --exclude=d1,d2,d3"
+    result = worker.run("a b")
+    assert result.returncode == 1
+    assert "giving up" in result.stdout
+    assert worker.calls() == [] and worker.sbatch() == []
