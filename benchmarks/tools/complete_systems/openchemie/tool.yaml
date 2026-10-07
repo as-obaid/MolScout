@@ -1,0 +1,67 @@
+# Non-default settings, each with its reason (the docs' Tool Settings are built from this block):
+# - Environment: torch 2.5.1+cu121 instead of upstream's torch<2.0 (cu117 wheels have no sm_90 kernels for
+#   the H200); transformers 4.44.2, easyocr 1.7.2, effdet 0.3.0 (newest accepting MolScribe's timm 0.4.12),
+#   pycocotools, seqeval and the PDF libraries are pinned by us, as upstream leaves them unpinned.
+# - OpenChemIE and its four git dependencies are installed with --no-deps at pinned commits, because their
+#   own requirements clash (two opencv builds, torch<2.0).
+# - Calls left out: the text call (extract_molecules_from_text_in_pdf, ChemNER gives names, not structures) and
+#   the reaction and coref/R-group pipelines (extract_reactions_*, extract_molecule_corefs_*), which are not
+#   the documented all-molecules call. Only extract_molecules_from_figures_in_pdf runs, at its defaults.
+# - poppler (pdftoppm, libpoppler-cpp) comes from a conda-forge prefix, as Explorer has none; --poppler-bin below.
+# - The layoutparser PubLayNet weight comes from layoutparser's Hugging Face repo (revision 98c70a9), as its
+#   Dropbox link now serves a "File Deleted" page.
+# - Each Hugging Face repo's refs/main is set to the pinned revision, so OpenChemIE's revision-less download
+#   resolves to it offline.
+# - run.py gives every paper its own temp folder for page renders; nothing is written into the clone.
+# - Boxes assume each page's mediabox origin is (0,0) with no /Rotate and no smaller cropbox (true for the
+#   smoke papers).
+tool: openchemie
+name: OpenChemIE
+# OpenChemIE's setup.py version, the upstream short commit, and the weights: MolScribe
+# swin_base_char_aux_1m (yujieq/MolScribe a018977), MolDet best_hf.ckpt (Ozymandias314/MolDetectCkpt 7cf4ba5),
+# layoutparser PubLayNet EfficientDet-D1 (layoutparser/efficientdet 98c70a9).
+version: 0.1.0 (git d9b50bb; MolScribe 1m a018977, MolDet 7cf4ba5, PubLayNet EfficientDet-D1 98c70a9)
+python: ${MOLSCOUT_STORE}/envs/openchemie/bin/python
+args:
+- --device
+- cuda
+# Non-default: pdf2image needs pdftoppm and Explorer has no poppler, so it comes from conda-forge
+# (poppler 24.12.0) in a prefix of its own; run.py puts this folder on PATH.
+- --poppler-bin
+- ${MOLSCOUT_STORE}/envs/openchemie-poppler/bin
+checkpoints:
+# MolScribe, loaded by OpenChemIE and again inside MolDet; note OpenChemIE uses swin_base_char_aux_1m, not 1m680k
+- path: ${MOLSCOUT_STORE}/models/openchemie/hf/hub/models--yujieq--MolScribe/snapshots/a0189776b7415b82795c7ee81eed311bf5c8724b/swin_base_char_aux_1m.pth
+  sha256: 6f0df56fa32b5ffc21f8c7f311ef333da522f590bf5622e966c6bcb1f2d9ea1d
+# MolDet; OpenChemIE's coref_best_hf.ckpt is byte-identical (same sha256) and is not loaded by the default call
+- path: ${MOLSCOUT_STORE}/models/openchemie/hf/hub/models--Ozymandias314--MolDetectCkpt/snapshots/7cf4ba5ffdae2aec35c8339693f1dafd70e0613c/best_hf.ckpt
+  sha256: 32463883672228e0512351307a7e930c25ae8f47d2ed62aae6f0e0a259d02566
+# page layout model (figures and tables). Non-default source: the Dropbox link in layoutparser 0.3.4 now
+# serves a "File Deleted" page, so setup.sh takes the same file from layoutparser's Hugging Face repo and
+# places it at the cache path layoutparser looks up (FVCORE_CACHE below).
+- path: ${MOLSCOUT_STORE}/models/openchemie/iopath_cache/s/gxy11xkkiwnpgog/publaynet-tf_efficientdet_d1.pth.tar?dl=1
+  sha256: 64e0008d1b78813aaa4f88591729af00e268e5f6795cd784bd2416dbecdc9009
+# loaded while building the models, and overwritten (effdet) or replaced by MolDet's checkpoint (ResNet-50)
+- path: ${MOLSCOUT_STORE}/models/openchemie/torch/hub/checkpoints/tf_efficientdet_d1_40-a30f94af.pth
+  sha256: a30f94afc3326a6ef7a61c1657baefe3ea7168139006fbf0fe41807260b885b8
+- path: ${MOLSCOUT_STORE}/models/openchemie/torch/hub/checkpoints/resnet50-0676ba61.pth
+  sha256: 0676ba61b6795bbe1773cffd859882e5e297624d384b6993f7c9e683e722fb8a
+# MolDet builds EasyOCR's English reader when constructed (used only with ocr=True, which the default call does not)
+- path: ${MOLSCOUT_STORE}/models/openchemie/easyocr/model/craft_mlt_25k.pth
+  sha256: 4a5efbfb48b4081100544e75e1e2b57f8de3d84f213004b14b85fd4b3748db17
+- path: ${MOLSCOUT_STORE}/models/openchemie/easyocr/model/english_g2.pth
+  sha256: e2272681d9d67a04e2dff396b6e95077bc19001f8f6d3593c307b9852e1c29e8
+env:
+  # OpenChemIE fetches its weights on first use; setup.sh stores them under models/openchemie, and
+  # these point each library there, so a run reads only these files
+  HF_HOME: ${MOLSCOUT_STORE}/models/openchemie/hf
+  FVCORE_CACHE: ${MOLSCOUT_STORE}/models/openchemie/iopath_cache
+  TORCH_HOME: ${MOLSCOUT_STORE}/models/openchemie/torch
+  EASYOCR_MODULE_PATH: ${MOLSCOUT_STORE}/models/openchemie/easyocr
+lock_commands:
+# the conda poppler prefix (pdftoppm and libpoppler-cpp), which the Python lock does not cover
+- - ls
+  - ${MOLSCOUT_STORE}/envs/openchemie-poppler/conda-meta
+sources:
+# the pinned upstream clone; the package itself is installed from an archive of it
+- ${MOLSCOUT_STORE}/src/OpenChemIE
