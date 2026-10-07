@@ -21,6 +21,7 @@
 #SBATCH --output=benchmarks/slurm/logs/%x_%A_%a.out
 #SBATCH --error=benchmarks/slurm/logs/%x_%A_%a.err
 set -euo pipefail
+umask 077  # Internal results, checkpoints and logs hold SMILES from private papers
 configs=("$@")
 if [ "${#configs[@]}" -eq 0 ]; then
     echo "usage: sbatch [--array=0-N] benchmarks/slurm/run.sbatch CONFIG [CONFIG ...]" >&2

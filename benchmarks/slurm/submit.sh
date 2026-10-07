@@ -19,13 +19,25 @@ case $kind in
         exit 2 ;;
 esac
 
+# Every run is keyed on HEAD: with uncommitted configs, tools or sources every run is recorded dirty and
+# is rerun forever, so refuse to submit until they are committed.
+dirty=$(git status --porcelain -uall -- benchmarks/configs benchmarks/tools src pyproject.toml uv.lock) ||
+    { echo "git status failed: submit from a git checkout" >&2; exit 1; }
+if [ -n "$dirty" ]; then
+    echo "uncommitted changes in benchmarks/configs, benchmarks/tools, src, pyproject.toml or uv.lock; commit them first" >&2
+    echo "$dirty" >&2
+    exit 1
+fi
+
 # Type 2 estimates: papers per dataset × seconds per paper, plus start-up seconds for each segment the
 # run needs (placeholders until the Task 9 smoke tests are timed; update the lines below). A segment is
-# at most TYPE2_SEGMENT_SECONDS: the shortest time limit (2 h) less the 180 s USR1 warning.
+# at most the time limit less the 180 s USR1 warning: TYPE2_SEGMENT_SECONDS for the 2 h partitions that
+# DECIMER.ai and OpenChemIE also use, TYPE2_BIOMINER_SEGMENT_SECONDS for BioMiner's one 8 h worker.
 TYPE2_PAPERS="biovista=163 internal=6"
 TYPE2_SECONDS_PER_PAPER="biominer=120 decimer_ai=60 openchemie=30"
 TYPE2_STARTUP_SECONDS="biominer=600 decimer_ai=120 openchemie=120"
 TYPE2_SEGMENT_SECONDS=7020
+TYPE2_BIOMINER_SEGMENT_SECONDS=28620
 
 type2=() type1=()
 for config in benchmarks/configs/*.yaml; do
@@ -98,27 +110,39 @@ if [ "$kind" = structure-readers ]; then
         submit short 5 24:00:00 none molscout-short "" "${cpu[@]}"
     fi
 else
-    estimates=$(estimate "$TYPE2_PAPERS" "$TYPE2_SECONDS_PER_PAPER" "$TYPE2_STARTUP_SECONDS" "$TYPE2_SEGMENT_SECONDS" "${type2[@]}")
+    # Internal configs first (short canaries), then BioVista; longest first within each.
+    ordered() {  # SEGMENT CONFIG...
+        local segment=$1 all
+        shift
+        all=$(estimate "$TYPE2_PAPERS" "$TYPE2_SECONDS_PER_PAPER" "$TYPE2_STARTUP_SECONDS" "$segment" "$@")
+        { grep '__internal\.yaml$' <<< "$all" || true; grep -v '__internal\.yaml$' <<< "$all" || true; } | cut -d' ' -f2
+    }
     biominer=() others=()
-    while read -r _ config; do
+    for config in "${type2[@]}"; do
         case $config in
             */biominer__*) biominer+=("$config") ;;
             *) others+=("$config") ;;
         esac
-    done <<< "$estimates"
-    # BioMiner takes two cards, and only gpu-short allows 2 GPUs per job (the gpu QOS caps a job at 1 GPU,
-    # so a 2-GPU job there would pend forever); the others take one (job names molscout2-<partition>-<gpus>gpu).
-    big="--cpus-per-task=16 --mem=192G"
+    done
+    # Every Type 2 job takes one H200. BioMiner is one worker on gpu (its servers use fixed ports, so
+    # --dependency=singleton keeps two BioMiner jobs, resubmissions included, from sharing a node).
+    # Fallback, not used: 2 H200 on gpu-short.
     if [ "${#biominer[@]}" -eq 0 ]; then
         echo "no biominer configs: skipping its workers"
     else
-        submit gpu-short 2 02:00:00 gpu:h200:2 molscout2-gpu-short-2gpu "$big" "${biominer[@]}"
+        sorted=()
+        while read -r config; do sorted+=("$config"); done < <(ordered "$TYPE2_BIOMINER_SEGMENT_SECONDS" "${biominer[@]}")
+        biominer=("${sorted[@]}")
+        submit gpu 1 08:00:00 gpu:h200:1 molscout2-biominer "--cpus-per-task=16 --mem=192G --dependency=singleton" "${biominer[@]}"
     fi
     if [ "${#others[@]}" -eq 0 ]; then
         echo "no decimer_ai or openchemie configs: skipping their workers"
     else
-        submit gpu 2 08:00:00 gpu:h200:1 molscout2-gpu-1gpu "" "${others[@]}"
+        sorted=()
+        while read -r config; do sorted+=("$config"); done < <(ordered "$TYPE2_SEGMENT_SECONDS" "${others[@]}")
+        others=("${sorted[@]}")
+        submit gpu 3 08:00:00 gpu:h200:1 molscout2-gpu-1gpu "" "${others[@]}"
+        submit gpu-short 2 02:00:00 gpu:h200:1 molscout2-gpu-short-1gpu "" "${others[@]}"
         submit gpu-interactive 2 02:00:00 gpu:h200:1 molscout2-gpu-interactive-1gpu "" "${others[@]}"
-        submit sharing 2 01:00:00 gpu:h200:1 molscout2-sharing-1gpu "" "${others[@]}"
     fi
 fi

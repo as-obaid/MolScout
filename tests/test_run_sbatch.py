@@ -54,6 +54,11 @@ def test_sets_offline_environment(tmp_path):
         assert name in script
 
 
+def test_files_are_private_by_default():
+    lines = SCRIPT.read_text().splitlines()
+    assert "umask 077" in [line.split("#")[0].strip() for line in lines[:40]]
+
+
 HEAD = "a" * 40
 FAKE_BENCH = """#!/bin/bash
 # molscout bench CONFIG: logs the call; <run>.exit holds its status, and with <run>.hang it runs until TERM.

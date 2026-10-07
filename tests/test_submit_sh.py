@@ -81,12 +81,24 @@ def expected_call(partition: str, limit: str, gres: str, configs: list[str], nam
     return ["--parsable", f"--export=ALL,MOLSCOUT_RESUBMIT={options}", *options.split(), "benchmarks/slurm/run.sbatch", *paths]
 
 
+def commit_all(root: Path) -> None:
+    git = ["git", "-c", "user.name=t", "-c", "user.email=t@example.com"]
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+    subprocess.run(["git", "add", "-A"], cwd=root, check=True)
+    subprocess.run([*git, "commit", "-q", "-m", "init"], cwd=root, check=True)
+
+
+def commit_all_again(root: Path) -> None:
+    subprocess.run(["git", "add", "-A"], cwd=root, check=True)
+    subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "-q", "-m", "more"], cwd=root, check=True)
+
+
 def calls(fake: Path) -> list[list[str]]:
     return [json.loads(line) for line in (fake / "sbatch.log").read_text().splitlines()]
 
 
-def test_submit_fills_each_partition_to_its_limit_with_the_longest_configs_first(fake):
-    result = submit(fake, "structure-readers")
+def test_submit_fills_each_partition_to_its_limit_with_the_longest_configs_first(fake, tmp_path):
+    result = submit(fake, "structure-readers", cwd=type_repo(tmp_path))
     assert result.returncode == 0, result.stderr
     expected = [expected_call(p, limit, gres, configs) for p, workers, limit, gres, configs in WORKERS for _ in range(workers)]
     assert calls(fake) == expected
@@ -97,10 +109,10 @@ def test_submit_fills_each_partition_to_its_limit_with_the_longest_configs_first
     assert "sharing: sbatch: error: QOSMaxSubmitJobPerUserLimit" in result.stderr  # a refusal does not stop the rest
 
 
-def test_submit_only_tops_up_partitions_that_already_have_workers(fake):
+def test_submit_only_tops_up_partitions_that_already_have_workers(fake, tmp_path):
     (fake / "queued-molscout-gpu").write_text("11\n12\n13\n")
     (fake / "queued-molscout-short").write_text("".join(f"{job}\n" for job in range(20, 25)))
-    result = submit(fake, "structure-readers")
+    result = submit(fake, "structure-readers", cwd=type_repo(tmp_path))
     assert result.returncode == 0, result.stderr
     partitions = [call[2] for call in calls(fake)]
     assert partitions.count("--partition=gpu") == 1
@@ -128,16 +140,16 @@ def test_an_unknown_argument_is_a_usage_error(fake):
     assert not (fake / "sbatch.log").exists()
 
 
-TYPE2_ORDER = {  # papers × seconds per paper, longest first (the placeholder rates in submit.sh)
-    "biominer": ["biominer__biovista", "biominer__internal"],
-    "others": ["decimer_ai__biovista", "openchemie__biovista", "decimer_ai__internal", "openchemie__internal"],
+TYPE2_ORDER = {  # internal first, then BioVista; longest first within each (the placeholder rates in submit.sh)
+    "biominer": ["biominer__internal", "biominer__biovista"],
+    "others": ["decimer_ai__internal", "openchemie__internal", "decimer_ai__biovista", "openchemie__biovista"],
 }
-BIOMINER = " --cpus-per-task=16 --mem=192G"
+BIOMINER = " --cpus-per-task=16 --mem=192G --dependency=singleton"
 TYPE2_WORKERS = [  # partition, workers, time limit, GRES, job name, extra options, configs
-    ("gpu-short", 2, "02:00:00", "gpu:h200:2", "molscout2-gpu-short-2gpu", BIOMINER, TYPE2_ORDER["biominer"]),
-    ("gpu", 2, "08:00:00", "gpu:h200:1", "molscout2-gpu-1gpu", "", TYPE2_ORDER["others"]),
+    ("gpu", 1, "08:00:00", "gpu:h200:1", "molscout2-biominer", BIOMINER, TYPE2_ORDER["biominer"]),
+    ("gpu", 3, "08:00:00", "gpu:h200:1", "molscout2-gpu-1gpu", "", TYPE2_ORDER["others"]),
+    ("gpu-short", 2, "02:00:00", "gpu:h200:1", "molscout2-gpu-short-1gpu", "", TYPE2_ORDER["others"]),
     ("gpu-interactive", 2, "02:00:00", "gpu:h200:1", "molscout2-gpu-interactive-1gpu", "", TYPE2_ORDER["others"]),
-    ("sharing", 2, "01:00:00", "gpu:h200:1", "molscout2-sharing-1gpu", "", TYPE2_ORDER["others"]),
 ]
 
 
@@ -152,6 +164,7 @@ def type_repo(tmp_path: Path) -> Path:
         (root / "benchmarks/configs" / f"{stem}.yaml").write_text(f"tool: {stem}\nrun_dir: benchmarks/tools/structure_readers/x\n")
     for stem in sum(TYPE2_ORDER.values(), []):
         (root / "benchmarks/configs" / f"{stem}.yaml").write_text(f"tool: {stem}\nrun_dir: benchmarks/tools/complete_systems/x\n")
+    commit_all(root)
     return root
 
 
@@ -165,22 +178,27 @@ def test_complete_systems_submits_only_type2_configs(fake, tmp_path):
         for _ in range(workers)
     ]
     assert calls(fake) == expected
-    two_gpu = [call for call in calls(fake) if "--gres=gpu:h200:2" in call]
-    assert [call[2] for call in two_gpu] == ["--partition=gpu-short"] * 2  # gpu allows 1 GPU per job
-    assert "gpu-short: submitted 1000 1001" in result.stdout
-    assert "gpu: submitted 1002 1003" in result.stdout
+    assert all("--gres=gpu:h200:1" in call for call in calls(fake))
+    assert {call[2] for call in calls(fake)} == {"--partition=gpu", "--partition=gpu-short", "--partition=gpu-interactive"}
+    assert not any("sharing" in " ".join(call) for call in calls(fake))
+    biominer = [call for call in calls(fake) if "--job-name=molscout2-biominer" in call]
+    assert len(biominer) == 1 and "--partition=gpu" in biominer[0] and "--dependency=singleton" in biominer[0]
+    resubmit = next(a for a in biominer[0] if a.startswith("--export=ALL,MOLSCOUT_RESUBMIT="))
+    assert "--job-name=molscout2-biominer" in resubmit and "--dependency=singleton" in resubmit  # USR1 keeps both
+    assert "gpu: submitted 1000" in result.stdout
 
 
 def test_complete_systems_tops_up_by_job_name(fake, tmp_path):
     root = type_repo(tmp_path)
-    (fake / "queued-molscout2-gpu-1gpu").write_text("11\n12\n")
+    (fake / "queued-molscout2-gpu-1gpu").write_text("11\n12\n13\n")
     (fake / "queued-molscout-gpu").write_text("21\n22\n23\n24\n")  # Type 1 workers do not count
     result = submit(fake, "complete-systems", cwd=root)
     assert result.returncode == 0, result.stderr
     names = [next(a for a in call if a.startswith("--job-name=")) for call in calls(fake)]
     assert names.count("--job-name=molscout2-gpu-1gpu") == 0
-    assert names.count("--job-name=molscout2-gpu-short-2gpu") == 2
-    assert "gpu: 2 already queued; submitted none" in result.stdout
+    assert names.count("--job-name=molscout2-gpu-short-1gpu") == 2
+    assert names.count("--job-name=molscout2-biominer") == 1
+    assert "gpu: 3 already queued; submitted none" in result.stdout
 
 
 def test_structure_readers_never_submits_type2_configs(fake, tmp_path):
@@ -195,6 +213,7 @@ def test_a_group_with_no_configs_submits_no_workers(fake, tmp_path):
     root = type_repo(tmp_path)
     for config in (root / "benchmarks" / "configs").glob("biominer__*.yaml"):
         config.unlink()
+    commit_all_again(root)
     result = submit(fake, "complete-systems", cwd=root)
     assert result.returncode == 0, result.stderr
     assert "no biominer configs: skipping its workers" in result.stdout
@@ -203,4 +222,25 @@ def test_a_group_with_no_configs_submits_no_workers(fake, tmp_path):
         for partition, workers, limit, gres, name, extra, configs in TYPE2_WORKERS[1:]
         for _ in range(workers)
     ]
-    assert not any("--gres=gpu:h200:2" in call for call in calls(fake))
+    assert not any("molscout2-biominer" in " ".join(call) for call in calls(fake))
+
+
+@pytest.mark.parametrize("kind", ["structure-readers", "complete-systems"])
+@pytest.mark.parametrize("path", ["benchmarks/configs/new.yaml", "benchmarks/tools/complete_systems/x/run.py", "src/a.py", "uv.lock"])
+def test_a_dirty_tree_refuses_to_submit(fake, tmp_path, kind, path):
+    root = type_repo(tmp_path)
+    (root / "uv.lock").write_text("x")
+    commit_all_again(root)
+    target = root / path
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(target.read_text() + "changed\n" if target.exists() else "new\n")
+    result = submit(fake, kind, cwd=root)
+    assert result.returncode == 1
+    assert path in result.stderr
+    assert not (fake / "sbatch.log").exists()
+
+
+def test_changes_outside_the_keyed_paths_do_not_block(fake, tmp_path):
+    root = type_repo(tmp_path)
+    (root / "notes.md").write_text("x")
+    assert submit(fake, "complete-systems", cwd=root).returncode == 0
