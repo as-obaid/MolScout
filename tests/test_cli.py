@@ -200,7 +200,7 @@ def test_dataset_flag_must_agree_with_rows(tmp_path, capsys):
     assert "uspto" in capsys.readouterr().err
 
 
-def test_biovista_has_no_ground_truth_loader_yet(tmp_path, capsys):
+def test_biovista_without_references_is_an_error(tmp_path, capsys):
     predictions = tmp_path / "predictions.csv"
     predictions.write_text(HEADER + "\nbiovista,p1,CCO,1,,,T 1,1\n")
     assert main(["score", str(predictions), "-o", str(tmp_path / "scores.json")]) == 1
@@ -355,3 +355,26 @@ def test_paper_seconds_must_be_consistent(tmp_path, capsys):
     args += ["--papers", str(BIOVISTA / "manifest.csv"), "--paper-seconds", str(seconds)]
     assert main(args) == 1
     assert "papers" in capsys.readouterr().err
+
+
+def timing_file(directory, papers):
+    path = directory / "timing.json"
+    path.write_text(json.dumps({"papers": len(papers), "seconds": {p: 1 for p in papers}}))
+    return path
+
+
+def test_biovista_timing_must_cover_exactly_the_scored_papers(tmp_path, capsys):
+    for papers, expected in ((["1_aaaa", "2_bbbb"], "missing 1: 3_cccc"), (["1_aaaa", "2_bbbb", "3_cccc", "4_dddd"], "extra 1: 4_dddd")):
+        seconds = timing_file(tmp_path, papers)
+        args = ["score", str(biovista_predictions(tmp_path)), "-o", str(tmp_path / "s.json")]
+        args += ["--references", str(BIOVISTA), "--papers", str(BIOVISTA / "manifest.csv"), "--paper-seconds", str(seconds)]
+        assert main(args) == 1
+        assert expected in capsys.readouterr().err
+
+
+def test_internal_timing_must_cover_exactly_the_split_papers(tmp_path, capsys):
+    for papers, expected in ((["1", "2", "3"], "missing 1: 4"), (["1", "2", "3", "4", "9"], "extra 1: 9")):
+        seconds = timing_file(tmp_path, papers)
+        args = ["score", str(FIXTURES / "papers_predictions.csv"), "-o", str(tmp_path / "s.json"), *map(str, PAPER_ARGS)]
+        assert main([*args, "--paper-seconds", str(seconds)]) == 1
+        assert expected in capsys.readouterr().err

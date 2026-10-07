@@ -71,7 +71,10 @@ def scored_papers(manifest: str | Path = BIOVISTA_PAPERS_PATH) -> tuple[ScoredPa
 
 
 def load_biovista_truth(root: str | Path, manifest: str | Path = BIOVISTA_PAPERS_PATH) -> BioVistaTruth:
-    """Read every scored paper's label file; ValueError if the labels differ from the frozen manifest."""
+    """Read every scored paper's label file; ValueError if the labels differ from the frozen manifest.
+
+    Drawn means `backbone` is exactly `NA`; any other value, blank included, is enumerated.
+    """
     papers = scored_papers(manifest)
     references: dict[str, tuple[str, ...]] = {}
     drawn: dict[str, tuple[str, ...]] = {}

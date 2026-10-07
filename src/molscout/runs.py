@@ -54,6 +54,8 @@ def score_run(
         scores, inputs = _score_biovista(predictions, references, papers)
     else:
         raise ValueError(f"no ground-truth loader for {dataset} yet")
+    if paper_seconds is not None and isinstance(scores.get("papers"), dict):
+        _check_paper_seconds(paper_seconds, scores["papers"])
     scores = {**scores, "seconds_per_item": seconds_per_item(predictions, paper_seconds)}
     tool = predictions[0].tool if predictions else ""
     return build_report(scores, dataset=dataset, tool=tool, predictions_path=predictions_path, inputs=inputs)
@@ -119,6 +121,13 @@ def _score_biovista(
         }
     }
     return scores, inputs
+
+
+def _check_paper_seconds(paper_seconds: Mapping[str, float], scored: Mapping[str, object]) -> None:
+    missing, extra = sorted(set(scored) - set(paper_seconds)), sorted(set(paper_seconds) - set(scored))
+    if missing or extra:
+        parts = [f"{label} {len(ids)}: {', '.join(ids[:5])}" for label, ids in (("missing", missing), ("extra", extra)) if ids]
+        raise ValueError("the timing file's papers differ from the scored papers (" + "; ".join(parts) + ")")
 
 
 def read_paper_seconds(path: str | Path) -> dict[str, float]:

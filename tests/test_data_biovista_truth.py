@@ -95,3 +95,15 @@ def test_checksum_changes_with_a_label_file(root):
     path = root / bt.LABELS / "3_cccc_structure.csv"
     path.write_text(path.read_text().replace("CCCl", "CCCCl"))
     assert bt.reference_set_sha256(root, MANIFEST) != before
+
+
+def test_blank_backbone_is_enumerated_not_drawn(tmp_path):
+    labels = tmp_path / bt.LABELS
+    labels.mkdir(parents=True)
+    (labels / "1_aaaa_structure.csv").write_text("smiles,backbone\nCCO,NA\nCCN,\nCCC, \nCCCl,CC*\n")
+    manifest = tmp_path / "manifest.csv"
+    lines = MANIFEST.read_text().splitlines()
+    manifest.write_text("\n".join([lines[0], lines[1].replace(",4,", ",4,", 1)]) + "\n")
+    truth = bt.load_biovista_truth(tmp_path, manifest)
+    assert dict(truth.drawn) == {"1_aaaa": ("CCO",)}
+    assert dict(truth.enumerated) == {"1_aaaa": ("CCN", "CCC", "CCCl")}
