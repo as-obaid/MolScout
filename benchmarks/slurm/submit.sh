@@ -33,12 +33,14 @@ if [ -n "$dirty" ]; then
 fi
 
 # Type 2 estimates: papers per dataset × seconds per paper, plus start-up seconds for each segment the
-# run needs (placeholders until the Task 9 smoke tests are timed; update the lines below). A segment is
-# at most the time limit less the 180 s USR1 warning: TYPE2_SEGMENT_SECONDS for the 2 h partitions that
-# DECIMER.ai and OpenChemIE also use, TYPE2_BIOMINER_SEGMENT_SECONDS for BioMiner's one 8 h worker.
-TYPE2_PAPERS="biovista=163 internal=6"
+# run needs. DECIMER.ai and OpenChemIE were timed on an H200: 57.7 and 6.9 s per paper, and about 210
+# and 140 s of start-up (model load and a warm-up paper), rounded up below; BioMiner's are not yet timed.
+# A segment is at most the time limit less the 180 s USR1 warning: TYPE2_SEGMENT_SECONDS for the 2 h
+# partitions that DECIMER.ai and OpenChemIE also use, TYPE2_BIOMINER_SEGMENT_SECONDS for BioMiner's one
+# 8 h worker.
+TYPE2_PAPERS="biovista=145 internal=6"
 TYPE2_SECONDS_PER_PAPER="biominer=120 decimer_ai=60 openchemie=30"
-TYPE2_STARTUP_SECONDS="biominer=600 decimer_ai=120 openchemie=120"
+TYPE2_STARTUP_SECONDS="biominer=600 decimer_ai=240 openchemie=180"
 TYPE2_SEGMENT_SECONDS=7020
 TYPE2_BIOMINER_SEGMENT_SECONDS=28620
 

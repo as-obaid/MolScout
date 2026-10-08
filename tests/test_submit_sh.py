@@ -140,7 +140,7 @@ def test_an_unknown_argument_is_a_usage_error(fake):
     assert not (fake / "sbatch.log").exists()
 
 
-TYPE2_ORDER = {  # internal first, then BioVista; longest first within each (the placeholder rates in submit.sh)
+TYPE2_ORDER = {  # internal first, then BioVista; longest first within each (the rates in submit.sh)
     "biominer": ["biominer__internal", "biominer__biovista"],
     "others": ["decimer_ai__internal", "openchemie__internal", "decimer_ai__biovista", "openchemie__biovista"],
 }
