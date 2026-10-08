@@ -1,8 +1,10 @@
 #!/bin/bash
 # Where each benchmark run stands, then the molscout jobs in the queue. Run from the repository root:
 #   bash benchmarks/slurm/status.sh [structure-readers|complete-systems]   (default: both)
-# done: results at HEAD with no uncommitted changes. running: claimed by a live job. failed: given up
-# after 2 failures at HEAD. partial: a checkpoint is left. stale: results a worker will redo.
+# done: results current (molscout is-current: made from the code the run has at HEAD, none of it
+# uncommitted). running: claimed by a live job. failed: given up after 2 failures with the run's code at
+# HEAD. partial: a checkpoint is left. stale: results a worker will redo. MOLSCOUT names the molscout
+# command (default: the one run.sbatch uses, in $MOLSCOUT_STORE).
 # Checkpoint rows are counted by line; a complete system (paper config) shows its finished papers, counted
 # from .checkpoints/<run>/predictions.papers.jsonl (lines marking an attempt are not counted).
 set -euo pipefail
@@ -15,7 +17,12 @@ case $kind in
 esac
 results=benchmarks/results
 claims=$results/.claims
-head=$(git rev-parse HEAD 2>/dev/null || true)
+export MOLSCOUT_STORE="${MOLSCOUT_STORE:-/scratch/$USER/molscout-store}"  # as in run.sbatch: configs use it
+molscout=${MOLSCOUT:-$MOLSCOUT_STORE/envs/molscout/bin/molscout}
+if ! command -v "$molscout" > /dev/null; then
+    echo "status.sh: $molscout not found; set MOLSCOUT (or MOLSCOUT_STORE) to find molscout" >&2
+    exit 1
+fi
 
 images() {  # the images in the folder a config names
     local folder
@@ -27,39 +34,51 @@ images() {  # the images in the folder a config names
 
 add() { detail="${detail:+$detail, }$1"; }
 
-printf '%-30s %-8s %s\n' RUN STATE DETAIL
-states=""
+is_papers() { grep -q '^run_dir:.*complete_systems' "$1"; }  # whether config $1 is a complete system's
+
+selected=()
 for config in benchmarks/configs/*.yaml; do
-    run=$(basename "$config" .yaml)
-    if grep -q '^run_dir:.*complete_systems' "$config"; then papers=1; else papers=""; fi
+    if is_papers "$config"; then papers=1; else papers=""; fi
     if [ "$kind" = structure-readers ] && [ -n "$papers" ]; then continue; fi
     if [ "$kind" = complete-systems ] && [ -z "$papers" ]; then continue; fi
+    selected+=("$config")
+done
+# One line per config, in order: RUN current|not-current CODE WHY; CODE, the run's code fingerprint at
+# HEAD, keys the failures as in run.sbatch. Exit status 1 only means some run is not current.
+verdicts=""
+if [ "${#selected[@]}" -gt 0 ]; then
+    verdicts=$("$molscout" is-current "${selected[@]}") || [ $? -eq 1 ] || {
+        echo "status.sh: $molscout is-current failed" >&2
+        exit 1
+    }
+fi
+
+printf '%-30s %-8s %s\n' RUN STATE DETAIL
+states=""
+while read -r run verdict code why <&3; do
+    [ -n "$run" ] || continue
+    config=benchmarks/configs/$run.yaml
+    if is_papers "$config"; then papers=1; else papers=""; fi
     meta=$results/$run/meta.json
     checkpoint=$results/.checkpoints/$run/predictions.csv
-    commit="" partition="" detail=""
-    if [ -f "$meta" ]; then
-        commit=$(python3 -c '
-import json, sys
-git = json.load(open(sys.argv[1])).get("git") or {}
-print(git.get("commit") or "unknown", "dirty" if git.get("dirty") is not False else "clean")' "$meta") || commit=""
-    fi
+    partition="" detail=""
     job=$(cat "$claims/$run/job" 2>/dev/null) || job=""
     if [ -n "$job" ]; then partition=$(squeue -h -j "$job" -t RUNNING,COMPLETING -o %P 2>/dev/null) || partition=""; fi
-    failures=$(grep -cxF "$head" "$claims/$run.failures" 2>/dev/null) || failures=0
-    if [ "$commit" = "$head clean" ]; then
+    failures=$(grep -cxF -e "$code" "$claims/$run.failures" 2>/dev/null) || failures=0
+    if [ "$verdict" = current ]; then
         state="done"
-        add "${head:0:7}"
+        add "$why"
     elif [ -n "$partition" ]; then
         state=running
         add "job $job ($partition)"
     elif [ "$failures" -ge 2 ]; then
         state=failed
-        add "$failures failures at HEAD"
+        add "$failures failures at code ${code:0:7}"
     elif [ -f "$checkpoint" ]; then
         state=partial
-    elif [ -n "$commit" ]; then
+    elif [ -f "$meta" ]; then
         state=stale
-        if [ "${commit% *}" = "$head" ]; then add "${head:0:7}, uncommitted changes"; else add "${commit:0:7}, not HEAD"; fi
+        add "$why"
     else
         state=pending
     fi
@@ -70,11 +89,11 @@ print(git.get("commit") or "unknown", "dirty" if git.get("dirty") is not False e
         add "$((rows > 0 ? rows : 0))/$(images "$config") rows"
     fi
     if [ "$failures" -gt 0 ] && [ "$state" != failed ]; then
-        add "$failures failure$([ "$failures" -eq 1 ] || echo s) at HEAD"
+        add "$failures failure$([ "$failures" -eq 1 ] || echo s) at code ${code:0:7}"
     fi
     printf '%-30s %-8s %s\n' "$run" "$state" "$detail"
     states="$states$state"$'\n'
-done
+done 3<<< "$verdicts"
 printf '%s' "$states" | sort | uniq -c | awk '{ printf "%s%s %s", (NR > 1 ? ", " : ""), $1, $2 } END { print "" }'
 echo
 squeue -u "$(id -un)" -o '%.10i %.24j %.16P %.9T %.10M %.10L %R' | awk 'NR == 1 || $2 ~ /^molscout/'

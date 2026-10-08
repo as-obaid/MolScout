@@ -1,12 +1,14 @@
 """benchmarks/slurm/run.sbatch runs one config, picks one by array index, or works through several as a worker.
 
 MOLSCOUT=echo shows the command; the worker tests put fake molscout, squeue, sbatch and git first on PATH.
+One worker test uses real git and the real `molscout is-current` instead.
 """
 
 import json
 import os
 import signal
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -60,9 +62,21 @@ def test_files_are_private_by_default():
 
 
 HEAD = "a" * 40
+CODE = "c" * 64
 FAKE_BENCH = """#!/bin/bash
+# molscout is-current CONFIG: with MOLSCOUT_PYTHON set, the real one; otherwise <run>.verdict holds
+# "current WHY" or "not-current WHY" (none: no results), the code fingerprint is $FAKE_CODE, and with
+# is-current.broken it fails without output.
 # molscout bench CONFIG: logs the call; <run>.exit holds its status, and with <run>.hang it runs until TERM.
 run=$(basename "$2" .yaml)
+if [ "$1" = is-current ]; then
+    if [ -n "${MOLSCOUT_PYTHON:-}" ]; then exec "$MOLSCOUT_PYTHON" -m molscout "$@"; fi
+    if [ -f "$FAKE/is-current.broken" ]; then echo "Traceback: broken" >&2; exit 2; fi
+    verdict=$(cat "$FAKE/$run.verdict" 2>/dev/null || echo "not-current no results")
+    echo "$run ${verdict%% *} $FAKE_CODE ${verdict#* }"
+    [ "${verdict%% *}" = current ]
+    exit
+fi
 echo "bench $run" >> "$FAKE/calls"
 if [ -f "$FAKE/$run.hang" ]; then
     trap 'echo "TERM $run" >> "$FAKE/calls"; kill $sleeper; exit 143' TERM
@@ -121,6 +135,7 @@ class Worker:
             "SLURM_JOB_ID": "500",
             "FAKE": str(self.fake),
             "FAKE_HEAD": HEAD,
+            "FAKE_CODE": CODE,
         }
 
     def configs(self, runs: str) -> list[str]:
@@ -141,9 +156,9 @@ class Worker:
         path = self.fake / "sbatch"
         return [json.loads(line) for line in path.read_text().splitlines()] if path.exists() else []
 
-    def results_at(self, run: str, commit: str, dirty: bool = False) -> None:
-        (self.results / run).mkdir()
-        (self.results / run / "meta.json").write_text(json.dumps({"git": {"commit": commit, "dirty": dirty}}))
+    def verdict(self, run: str, text: str) -> None:
+        """What the fake `molscout is-current` says of the run: "current WHY" or "not-current WHY"."""
+        (self.fake / f"{run}.verdict").write_text(f"{text}\n")
 
     def claim(self, run: str, job: str) -> None:
         (self.claims / run).mkdir(parents=True)
@@ -155,15 +170,17 @@ def worker(tmp_path):
     return Worker(tmp_path)
 
 
-def test_worker_skips_runs_done_at_head_and_runs_the_rest(worker):
-    worker.results_at("a", HEAD)
-    worker.results_at("b", "b" * 40)
-    worker.results_at("c", HEAD, dirty=True)
+def test_worker_skips_current_runs_and_runs_the_rest(worker):
+    worker.verdict("a", "current made at bbbbbbb")
+    worker.verdict("b", "not-current code changed since bbbbbbb: src/x.py")
+    worker.verdict("c", "not-current uncommitted changes: src/x.py")
     result = worker.run("a b c d")
     assert result.returncode == 0, result.stderr
     assert worker.calls() == ["bench b", "bench c", "bench d"]
-    assert "skip a: done at aaaaaaa" in result.stdout
-    assert "claimed b" in result.stdout and "finished d" in result.stdout
+    assert "skip a: done at code ccccccc (made at bbbbbbb)" in result.stdout
+    assert "claimed b (code changed since bbbbbbb: src/x.py)" in result.stdout
+    assert "claimed c (uncommitted changes: src/x.py)" in result.stdout
+    assert "claimed d (no results)" in result.stdout and "finished d" in result.stdout
     assert list(worker.claims.iterdir()) == []
     assert worker.sbatch() == []  # a worker that finishes does not resubmit
 
@@ -172,31 +189,42 @@ def test_worker_skips_live_claims_and_takes_over_dead_ones(worker):
     worker.claim("a", "111")
     worker.claim("b", "222")
     worker.claim("c", "333")
-    worker.results_at("c", HEAD)
+    worker.verdict("c", "current made at aaaaaaa")
     (worker.fake / "alive").write_text("111\n")
     result = worker.run("a b c")
     assert result.returncode == 0, result.stderr
     assert worker.calls() == ["bench b"]
     assert "skip a: claimed by job 111" in result.stdout
     assert "claimed b from job 222, which has ended" in result.stdout
-    assert "skip c: done at aaaaaaa" in result.stdout  # checked under the claim
+    assert "skip c: done at code ccccccc" in result.stdout  # checked under the claim
     assert (worker.claims / "a" / "job").read_text() == "111\n"
     assert not (worker.claims / "b").exists() and not (worker.claims / "c").exists()
 
 
-def test_worker_counts_failures_at_head_and_gives_up_after_two(worker):
+def test_worker_counts_failures_against_the_runs_code_and_gives_up_after_two(worker):
     (worker.fake / "a.exit").write_text("3")
     for attempt in (1, 2):
         result = worker.run("a b")
         assert result.returncode == 0, result.stderr
         assert f"failed a with status 3 (failure {attempt} of 2)" in result.stdout
         assert not (worker.claims / "a").exists()
-    assert (worker.claims / "a.failures").read_text() == f"{HEAD}\n{HEAD}\n"
+    assert (worker.claims / "a.failures").read_text() == f"{CODE}\n{CODE}\n"
+    worker.env["FAKE_HEAD"] = "d" * 40  # a commit that leaves the run's code alone keeps the count
     result = worker.run("a b")
-    assert "skip a: gave up after 2 failures at aaaaaaa" in result.stdout
+    assert "skip a: gave up after 2 failures at code ccccccc" in result.stdout
     assert worker.calls() == ["bench a", "bench b"] * 2 + ["bench b"]
-    worker.env["FAKE_HEAD"] = "c" * 40  # a new commit gets new attempts
+    worker.env["FAKE_CODE"] = "e" * 64  # a commit to the run's code gets new attempts
     assert "failed a with status 3 (failure 1 of 2)" in worker.run("a").stdout
+    assert (worker.claims / "a.failures").read_text() == f"{CODE}\n{CODE}\n{'e' * 64}\n"
+
+
+def test_a_failing_is_current_check_means_not_done(worker):
+    (worker.fake / "is-current.broken").touch()
+    (worker.fake / "a.exit").write_text("3")
+    result = worker.run("a")
+    assert worker.calls() == ["bench a"]
+    assert "claimed a (molscout is-current failed with status 2)" in result.stdout
+    assert (worker.claims / "a.failures").read_text() == "-\n"
 
 
 @pytest.mark.parametrize(
@@ -245,11 +273,73 @@ def test_a_refused_resubmission_is_logged(worker):
 
 
 def test_one_config_is_a_worker_only_when_submitted_to_resubmit(worker):
-    worker.results_at("a", HEAD)
+    worker.verdict("a", "current made at aaaaaaa")
     assert "skip a: done" in worker.run("a").stdout
     del worker.env["MOLSCOUT_RESUBMIT"]
     assert worker.run("a").returncode == 0
     assert worker.calls() == ["bench a"]
+
+
+GIT = ("git", "-c", "user.name=Test", "-c", "user.email=test@example.com", "-c", "commit.gpgsign=false")
+CONFIG = """tool: {tool}
+name: Tool
+version: '1.0'
+dataset: uspto
+images: data/raw/uspto/images
+references: data/raw/uspto/refs
+run_dir: benchmarks/tools/structure_readers/{tool}
+python: ${{MOLSCOUT_STORE}}/envs/{tool}/bin/python
+args: []
+checkpoints: []
+"""
+REPO_FILES = {
+    "pyproject.toml": "[project]\nname = 'molscout'\n",
+    "src/molscout/x.py": "v1\n",
+    "benchmarks/tools/crop_runner.py": "v1\n",
+    "benchmarks/tools/paper_runner.py": "v1\n",
+    "benchmarks/slurm/run.sbatch": "v1\n",
+    "benchmarks/tools/structure_readers/t1/run.py": "v1\n",
+    "benchmarks/tools/structure_readers/t2/run.py": "v1\n",
+    **{f"benchmarks/configs/{tool}__uspto.yaml": CONFIG.format(tool=tool) for tool in ("t1", "t2")},
+}
+
+
+def test_the_worker_redoes_only_the_runs_whose_code_a_commit_changed(worker):
+    """Real git and the real `molscout is-current` (only `molscout bench` is fake): both runs finished at the
+    first commit; a commit adding another tool keeps them done, and one to t2's folder makes t2 run again."""
+    (worker.bin / "git").unlink()
+    worker.env["MOLSCOUT_PYTHON"] = sys.executable
+
+    def commit(files: dict[str, str]) -> str:
+        for path, text in files.items():
+            (worker.root / path).parent.mkdir(parents=True, exist_ok=True)
+            (worker.root / path).write_text(text)
+        paths = list(files)
+        subprocess.run([*GIT, "-C", str(worker.root), "add", "--", *paths], check=True)
+        subprocess.run([*GIT, "-C", str(worker.root), "commit", "-q", "-m", "change"], check=True)
+        head = subprocess.run(["git", "-C", str(worker.root), "rev-parse", "HEAD"], capture_output=True, text=True)
+        return head.stdout.strip()
+
+    subprocess.run([*GIT, "init", "-q", str(worker.root)], check=True)
+    made = commit(REPO_FILES)
+    for run in ("t1__uspto", "t2__uspto"):
+        (worker.results / run).mkdir()
+        (worker.results / run / "meta.json").write_text(json.dumps({"git": {"commit": made, "dirty": False}}))
+
+    commit({"benchmarks/tools/complete_systems/biominer/x.py": "v1\n"})
+    result = worker.run("t1__uspto t2__uspto")
+    assert result.returncode == 0, result.stderr
+    assert worker.calls() == []
+    for run in ("t1__uspto", "t2__uspto"):
+        assert f"skip {run}: done at code " in result.stdout and f"(made at {made[:7]})" in result.stdout
+
+    own = "benchmarks/tools/structure_readers/t2/run.py"
+    commit({own: "v2\n"})
+    result = worker.run("t1__uspto t2__uspto")
+    assert result.returncode == 0, result.stderr
+    assert worker.calls() == ["bench t2__uspto"]
+    assert "skip t1__uspto: done at code " in result.stdout
+    assert f"claimed t2__uspto (code changed since {made[:7]}: {own})" in result.stdout
 
 
 GPU_HEALTHY = "#!/bin/bash\necho 0\n"

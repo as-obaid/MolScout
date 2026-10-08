@@ -18,6 +18,7 @@ from time import perf_counter, sleep
 
 from molscout.bench import BenchError, Terminated, papers
 from molscout.bench.config import RunConfig, load_config
+from molscout.bench.current import GIT_PATHS, code_fingerprint, run_paths
 from molscout.bench.meta import (
     GpuSampler,
     build_meta,
@@ -41,13 +42,6 @@ from molscout.scoring import check_rdkit_version, write_scores
 
 IMAGE_SUFFIXES = frozenset({".png", ".jpg", ".jpeg", ".tif", ".tiff", ".gif", ".bmp"})
 DROPPED_VARIABLES = ("PYTHONPATH", "PYTHONHOME", "VIRTUAL_ENV")
-GIT_PATHS = (
-    "src",
-    "pyproject.toml",
-    "benchmarks/tools/crop_runner.py",
-    "benchmarks/tools/paper_runner.py",
-    "benchmarks/slurm/run.sbatch",
-)
 EXAMPLES_SHOWN = 10
 ERRORS_FILE = "predictions.errors.json"  # what benchmarks/tools/crop_runner.py writes beside predictions.csv
 ERRORS_KEYS = frozenset({"images", "failed", "errors"})
@@ -66,8 +60,9 @@ def run_benchmark(config_path: str | Path, *, repo_root: str | Path, results_roo
     raises Terminated, which stops the tool and removes the staging folder.
 
     run.py keeps its finished rows in results/.checkpoints/<tool>__<dataset>/ (see resume.py). A run
-    that fails or is stopped leaves that checkpoint, and the next run of the same config at the same
-    commit carries on from it; the folder is deleted once the results are in place.
+    that fails or is stopped leaves that checkpoint, and the next run of the same config with the same
+    code (current.code_fingerprint: a commit to another tool's folder leaves it alone) carries on from
+    it; the folder is deleted once the results are in place.
     """
     with _sigterm_raises():
         return _run(config_path, Path(repo_root).absolute(), Path(results_root).absolute())
@@ -97,7 +92,10 @@ def _run(config_path: str | Path, repo_root: Path, results_root: Path) -> Path:
         "variables": environment_variables(env, config.env),
     }
     git_paths = [repo_root / path for path in GIT_PATHS]
-    git = git_state(repo_root, [config.run_dir, config.path, *git_paths])
+    code = run_paths(config, repo_root)
+    git = git_state(repo_root, code)
+    fingerprint = code_fingerprint(repo_root, git["commit"], code)  # type: ignore[arg-type]
+    git = {**git, "code_fingerprint": fingerprint}  # meta.json keeps the commit too, for provenance
     # Paper runs take hours across segments: a changed environment lock or an uncommitted edit means another run
     extra_key = (
         {
@@ -112,7 +110,7 @@ def _run(config_path: str | Path, repo_root: Path, results_root: Path) -> Path:
         results_root,
         config.run_name,
         config_text=config.text,
-        git_commit=git["commit"],
+        code_fingerprint=fingerprint,
         sources=fingerprints,
         extra_key=extra_key,
     )

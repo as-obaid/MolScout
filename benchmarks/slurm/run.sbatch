@@ -5,10 +5,13 @@
 #   sbatch --array=0-4 benchmarks/slurm/run.sbatch benchmarks/configs/molscribe__*.yaml
 #   sbatch --partition=short --gres=none benchmarks/slurm/run.sbatch benchmarks/configs/molvec__uspto.yaml
 # Several configs without --array, or any configs with MOLSCOUT_RESUBMIT set (benchmarks/slurm/submit.sh
-# sets it), make a worker. It runs, in order, each config not yet done at HEAD that no live job has
-# claimed, and gives up on a config after 2 failures at HEAD. USR1 (--signal=B:USR1@180) means the time
-# limit is near: the run stops, keeping its checkpoint, and the worker resubmits itself with
-# sbatch $MOLSCOUT_RESUBMIT. TERM (scancel) stops it the same way without resubmitting.
+# sets it), make a worker. It runs, in order, each config whose results are not current that no live job
+# has claimed, and gives up on a config after 2 failures with the same code. `molscout is-current` decides
+# both: results are current when made from the code the run has at HEAD (its tool folder, its config and
+# the harness) with none of it uncommitted, and its code fingerprint keys the failures, so a commit to
+# another tool's folder leaves both alone. USR1 (--signal=B:USR1@180) means the time limit is near: the
+# run stops, keeping its checkpoint, and the worker resubmits itself with sbatch $MOLSCOUT_RESUBMIT.
+# TERM (scancel) stops it the same way without resubmitting.
 # A GPU job first checks its GPUs (gpu_ok). On a bad GPU a worker resubmits itself excluding the node
 # (up to 3 nodes) and exits 0 without claiming anything; a single or array run exits 3.
 #SBATCH --job-name=molscout-bench
@@ -32,11 +35,14 @@ claims=$results/.claims
 
 log() { echo "worker: $*"; }
 
-is_done() {  # whether results/<run>/meta.json is from HEAD with no uncommitted changes
-    [ -f "$results/$1/meta.json" ] && python3 -c '
-import json, sys
-git = json.load(open(sys.argv[1])).get("git") or {}
-sys.exit(git.get("commit") != sys.argv[2] or git.get("dirty") is not False)' "$results/$1/meta.json" "$head"
+is_current() {  # whether config $1's results are current (molscout is-current). Sets code, the run's code
+    # fingerprint at HEAD (- when unknown), and why.
+    local line="" verdict="" status=0
+    line=$("$molscout" is-current "$1") || status=$?
+    read -r _ verdict code why <<< "$line" || true
+    code=${code:--}
+    why=${why:-molscout is-current failed with status $status}
+    [ "$status" -eq 0 ] && [ "$verdict" = current ]
 }
 
 alive() {  # whether job $1 is queued or running; when squeue cannot tell, it is taken to be
@@ -142,7 +148,7 @@ stop() {  # trap: $1 is USR1 (the time limit is near) or TERM (scancel); the run
 }
 
 worker() {
-    local head config run failures status
+    local head config run failures status code why current
     if ! gpu_ok; then
         log "bad GPU on $(hostname -s): $gpu_why"
         if [ -n "${MOLSCOUT_RESUBMIT:-}" ]; then bad_gpu_resubmit || exit 1; fi
@@ -161,13 +167,14 @@ worker() {
             log "skip $run: claimed by job ${owner:-(being claimed)}"
             continue
         fi
-        failures=$(grep -cxF "$head" "$claims/$run.failures" 2>/dev/null) || failures=0
-        if is_done "$run"; then
-            log "skip $run: done at ${head:0:7}"
+        if is_current "$config"; then current=1; else current=""; fi
+        failures=$(grep -cxF -e "$code" "$claims/$run.failures" 2>/dev/null) || failures=0
+        if [ -n "$current" ]; then
+            log "skip $run: done at code ${code:0:7} ($why)"
         elif [ "$failures" -ge 2 ]; then
-            log "skip $run: gave up after $failures failures at ${head:0:7}"
+            log "skip $run: gave up after $failures failures at code ${code:0:7}"
         else
-            log "claimed $run${owner:+ from job $owner, which has ended}"
+            log "claimed $run${owner:+ from job $owner, which has ended} ($why)"
             "$molscout" bench "$config" &
             bench=$!
             if [ -n "$stopped" ]; then kill -TERM "$bench" 2>/dev/null || true; fi  # a signal before bench was set
@@ -183,7 +190,7 @@ worker() {
             elif [ -n "$stopped" ]; then
                 log "stopped $run; its checkpoint is kept"
             else
-                echo "$head" >> "$claims/$run.failures"
+                echo "$code" >> "$claims/$run.failures"
                 log "failed $run with status $status (failure $((failures + 1)) of 2)"
             fi
         fi

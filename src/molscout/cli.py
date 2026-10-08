@@ -1,4 +1,5 @@
-"""Command line: `molscout score` writes scores.json for a predictions.csv; `molscout bench` runs and scores a tool."""
+"""Command line: `molscout score` writes scores.json for a predictions.csv; `molscout bench` runs and scores a tool;
+`molscout is-current` says whether a run's results are current."""
 
 from __future__ import annotations
 
@@ -8,6 +9,7 @@ import sys
 from pathlib import Path
 
 from molscout.bench import BenchError, Terminated
+from molscout.bench.current import check_current
 from molscout.bench.harness import run_benchmark
 from molscout.data.internal import GROUND_TRUTH_PATH, SPLIT_PATH
 from molscout.data.biovista_truth import BIOVISTA_PAPERS_PATH
@@ -44,9 +46,21 @@ def main(argv: list[str] | None = None) -> int:
         "--repo-root", type=Path, help="where relative paths in the config start (default: the current directory)"
     )
     bench.add_argument("--results-root", type=Path, help="default: <repo root>/benchmarks/results")
+    current = commands.add_parser(
+        "is-current",
+        help="whether each run's results are current: made from the code the run has at HEAD (its tool folder, "
+        "its config and the harness), with none of it uncommitted; exit 0 only when all are",
+        description="Prints one line per config: RUN current|not-current CODE WHY, where CODE is the run's code "
+        "fingerprint at HEAD (- when it cannot be computed). Exits 0 when every run is current, else 1.",
+    )
+    current.add_argument("configs", type=Path, nargs="+", metavar="config", help="benchmarks/configs/<tool>__<dataset>.yaml")
+    current.add_argument("--repo-root", type=Path, help="the repository root (default: the current directory)")
+    current.add_argument("--results-root", type=Path, help="default: <repo root>/benchmarks/results")
     args = parser.parse_args(argv)
     if args.command == "bench":
         return _bench(args)
+    if args.command == "is-current":
+        return _is_current(args)
     try:
         write_scores(args.output, _score(args))
     except (ValueError, OSError, RuntimeError) as exc:
@@ -66,6 +80,15 @@ def _score(args: argparse.Namespace) -> dict[str, object]:
         papers=args.papers,
         paper_seconds=None if args.paper_seconds is None else read_paper_seconds(args.paper_seconds),
     )
+
+
+def _is_current(args: argparse.Namespace) -> int:
+    repo_root = args.repo_root or Path.cwd()
+    results_root = args.results_root or repo_root / "benchmarks" / "results"
+    verdicts = [check_current(config, repo_root=repo_root, results_root=results_root) for config in args.configs]
+    for verdict in verdicts:
+        print(verdict.line(), flush=True)
+    return 0 if all(verdict.current for verdict in verdicts) else 1
 
 
 def _bench(args: argparse.Namespace) -> int:

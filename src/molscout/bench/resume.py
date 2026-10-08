@@ -1,8 +1,9 @@
 """Checkpoints that let an interrupted benchmark run carry on where it stopped.
 
 An unfinished run keeps <results root>/.checkpoints/<run>/: the tool's partial predictions.csv and
-predictions.errors.jsonl (crop_runner's --resume), and state.json, {"config_sha256", "git_commit",
-"segments"}, with one record for each time the tool ran.
+predictions.errors.jsonl (crop_runner's --resume), and state.json, {"config_sha256", "code_fingerprint",
+"segments"}, with one record for each time the tool ran. The code fingerprint (current.code_fingerprint)
+covers only the run's own code, so a commit elsewhere in the repository keeps the checkpoint.
 """
 
 from __future__ import annotations
@@ -34,15 +35,16 @@ class Checkpoint:
         run: str,
         *,
         config_text: str,
-        git_commit: str | None,
+        code_fingerprint: str | None,
         sources: Sequence[Mapping[str, object]] = (),
         extra_key: Mapping[str, object] | None = None,
     ) -> Checkpoint:
-        """The checkpoint an interrupted run of this config at this commit left, or a new, empty one.
+        """The checkpoint an interrupted run of this config with this code left, or a new, empty one.
 
-        `sources` are the fingerprints of the upstream clones (meta.source_fingerprint); a run whose
-        clones changed starts over, since its finished rows came from other code. Without sources the
-        key is the config and the commit alone.
+        `code_fingerprint` is the run's code at HEAD (current.code_fingerprint). `sources` are the
+        fingerprints of the upstream clones (meta.source_fingerprint); a run whose clones changed starts
+        over, since its finished rows came from other code. Without sources the key is the config and
+        the code fingerprint alone.
 
         `extra_key` adds more entries to the key (paper runs pass the environment lock and the tracked
         source changes); without it the key is unchanged.
@@ -52,7 +54,7 @@ class Checkpoint:
         folder = results_root / CHECKPOINTS / run
         key: dict[str, object] = {
             "config_sha256": hashlib.sha256(config_text.encode("utf-8")).hexdigest(),
-            "git_commit": git_commit,
+            "code_fingerprint": code_fingerprint,
         }
         if sources:
             key["sources"] = [dict(source) for source in sources]
@@ -64,7 +66,7 @@ class Checkpoint:
             print(f"{run}: resuming with {checkpoint.rows()} rows done, from {folder}", flush=True)
             return checkpoint
         if folder.exists():
-            print(f"{run}: discarding the checkpoint in {folder}, which is not from this config and commit", flush=True)
+            print(f"{run}: discarding the checkpoint in {folder}, which is not from this config and code", flush=True)
             shutil.rmtree(folder)
         folder.mkdir(parents=True)
         checkpoint = cls(folder, {**key, "segments": []})

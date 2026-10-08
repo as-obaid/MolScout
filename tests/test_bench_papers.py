@@ -398,3 +398,42 @@ def test_paper_checkpoint_is_keyed_on_the_environment_lock_and_tracked_edits(ws,
     else:
         assert again == ["1_aaaa", "1_aaaa", "2_bbbb", "3_cccc"]
         assert len(load(folder / "meta.json")["segments"]) == 1
+
+
+@pytest.mark.parametrize(
+    ("change", "resumes"),
+    [
+        ("benchmarks/tools/complete_systems/biominer/x.py", True),  # another tool's folder
+        ("README.md", True),
+        ("src/molscout/x.py", False),
+        ("benchmarks/tools/paper_runner.py", False),
+        ("tools/fake/x.py", False),  # the run's own tool folder
+    ],
+)
+def test_paper_checkpoint_is_kept_across_commits_that_leave_the_runs_code_alone(ws, change, resumes):
+    predicted = ws.root / "predicted.txt"
+    args = ("--answers", str(ws.answers), "--stop-once", str(ws.markers / "stopped"), "--predicted", str(predicted))
+    ws.config("biovista", *args)
+    commit_all(ws.root)
+    with pytest.raises(BenchError, match="exited with status 3"):
+        ws.run("biovista", *args)
+    first = load(ws.checkpoint("biovista") / "state.json")["code_fingerprint"]
+    assert first is not None and len(first) == 64
+    path = ws.root / change
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a") as handle:
+        handle.write("# a later commit\n")
+    subprocess.run([*GIT, "-C", str(ws.root), "add", change], check=True)
+    subprocess.run([*GIT, "-C", str(ws.root), "commit", "-q", "-m", "two"], check=True)
+    folder = ws.run("biovista", *args)
+    again = predicted.read_text().split()
+    meta = load(folder / "meta.json")
+    assert meta["git"]["dirty"] is False
+    if resumes:
+        assert again == ["1_aaaa", "2_bbbb", "3_cccc"]
+        assert len(meta["segments"]) == 2
+        assert meta["git"]["code_fingerprint"] == first
+    else:
+        assert again == ["1_aaaa", "1_aaaa", "2_bbbb", "3_cccc"]
+        assert len(meta["segments"]) == 1
+        assert meta["git"]["code_fingerprint"] != first

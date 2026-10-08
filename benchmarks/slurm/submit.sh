@@ -19,8 +19,9 @@ case $kind in
         exit 2 ;;
 esac
 
-# Every run is keyed on HEAD: with uncommitted configs, tools or sources every run is recorded dirty and
-# is rerun forever, so refuse to submit until they are committed.
+# A run is current only when its code (tool folder, config, harness) has no uncommitted changes (molscout
+# is-current): with uncommitted configs, tools or sources runs are recorded dirty and rerun forever, so
+# refuse to submit until they are committed.
 dirty=$(git status --porcelain -uall -- benchmarks/configs benchmarks/tools src pyproject.toml uv.lock) ||
     { echo "git status failed: submit from a git checkout" >&2; exit 1; }
 if [ -n "$dirty" ]; then

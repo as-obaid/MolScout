@@ -23,6 +23,7 @@ import pytest
 import yaml
 
 from molscout.bench import BenchError, Terminated
+from molscout.bench.current import check_current
 from molscout.bench.harness import run_benchmark
 from molscout.cli import main
 from molscout.hashing import sha256_tree
@@ -155,7 +156,14 @@ def test_meta_records_commit_environment_hardware_and_timing(ws, monkeypatch):
         "version": "1.0 (test)",
         "checkpoints": [{"path": str(ws.checkpoint), "sha256": sha(ws.checkpoint)}],
     }
-    assert meta["git"] == {"commit": commit, "dirty": False, "dirty_paths": []}
+    fingerprint = check_current(ws.root / "configs" / "fake__uspto.yaml", repo_root=ws.root, results_root=ws.results)
+    assert fingerprint.current and re.fullmatch("[0-9a-f]{64}", fingerprint.fingerprint)
+    assert meta["git"] == {
+        "commit": commit,
+        "dirty": False,
+        "dirty_paths": [],
+        "code_fingerprint": fingerprint.fingerprint,  # what `molscout is-current` compares
+    }
     environment = meta["environment"]
     assert environment["python"] == sys.executable
     assert environment["python_version"] == platform.python_version()
@@ -322,7 +330,7 @@ def test_lock_output_redacts_credentials(ws, tmp_path):
 
 def test_meta_git_is_none_outside_a_repository(ws):
     meta = json.loads((ws.run() / "meta.json").read_text())
-    assert meta["git"] == {"commit": None, "dirty": None, "dirty_paths": None}
+    assert meta["git"] == {"commit": None, "dirty": None, "dirty_paths": None, "code_fingerprint": None}
 
 
 def test_meta_records_the_tools_peak_memory_and_cpu_time_with_its_children(ws):
@@ -746,7 +754,7 @@ def test_an_interrupted_run_resumes_where_it_stopped_and_scores_like_a_clean_run
     assert 2 <= len(done) < 7 and done == IMAGES[: len(done)]
     state = json.loads((ws.resume / "state.json").read_text())
     assert state["config_sha256"] == hashlib.sha256(config.read_bytes()).hexdigest()
-    assert state["git_commit"] is None
+    assert state["code_fingerprint"] is None
     [first] = state["segments"]
     assert first["rows"] == len(done)
     assert first["resources"]["gpu"]["name"] == "NVIDIA H200"
@@ -788,16 +796,16 @@ def test_an_interrupted_run_resumes_where_it_stopped_and_scores_like_a_clean_run
     assert len(json.loads((clean / "meta.json").read_text())["segments"]) == 1
 
 
-@pytest.mark.parametrize("stale", ["config", "commit", "no-state"])
-def test_a_checkpoint_from_another_config_or_commit_is_discarded(ws, capsys, stale):
+@pytest.mark.parametrize("stale", ["config", "code", "no-state"])
+def test_a_checkpoint_from_another_config_or_code_is_discarded(ws, capsys, stale):
     config = ws.config("--answers", str(ws.answers))
     ws.resume.mkdir(parents=True)
     (ws.resume / "predictions.csv").write_bytes((HEADER + "uspto,c1,STALE,,,0.9,Fake 1.0 (test),0.25\r\n").encode())
-    state = {"config_sha256": hashlib.sha256(config.read_bytes()).hexdigest(), "git_commit": None, "segments": []}
+    state = {"config_sha256": hashlib.sha256(config.read_bytes()).hexdigest(), "code_fingerprint": None, "segments": []}
     if stale == "config":
         state["config_sha256"] = "0" * 64
-    if stale == "commit":
-        state["git_commit"] = "f" * 40
+    if stale == "code":
+        state["code_fingerprint"] = "f" * 64
     if stale != "no-state":
         (ws.resume / "state.json").write_text(json.dumps(state))
     folder = run_benchmark(config, repo_root=ws.root, results_root=ws.results)
