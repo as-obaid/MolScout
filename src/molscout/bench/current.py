@@ -1,11 +1,15 @@
 """Whether a run's results are current: made from the code the run has at HEAD, with none of it uncommitted.
 
 A run's code is every file in the repository that can change its results: the harness (GIT_PATHS), the
-run's tool folder and its config (run_paths). Its code fingerprint at a commit is the sha256 of the blob
-IDs and paths that `git ls-tree -r <commit>` lists under those paths, so it can be computed for any
-commit, including the one an older meta.json records. A finished run therefore stays current across
-commits that leave its code alone, such as one that adds another tool. benchmarks/slurm/run.sbatch asks
-`molscout is-current` before it runs a config, and paper checkpoints are keyed on the fingerprint.
+run's tool folder, its config and the paper manifest it reads (run_paths). Its code fingerprint at a
+commit is the sha256 of the blob IDs and paths that `git ls-tree -r <commit>` lists under those paths, so
+it can be computed for any commit, including the one an older meta.json records. A finished run therefore
+stays current across commits that leave its code alone, such as one that adds another tool.
+benchmarks/slurm/run.sbatch asks `molscout is-current` before it runs a config and again after, and
+checkpoints are keyed on the fingerprint.
+
+A run is blocked while its code has uncommitted changes or lies outside the repository: no result of it
+could be current then, so a worker skips it instead of running it.
 """
 
 from __future__ import annotations
@@ -36,8 +40,10 @@ PATHS_SHOWN = 3
 
 
 def run_paths(config: RunConfig, repo_root: Path) -> list[Path]:
-    """The files that can change a run's results: its tool folder, its config and the harness (GIT_PATHS)."""
-    return [config.run_dir, config.path, *(repo_root / path for path in GIT_PATHS)]
+    """The files that can change a run's results: its tool folder, its config, the paper manifest it reads
+    (`papers`: biovista_papers.csv or internal_split.csv; crop runs read none) and the harness (GIT_PATHS)."""
+    manifest = [] if config.papers is None else [config.papers]
+    return [config.run_dir, config.path, *manifest, *(repo_root / path for path in GIT_PATHS)]
 
 
 def code_fingerprint(repo_root: Path, commit: str | None, paths: Sequence[Path]) -> str | None:
@@ -75,25 +81,30 @@ def code_tree(repo_root: Path, commit: str, paths: Sequence[Path]) -> dict[str, 
 
 @dataclass(frozen=True, slots=True)
 class Verdict:
-    """Whether a run is current, why, and its code fingerprint at HEAD (None when it cannot be computed)."""
+    """Whether a run is current, why, and its code fingerprint at HEAD (None when it cannot be computed).
+
+    `blocked` runs are not current and could not become current by running: their code has uncommitted
+    changes or lies outside the repository.
+    """
 
     run: str
     current: bool
     fingerprint: str | None
     why: str
+    blocked: bool = False
 
     def line(self) -> str:
-        """`<run> current|not-current <fingerprint or -> <why>`, the line `molscout is-current` prints.
+        """`<run> current|blocked|not-current <fingerprint or -> <why>`, the line `molscout is-current` prints.
 
         run.sbatch and status.sh read it with `read -r run verdict code why`, so it is always one line.
         """
-        verdict = "current" if self.current else "not-current"
+        verdict = "current" if self.current else "blocked" if self.blocked else "not-current"
         return f"{self.run} {verdict} {self.fingerprint or '-'} {_one_line(self.why)}"
 
 
 def check_current(config_path: str | Path, *, repo_root: str | Path, results_root: str | Path) -> Verdict:
-    """Whether results/<run>/ is current: its meta.json records a commit made with no uncommitted changes, the run's
-    code has the same fingerprint at that commit as at HEAD, and none of it has uncommitted changes now."""
+    """Whether results/<run>/ is current: none of the run's code has uncommitted changes, its meta.json records
+    a commit made with none, and the run's code has the same fingerprint at that commit as at HEAD."""
     root, results = Path(repo_root).absolute(), Path(results_root).absolute()
     run = Path(config_path).stem
     try:
@@ -110,30 +121,37 @@ def check_current(config_path: str | Path, *, repo_root: str | Path, results_roo
     if tree is None:
         return Verdict(run, False, None, f"git cannot list HEAD {head[:7]}")
     fingerprint = _fingerprint(tree)
+    outside = [str(path) for path in paths if _relative(path, root) is None]
+    if outside:
+        return Verdict(run, False, fingerprint, f"{_listed(outside)} is outside the repository", blocked=True)
+    if git["dirty"] is True:
+        dirty = f"uncommitted changes: {_listed(git['dirty_paths'])}"  # type: ignore[arg-type]
+        return Verdict(run, False, fingerprint, dirty, blocked=True)
+    if git["dirty"] is not False:
+        return Verdict(run, False, fingerprint, "git status failed")
+    current, why = _judge_results(results / run / "meta.json", root, paths, tree)
+    return Verdict(run, current, fingerprint, why)
 
-    def stale(why: str) -> Verdict:
-        return Verdict(run, False, fingerprint, why)
 
-    meta = _read_meta(results / run / "meta.json")
+def _judge_results(meta_path: Path, root: Path, paths: Sequence[Path], tree: Mapping[str, str]) -> tuple[bool, str]:
+    """Whether the results meta.json describes were made, without uncommitted changes, from the code in `tree`."""
+    meta = _read_meta(meta_path)
     if isinstance(meta, str):
-        return stale(meta)
+        return False, meta
     made = meta.get("commit")
     if not isinstance(made, str) or not COMMIT.fullmatch(made):
-        return stale("meta.json records no commit")
+        return False, "meta.json records no commit"
     if meta.get("dirty") is True:
-        return stale("made with uncommitted changes")
+        return False, "made with uncommitted changes"
     if meta.get("dirty") is not False:
-        return stale("meta.json does not say whether its code was committed")
+        return False, "meta.json does not say whether its code was committed"
     then = code_tree(root, made, paths)
     if then is None:
-        return stale(f"made at {made[:7]}, which is not in this repository")
+        return False, f"made at {made[:7]}, which is not in this repository"
     changed = sorted(path for path in then.keys() | tree.keys() if then.get(path) != tree.get(path))
     if changed:
-        return stale(f"code changed since {made[:7]}: {_listed(changed)}")
-    if git["dirty"] is not False:
-        dirty = git["dirty_paths"]
-        return stale(f"uncommitted changes: {_listed(dirty)}" if dirty else "git status failed")
-    return Verdict(run, True, fingerprint, f"made at {made[:7]}")
+        return False, f"code changed since {made[:7]}: {_listed(changed)}"
+    return True, f"made at {made[:7]}"
 
 
 def _read_meta(path: Path) -> Mapping[str, object] | str:

@@ -54,13 +54,14 @@ def test_status_shows_each_run_and_the_molscout_jobs(tmp_path):
         folder.mkdir(parents=True)
     for name in ("a.png", "b.png", "c.PNG", "notes.txt", ".hidden.png"):
         (images / name).touch()
-    for run in ("done__x", "old__x", "running__x", "partial__x", "failed__x", "pending__x"):
+    for run in ("done__x", "old__x", "running__x", "partial__x", "failed__x", "pending__x", "blocked__x"):
         (root / "benchmarks" / "configs" / f"{run}.yaml").write_text(f"tool: {run}\nimages: data/img\n")
     for run, commit, dirty in (("done__x", HEAD, False), ("old__x", "b" * 40, False)):
         (results / run).mkdir()
         (results / run / "meta.json").write_text(json.dumps({"git": {"commit": commit, "dirty": dirty}}))
     (fake / "done__x.verdict").write_text("current made at bbbbbbb\n")
     (fake / "old__x.verdict").write_text("not-current code changed since bbbbbbb: src/x.py\n")
+    (fake / "blocked__x.verdict").write_text("blocked uncommitted changes: tools/x/out.png\n")
     (claims / "running__x").mkdir()
     (claims / "running__x" / "job").write_text("111\n")
     for run, rows in (("running__x", 1), ("partial__x", 2), ("failed__x", 1)):
@@ -72,10 +73,11 @@ def test_status_shows_each_run_and_the_molscout_jobs(tmp_path):
     result = subprocess.run(["bash", str(SCRIPT)], cwd=root, env=env, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
     table = [line.split(None, 2) for line in result.stdout.splitlines()]
-    assert table[:7] == [
+    assert table[:8] == [
         ["RUN", "STATE", "DETAIL"],
+        ["blocked__x", "blocked", "uncommitted changes: tools/x/out.png"],
         ["done__x", "done", "made at bbbbbbb"],
-        ["failed__x", "failed", "2 failures at code ccccccc, 1/3 rows"],
+        ["failed__x", "failed", "2 failures at code ccccccc (remove benchmarks/results/.claims/failed__x.failures to retry), 1/3 rows"],
         ["old__x", "stale", "code changed since bbbbbbb: src/x.py"],
         ["partial__x", "partial", "2/3 rows, 1 failure at code ccccccc"],
         ["pending__x", "pending"],

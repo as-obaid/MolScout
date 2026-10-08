@@ -333,6 +333,18 @@ def test_meta_git_is_none_outside_a_repository(ws):
     assert meta["git"] == {"commit": None, "dirty": None, "dirty_paths": None, "code_fingerprint": None}
 
 
+def test_a_run_whose_code_git_cannot_list_stops_before_the_tool_runs(ws, monkeypatch):
+    """Inside git, a checkpoint keyed on no fingerprint would let runs of different code resume each other."""
+    subprocess.run([*GIT, "init", "-q", str(ws.root)], check=True)
+    subprocess.run([*GIT, "-C", str(ws.root), "add", "tools", "pyproject.toml"], check=True)
+    subprocess.run([*GIT, "-C", str(ws.root), "commit", "-q", "-m", "test"], check=True)
+    monkeypatch.setattr("molscout.bench.harness.code_fingerprint", lambda *args: None)
+    record = ws.root / "record.json"
+    with pytest.raises(BenchError, match=r"fake__uspto: git cannot list the run's code at [0-9a-f]{7}"):
+        ws.run("--answers", str(ws.answers), "--record", str(record))
+    assert not record.exists() and not ws.resume.exists()
+
+
 def test_meta_records_the_tools_peak_memory_and_cpu_time_with_its_children(ws):
     # On Linux run.py starts as a copy of this process, so its peak memory is at least ours: hold more than that.
     allocated = round(peak_rss_mib()) + 50

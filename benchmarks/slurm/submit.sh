@@ -19,13 +19,15 @@ case $kind in
         exit 2 ;;
 esac
 
-# A run is current only when its code (tool folder, config, harness) has no uncommitted changes (molscout
-# is-current): with uncommitted configs, tools or sources runs are recorded dirty and rerun forever, so
-# refuse to submit until they are committed.
-dirty=$(git status --porcelain -uall -- benchmarks/configs benchmarks/tools src pyproject.toml uv.lock) ||
+# A run is current only when its code (tool folder, config, paper manifest, harness) has no uncommitted
+# changes (molscout is-current), and a worker skips a run whose code has some, so refuse to submit until
+# configs, tools, manifests and sources are committed.
+keyed="benchmarks/configs benchmarks/tools benchmarks/slurm/run.sbatch src data/manifests pyproject.toml uv.lock"
+# shellcheck disable=SC2086  # keyed holds several paths
+dirty=$(git status --porcelain -uall -- $keyed) ||
     { echo "git status failed: submit from a git checkout" >&2; exit 1; }
 if [ -n "$dirty" ]; then
-    echo "uncommitted changes in benchmarks/configs, benchmarks/tools, src, pyproject.toml or uv.lock; commit them first" >&2
+    echo "uncommitted changes in ${keyed// /, }; commit them first" >&2
     echo "$dirty" >&2
     exit 1
 fi

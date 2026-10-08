@@ -2,9 +2,10 @@
 # Where each benchmark run stands, then the molscout jobs in the queue. Run from the repository root:
 #   bash benchmarks/slurm/status.sh [structure-readers|complete-systems]   (default: both)
 # done: results current (molscout is-current: made from the code the run has at HEAD, none of it
-# uncommitted). running: claimed by a live job. failed: given up after 2 failures with the run's code at
-# HEAD. partial: a checkpoint is left. stale: results a worker will redo. MOLSCOUT names the molscout
-# command (default: the one run.sbatch uses, in $MOLSCOUT_STORE).
+# uncommitted). running: claimed by a live job. blocked: its code has uncommitted changes (or lies outside
+# the repository), so workers skip it. failed: given up after 2 failures with the run's code at HEAD
+# (remove its .claims/<run>.failures to retry). partial: a checkpoint is left. stale: results a worker will
+# redo. MOLSCOUT names the molscout command (default: the one run.sbatch uses, in $MOLSCOUT_STORE).
 # Checkpoint rows are counted by line; a complete system (paper config) shows its finished papers, counted
 # from .checkpoints/<run>/predictions.papers.jsonl (lines marking an attempt are not counted).
 set -euo pipefail
@@ -71,9 +72,12 @@ while read -r run verdict code why <&3; do
     elif [ -n "$partition" ]; then
         state=running
         add "job $job ($partition)"
+    elif [ "$verdict" = blocked ]; then
+        state=blocked
+        add "$why"
     elif [ "$failures" -ge 2 ]; then
         state=failed
-        add "$failures failures at code ${code:0:7}"
+        add "$failures failures at code ${code:0:7} (remove $claims/$run.failures to retry)"
     elif [ -f "$checkpoint" ]; then
         state=partial
     elif [ -f "$meta" ]; then

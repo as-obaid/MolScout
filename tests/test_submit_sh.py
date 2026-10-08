@@ -226,7 +226,17 @@ def test_a_group_with_no_configs_submits_no_workers(fake, tmp_path):
 
 
 @pytest.mark.parametrize("kind", ["structure-readers", "complete-systems"])
-@pytest.mark.parametrize("path", ["benchmarks/configs/new.yaml", "benchmarks/tools/complete_systems/x/run.py", "src/a.py", "uv.lock"])
+@pytest.mark.parametrize(
+    "path",
+    [
+        "benchmarks/configs/new.yaml",
+        "benchmarks/tools/complete_systems/x/run.py",
+        "src/a.py",
+        "uv.lock",
+        "data/manifests/biovista_papers.csv",
+        "benchmarks/slurm/run.sbatch",
+    ],
+)
 def test_a_dirty_tree_refuses_to_submit(fake, tmp_path, kind, path):
     root = type_repo(tmp_path)
     (root / "uv.lock").write_text("x")

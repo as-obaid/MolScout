@@ -1,7 +1,8 @@
 """`molscout is-current`: a finished run stays current across commits that leave its code alone.
 
-A run's code is the harness (GIT_PATHS), its tool folder and its config. The repository here is a small
-git repository with that layout; results/<run>/meta.json is written by hand, as an older Type 1 run left it
+A run's code is the harness (GIT_PATHS), its tool folder, its config and the paper manifest it reads. The
+repository here is a small git repository with that layout: a structure reader on USPTO and a complete
+system on BioVista and Internal. results/<run>/meta.json is written by hand, as an older Type 1 run left it
 (commit and dirty flag, no code fingerprint).
 """
 
@@ -32,6 +33,21 @@ python: ${{MOLSCOUT_STORE}}/envs/{tool}/bin/python
 args: []
 checkpoints: []
 """
+SYSTEM_CONFIG = """\
+tool: sys
+name: System
+version: '1.0'
+dataset: {dataset}
+pdfs: data/raw/{dataset}/pdfs
+papers: data/manifests/{manifest}
+references: data/raw/{dataset}
+run_dir: benchmarks/tools/complete_systems/sys
+python: ${{MOLSCOUT_STORE}}/envs/sys/bin/python
+args: []
+checkpoints: []
+"""
+BIOVISTA_MANIFEST = "data/manifests/biovista_papers.csv"
+INTERNAL_SPLIT = "data/manifests/internal_split.csv"
 OWN_TOOL = "benchmarks/tools/structure_readers/mytool/run.py"
 OTHER_TOOL = "benchmarks/tools/structure_readers/other/run.py"
 NEW_SYSTEM = "benchmarks/tools/complete_systems/biominer/x.py"
@@ -54,6 +70,11 @@ class Repo:
             OTHER_TOOL: "v1\n",
             OWN_CONFIG: CONFIG.format(tool="mytool"),
             "benchmarks/configs/other__uspto.yaml": CONFIG.format(tool="other"),
+            "benchmarks/tools/complete_systems/sys/run.py": "v1\n",
+            "benchmarks/configs/sys__biovista.yaml": SYSTEM_CONFIG.format(dataset="biovista", manifest="biovista_papers.csv"),
+            "benchmarks/configs/sys__internal.yaml": SYSTEM_CONFIG.format(dataset="internal", manifest="internal_split.csv"),
+            BIOVISTA_MANIFEST: "paper_id,status\n1_aaaa,ok\n",
+            INTERNAL_SPLIT: "paperID,split,molecules\n1,dev,17\n",
             "README.md": "v1\n",
         }
         for path, text in files.items():
@@ -84,15 +105,17 @@ class Repo:
     def head(self) -> str:
         return git("-C", str(self.root), "rev-parse", "HEAD").strip()
 
-    def finished(self, commit: str | None = None, dirty: object = False) -> str:
+    def finished(self, commit: str | None = None, dirty: object = False, run: str = RUN) -> str:
         """results/<run>/meta.json as an older run wrote it: its commit and dirty flag, no code fingerprint."""
         commit = commit or self.head()
-        folder = self.results / RUN
+        folder = self.results / run
         folder.mkdir(parents=True, exist_ok=True)
-        (folder / "meta.json").write_text(json.dumps({"run": RUN, "git": {"commit": commit, "dirty": dirty}}))
+        (folder / "meta.json").write_text(json.dumps({"run": run, "git": {"commit": commit, "dirty": dirty}}))
         return commit
 
-    def check(self, config: Path | None = None):
+    def check(self, config: Path | str | None = None):
+        if isinstance(config, str):
+            config = self.root / "benchmarks" / "configs" / f"{config}.yaml"
         return check_current(config or self.config, repo_root=self.root, results_root=self.results)
 
 
@@ -114,6 +137,45 @@ def test_the_runs_code_is_the_harness_its_tool_folder_and_its_config(repo):
         *(repo.root / path for path in GIT_PATHS),
     ]
     assert "src" in GIT_PATHS and "benchmarks/slurm/run.sbatch" in GIT_PATHS
+
+
+@pytest.mark.parametrize(("run", "manifest"), [("sys__biovista", BIOVISTA_MANIFEST), ("sys__internal", INTERNAL_SPLIT)])
+def test_a_paper_runs_code_includes_the_manifest_it_reads(repo, run, manifest):
+    config = load_config(repo.root / "benchmarks" / "configs" / f"{run}.yaml", repo.root)
+    assert run_paths(config, repo.root) == [
+        repo.root / "benchmarks/tools/complete_systems/sys",
+        config.path,
+        repo.root / manifest,
+        *(repo.root / path for path in GIT_PATHS),
+    ]
+
+
+@pytest.mark.parametrize(("manifest", "stale"), [(BIOVISTA_MANIFEST, "sys__biovista"), (INTERNAL_SPLIT, "sys__internal")])
+def test_a_manifest_commit_makes_only_the_runs_that_read_it_not_current(repo, manifest, stale):
+    runs = ("sys__biovista", "sys__internal", RUN)
+    made = {run: repo.finished(run=run) for run in runs}
+    before = {run: repo.check(run).fingerprint for run in runs}
+    repo.edit(manifest)
+    repo.commit(manifest)
+    for run in runs:
+        verdict = repo.check(run)
+        if run == stale:
+            assert not verdict.current
+            assert verdict.why == f"code changed since {made[run][:7]}: {manifest}"
+            assert verdict.fingerprint != before[run]  # so its failure count starts again
+        else:
+            assert verdict.current, (run, verdict.why)
+            assert verdict.fingerprint == before[run]
+
+
+def test_an_uncommitted_manifest_edit_blocks_only_the_runs_that_read_it(repo):
+    for run in ("sys__biovista", "sys__internal"):
+        repo.finished(run=run)
+    repo.edit(BIOVISTA_MANIFEST)
+    verdict = repo.check("sys__biovista")
+    assert (verdict.current, verdict.blocked) == (False, True)
+    assert verdict.why == f"uncommitted changes: {BIOVISTA_MANIFEST}"
+    assert repo.check("sys__internal").current
 
 
 def test_the_fingerprint_hashes_the_sorted_blob_ids_and_paths_of_the_runs_code(repo):
@@ -208,7 +270,37 @@ def test_only_uncommitted_changes_to_the_runs_code_make_it_not_current(repo, pat
     verdict = repo.check()
     assert verdict.current is current, verdict.why
     if not current:
+        assert verdict.blocked  # no run of it could be current until they are committed or removed
         assert verdict.why == f"uncommitted changes: {path}"
+        assert verdict.line().split()[1] == "blocked"
+
+
+def test_uncommitted_changes_block_a_run_that_has_no_results_yet(repo):
+    repo.edit(OWN_TOOL)
+    verdict = repo.check()
+    assert (verdict.current, verdict.blocked) == (False, True)
+    assert verdict.why == f"uncommitted changes: {OWN_TOOL}"
+
+
+@pytest.mark.parametrize("outside", ["run_dir", "config"])
+def test_a_run_whose_code_lies_outside_the_repository_is_blocked(repo, tmp_path, outside):
+    """git sees nothing outside the repository, so such code could change unseen."""
+    repo.finished()
+    elsewhere = tmp_path / "elsewhere"
+    text = repo.config.read_text()
+    if outside == "run_dir":
+        text = text.replace("run_dir: benchmarks/tools/structure_readers/mytool", f"run_dir: {elsewhere}")
+        repo.write(OWN_CONFIG, text)
+        repo.commit(OWN_CONFIG)
+        repo.finished()
+        config, path = repo.config, elsewhere
+    else:
+        config = path = elsewhere / f"{RUN}.yaml"
+        elsewhere.mkdir()
+        config.write_text(text)
+    verdict = repo.check(config)
+    assert (verdict.current, verdict.blocked) == (False, True)
+    assert verdict.why == f"{path} is outside the repository"
 
 
 def test_results_from_a_commit_missing_from_the_repository_are_not_current(repo):
@@ -287,6 +379,17 @@ def test_cli_takes_the_repository_and_results_roots(repo, tmp_path, capsys):
     assert main(args) == 0
     assert main([*args, "--results-root", str(elsewhere)]) == 1
     assert capsys.readouterr().out.splitlines()[-1].endswith(" no results")
+
+
+def test_cli_exits_2_when_the_check_itself_fails(repo, monkeypatch, capsys):
+    def broken(*args, **kwargs):
+        raise RuntimeError("git exploded")
+
+    monkeypatch.setattr("molscout.cli.check_current", broken)
+    assert main(["is-current", str(repo.config), "--repo-root", str(repo.root)]) == 2
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "molscout is-current: error: git exploded" in captured.err
 
 
 def test_python_m_molscout_is_current_runs_in_its_own_process(repo):

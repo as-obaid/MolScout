@@ -400,14 +400,19 @@ def test_paper_checkpoint_is_keyed_on_the_environment_lock_and_tracked_edits(ws,
         assert len(load(folder / "meta.json")["segments"]) == 1
 
 
+UNSCORED_PAPER = "7_gggg,gggg,test,1,10.0000/gggg,rcsb,,,Fixture paper 7_gggg,2020,Fixture Journal,yes,no_oa,,,,,,,none\n"
+
+
 @pytest.mark.parametrize(
     ("change", "resumes"),
     [
         ("benchmarks/tools/complete_systems/biominer/x.py", True),  # another tool's folder
         ("README.md", True),
+        ("data/internal/split.csv", True),  # the other dataset's manifest
         ("src/molscout/x.py", False),
         ("benchmarks/tools/paper_runner.py", False),
         ("tools/fake/x.py", False),  # the run's own tool folder
+        ("data/raw/biovista/manifest.csv", False),  # the manifest the run reads (a paper that is not scored)
     ],
 )
 def test_paper_checkpoint_is_kept_across_commits_that_leave_the_runs_code_alone(ws, change, resumes):
@@ -422,7 +427,7 @@ def test_paper_checkpoint_is_kept_across_commits_that_leave_the_runs_code_alone(
     path = ws.root / change
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a") as handle:
-        handle.write("# a later commit\n")
+        handle.write(UNSCORED_PAPER if change.endswith("manifest.csv") else "# a later commit\n")
     subprocess.run([*GIT, "-C", str(ws.root), "add", change], check=True)
     subprocess.run([*GIT, "-C", str(ws.root), "commit", "-q", "-m", "two"], check=True)
     folder = ws.run("biovista", *args)
@@ -437,3 +442,21 @@ def test_paper_checkpoint_is_kept_across_commits_that_leave_the_runs_code_alone(
         assert again == ["1_aaaa", "1_aaaa", "2_bbbb", "3_cccc"]
         assert len(meta["segments"]) == 1
         assert meta["git"]["code_fingerprint"] != first
+
+
+def test_paper_checkpoint_is_keyed_on_the_content_of_uncommitted_edits_to_the_tool(ws):
+    """A second edit to an already-edited tool file starts over: the key hashes the run's whole diff."""
+    predicted = ws.root / "predicted.txt"
+    args = ("--answers", str(ws.answers), "--stop-once", str(ws.markers / "stopped"), "--predicted", str(predicted))
+    ws.config("biovista", *args)
+    commit_all(ws.root)
+    tool = ws.root / "tools" / "fake" / "run.py"
+    with tool.open("a") as handle:
+        handle.write("# edit 1\n")
+    with pytest.raises(BenchError, match="exited with status 3"):
+        ws.run("biovista", *args)
+    with tool.open("a") as handle:
+        handle.write("# edit 2\n")
+    folder = ws.run("biovista", *args)
+    assert predicted.read_text().split() == ["1_aaaa", "1_aaaa", "2_bbbb", "3_cccc"]  # started over
+    assert len(load(folder / "meta.json")["segments"]) == 1

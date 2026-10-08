@@ -49,9 +49,12 @@ def main(argv: list[str] | None = None) -> int:
     current = commands.add_parser(
         "is-current",
         help="whether each run's results are current: made from the code the run has at HEAD (its tool folder, "
-        "its config and the harness), with none of it uncommitted; exit 0 only when all are",
-        description="Prints one line per config: RUN current|not-current CODE WHY, where CODE is the run's code "
-        "fingerprint at HEAD (- when it cannot be computed). Exits 0 when every run is current, else 1.",
+        "its config, the paper manifest it reads and the harness), with none of it uncommitted; exit 0 only when "
+        "all are",
+        description="Prints one line per config: RUN current|blocked|not-current CODE WHY, where CODE is the run's "
+        "code fingerprint at HEAD (- when it cannot be computed). A blocked run's code has uncommitted changes or "
+        "lies outside the repository, so running it could not make it current. Exits 0 when every run is "
+        "current, 1 when some is not, and 2 when the check itself fails.",
     )
     current.add_argument("configs", type=Path, nargs="+", metavar="config", help="benchmarks/configs/<tool>__<dataset>.yaml")
     current.add_argument("--repo-root", type=Path, help="the repository root (default: the current directory)")
@@ -85,7 +88,11 @@ def _score(args: argparse.Namespace) -> dict[str, object]:
 def _is_current(args: argparse.Namespace) -> int:
     repo_root = args.repo_root or Path.cwd()
     results_root = args.results_root or repo_root / "benchmarks" / "results"
-    verdicts = [check_current(config, repo_root=repo_root, results_root=results_root) for config in args.configs]
+    try:
+        verdicts = [check_current(config, repo_root=repo_root, results_root=results_root) for config in args.configs]
+    except Exception as exc:  # a bug, not a verdict: exit 2, so callers can tell it from "not current"
+        print(f"molscout is-current: error: {exc}", file=sys.stderr)
+        return 2
     for verdict in verdicts:
         print(verdict.line(), flush=True)
     return 0 if all(verdict.current for verdict in verdicts) else 1

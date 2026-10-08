@@ -18,7 +18,7 @@ from time import perf_counter, sleep
 
 from molscout.bench import BenchError, Terminated, papers
 from molscout.bench.config import RunConfig, load_config
-from molscout.bench.current import GIT_PATHS, code_fingerprint, run_paths
+from molscout.bench.current import COMMIT, code_fingerprint, run_paths
 from molscout.bench.meta import (
     GpuSampler,
     build_meta,
@@ -91,17 +91,19 @@ def _run(config_path: str | Path, repo_root: Path, results_root: Path) -> Path:
         **environment_lock(config.python, config.lock_commands, env, config.run_dir),
         "variables": environment_variables(env, config.env),
     }
-    git_paths = [repo_root / path for path in GIT_PATHS]
     code = run_paths(config, repo_root)
     git = git_state(repo_root, code)
-    fingerprint = code_fingerprint(repo_root, git["commit"], code)  # type: ignore[arg-type]
+    commit = git["commit"]
+    fingerprint = code_fingerprint(repo_root, commit, code)  # type: ignore[arg-type]
+    if isinstance(commit, str) and COMMIT.fullmatch(commit) and fingerprint is None:  # None would match any code
+        raise BenchError(f"{config.run_name}: git cannot list the run's code at {commit[:7]}; check the repository")
     git = {**git, "code_fingerprint": fingerprint}  # meta.json keeps the commit too, for provenance
     # Paper runs take hours across segments: a changed environment lock or an uncommitted edit means another run
     extra_key = (
         {
             "environment_sha256": environment["sha256"],
             "dirty_paths": git["dirty_paths"],
-            "diff_sha256": tracked_diff_sha256(repo_root, git_paths),
+            "diff_sha256": tracked_diff_sha256(repo_root, code),
         }
         if config.kind is Kind.PAPER
         else None

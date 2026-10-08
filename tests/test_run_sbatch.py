@@ -64,16 +64,19 @@ def test_files_are_private_by_default():
 HEAD = "a" * 40
 CODE = "c" * 64
 FAKE_BENCH = """#!/bin/bash
-# molscout is-current CONFIG: with MOLSCOUT_PYTHON set, the real one; otherwise <run>.verdict holds
-# "current WHY" or "not-current WHY" (none: no results), the code fingerprint is $FAKE_CODE, and with
-# is-current.broken it fails without output.
+# molscout is-current CONFIG: with MOLSCOUT_PYTHON set, the real one. Otherwise <run>.verdict holds
+# "current WHY", "blocked WHY" or "not-current WHY" (none: no results), the code fingerprint is $FAKE/code
+# or $FAKE_CODE, and with is-current.broken it fails without output.
 # molscout bench CONFIG: logs the call; <run>.exit holds its status, and with <run>.hang it runs until TERM.
+# A run that exits 0 leaves results: meta.json at HEAD with real git, else the verdict in <run>.after
+# (default: current). <run>.litter names a file it leaves behind; <run>.code becomes $FAKE/code, as if a
+# commit to the run's code landed while it ran.
 run=$(basename "$2" .yaml)
 if [ "$1" = is-current ]; then
     if [ -n "${MOLSCOUT_PYTHON:-}" ]; then exec "$MOLSCOUT_PYTHON" -m molscout "$@"; fi
     if [ -f "$FAKE/is-current.broken" ]; then echo "Traceback: broken" >&2; exit 2; fi
     verdict=$(cat "$FAKE/$run.verdict" 2>/dev/null || echo "not-current no results")
-    echo "$run ${verdict%% *} $FAKE_CODE ${verdict#* }"
+    echo "$run ${verdict%% *} $(cat "$FAKE/code" 2>/dev/null || echo "$FAKE_CODE") ${verdict#* }"
     [ "${verdict%% *}" = current ]
     exit
 fi
@@ -85,7 +88,20 @@ if [ -f "$FAKE/$run.hang" ]; then
     touch "$FAKE/$run.started"
     wait $sleeper
 fi
-exit "$(cat "$FAKE/$run.exit" 2>/dev/null || echo 0)"
+status=$(cat "$FAKE/$run.exit" 2>/dev/null || echo 0)
+if [ "$status" = 0 ]; then
+    if [ -n "${MOLSCOUT_PYTHON:-}" ]; then
+        mkdir -p "benchmarks/results/$run"
+        echo "{\\"git\\": {\\"commit\\": \\"$(git rev-parse HEAD)\\", \\"dirty\\": false}}" > "benchmarks/results/$run/meta.json"
+    elif [ -f "$FAKE/$run.after" ]; then
+        cp "$FAKE/$run.after" "$FAKE/$run.verdict"
+    else
+        echo "current made at ${FAKE_HEAD:0:7}" > "$FAKE/$run.verdict"
+    fi
+    if [ -f "$FAKE/$run.litter" ]; then touch "$(cat "$FAKE/$run.litter")"; fi
+    if [ -f "$FAKE/$run.code" ]; then cp "$FAKE/$run.code" "$FAKE/code"; fi
+fi
+exit "$status"
 """
 FAKE_SQUEUE = """#!/bin/bash
 # squeue -h -j ID -o %T: RUNNING for the jobs listed in $FAKE/alive, else the error for a job that has ended.
@@ -156,9 +172,10 @@ class Worker:
         path = self.fake / "sbatch"
         return [json.loads(line) for line in path.read_text().splitlines()] if path.exists() else []
 
-    def verdict(self, run: str, text: str) -> None:
-        """What the fake `molscout is-current` says of the run: "current WHY" or "not-current WHY"."""
-        (self.fake / f"{run}.verdict").write_text(f"{text}\n")
+    def verdict(self, run: str, text: str, *, after: bool = False) -> None:
+        """What the fake `molscout is-current` says of the run ("current WHY", "blocked WHY" or "not-current
+        WHY"), now or, with `after`, once a run of it has exited 0."""
+        (self.fake / f"{run}.{'after' if after else 'verdict'}").write_text(f"{text}\n")
 
     def claim(self, run: str, job: str) -> None:
         (self.claims / run).mkdir(parents=True)
@@ -211,11 +228,54 @@ def test_worker_counts_failures_against_the_runs_code_and_gives_up_after_two(wor
     assert (worker.claims / "a.failures").read_text() == f"{CODE}\n{CODE}\n"
     worker.env["FAKE_HEAD"] = "d" * 40  # a commit that leaves the run's code alone keeps the count
     result = worker.run("a b")
-    assert "skip a: gave up after 2 failures at code ccccccc" in result.stdout
-    assert worker.calls() == ["bench a", "bench b"] * 2 + ["bench b"]
+    assert "skip a: gave up after 2 failures at code ccccccc; remove benchmarks/results/.claims/a.failures to retry" in result.stdout
+    assert "skip b: done at code ccccccc" in result.stdout
+    assert worker.calls() == ["bench a", "bench b", "bench a"]  # b is current once it has finished
     worker.env["FAKE_CODE"] = "e" * 64  # a commit to the run's code gets new attempts
     assert "failed a with status 3 (failure 1 of 2)" in worker.run("a").stdout
     assert (worker.claims / "a.failures").read_text() == f"{CODE}\n{CODE}\n{'e' * 64}\n"
+
+
+def test_worker_skips_a_blocked_run_without_running_it(worker):
+    worker.verdict("a", "blocked uncommitted changes: benchmarks/tools/a/out.png")
+    result = worker.run("a b")
+    assert result.returncode == 0, result.stderr
+    assert worker.calls() == ["bench b"]
+    assert (
+        "skip a: no result of it could be current until this is fixed: uncommitted changes: benchmarks/tools/a/out.png"
+        in result.stdout
+    )
+    assert not (worker.claims / "a.failures").exists() and not (worker.claims / "a").exists()
+
+
+def test_a_run_that_finishes_but_is_blocked_counts_as_a_failure_and_is_not_rerun(worker):
+    """A tool that leaves a file in its own folder: its results can never be current, so it must not loop."""
+    worker.verdict("a", "blocked uncommitted changes: benchmarks/tools/a/out.png", after=True)
+    result = worker.run("a")
+    assert result.returncode == 0, result.stderr
+    assert (
+        "finished a, but it is not current (uncommitted changes: benchmarks/tools/a/out.png) (failure 1 of 2)"
+        in result.stdout
+    )
+    assert (worker.claims / "a.failures").read_text() == f"{CODE}\n"
+    assert "skip a: no result of it could be current" in worker.run("a").stdout
+    assert worker.calls() == ["bench a"]
+
+
+def test_runs_that_finish_but_stay_not_current_stop_after_two(worker):
+    worker.verdict("a", "not-current meta.json is unreadable", after=True)
+    for attempt in (1, 2):
+        assert f"finished a, but it is not current (meta.json is unreadable) (failure {attempt} of 2)" in worker.run("a").stdout
+    assert "skip a: gave up after 2 failures at code ccccccc" in worker.run("a").stdout
+    assert worker.calls() == ["bench a", "bench a"]
+
+
+def test_a_run_whose_code_changed_while_it_ran_is_not_a_failure(worker):
+    worker.verdict("a", "not-current code changed since aaaaaaa: src/x.py", after=True)
+    (worker.fake / "a.code").write_text("f" * 64 + "\n")
+    result = worker.run("a")
+    assert "finished a, but its code changed while it ran (code changed since aaaaaaa: src/x.py)" in result.stdout
+    assert not (worker.claims / "a.failures").exists()
 
 
 def test_a_failing_is_current_check_means_not_done(worker):
@@ -340,6 +400,20 @@ def test_the_worker_redoes_only_the_runs_whose_code_a_commit_changed(worker):
     assert worker.calls() == ["bench t2__uspto"]
     assert "skip t1__uspto: done at code " in result.stdout
     assert f"claimed t2__uspto (code changed since {made[:7]}: {own})" in result.stdout
+    assert "finished t2__uspto\n" in result.stdout  # its new meta.json is from HEAD
+
+    # A run that leaves a file in its tool folder fails once, then waits for the file to go.
+    litter = "benchmarks/tools/structure_readers/t1/out.png"
+    commit({"benchmarks/tools/structure_readers/t1/run.py": "v2\n"})
+    (worker.fake / "t1__uspto.litter").write_text(litter)
+    result = worker.run("t1__uspto t2__uspto")
+    assert f"finished t1__uspto, but it is not current (uncommitted changes: {litter}) (failure 1 of 2)" in result.stdout
+    (worker.fake / "t1__uspto.litter").unlink()
+    result = worker.run("t1__uspto")
+    assert f"skip t1__uspto: no result of it could be current until this is fixed: uncommitted changes: {litter}" in result.stdout
+    (worker.root / litter).unlink()
+    assert "skip t1__uspto: done at code " in worker.run("t1__uspto").stdout
+    assert worker.calls() == ["bench t2__uspto", "bench t1__uspto"]
 
 
 GPU_HEALTHY = "#!/bin/bash\necho 0\n"
