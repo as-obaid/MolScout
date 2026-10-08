@@ -13,17 +13,49 @@ page image is rendered at 200 dpi and scaled by 72/200); a table that holds a fi
 box padded by 20 points on the left and right (the image is the unpadded block). Both are undone
 here and the molecule box is mapped through the figure box to page points, origin top left.
 Assumes the page's mediabox origin is (0,0) with no /Rotate and no smaller cropbox.
+
+Pools. molscribe/chemistry.py turns each batch of MolScribe graphs into SMILES in a fresh
+multiprocessing.Pool(16), which forks this process after torch and CUDA have started their threads.
+A forked worker can inherit a lock another thread held, and then waits on it forever: on Internal
+paper 19 the call sat idle (0.3% GPU, 102 CPU seconds in 39 minutes) with one worker blocked in
+SemLock.acquire. chemistry.py looks multiprocessing up at call time, so this file gives it a pool
+that runs each item here, in order; the results are the same as the forked pool's.
 """
 
 import os
 import sys
 import tempfile
+import types
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from paper_runner import Molecule, base_parser, read_papers, run_papers  # noqa: E402
 
 TABLE_PAD = 20.0  # tableextractor.extract_table_information pads a table's box by this on each side
+
+
+class InlinePool:
+    """multiprocessing.Pool's map and starmap, run one item at a time in this process."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+    def map(self, func, iterable, chunksize=None):
+        return [func(item) for item in iterable]
+
+    def starmap(self, func, iterable, chunksize=None):
+        return [func(*item) for item in iterable]
+
+
+def pools_in_process(module):
+    """Make module's multiprocessing.Pool an InlinePool, leaving the real multiprocessing alone."""
+    module.multiprocessing = types.SimpleNamespace(Pool=InlinePool)
 
 
 def page_tops(pdf):
@@ -80,9 +112,11 @@ def main() -> int:
 
     os.environ["PATH"] = f"{args.poppler_bin}{os.pathsep}{os.environ['PATH']}"
     import pdftotext  # noqa: F401  first: it loads the libstdc++ that poppler needs, before torch loads an older one
+    import molscribe.chemistry
     import torch
     from openchemie import OpenChemIE
 
+    pools_in_process(molscribe.chemistry)  # see Pools in the docstring
     model = OpenChemIE(device=torch.device(args.device))
     kept = []
     extract_figures = model.extract_figures_from_pdf
