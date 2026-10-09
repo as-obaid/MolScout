@@ -35,6 +35,7 @@ REPO = Path(__file__).resolve().parents[1]
 BIOVISTA = Path(__file__).parent / "fixtures" / "biovista"
 COMMIT = "4cbaee3e2d4abdb94afaac495b0922ecf3c159fc"
 SOURCE_COMMIT = "5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f80"
+OTHER_COMMIT = "0" * 40
 NAMES = {"biominer": "BioMiner", "decimer_ai": "DECIMER.ai", "openchemie": "OpenChemIE"}
 BIOVISTA_PAPERS = ("1_aaaa", "2_bbbb", "3_cccc")
 INTERNAL_PAPERS = ("p1", "p2")
@@ -223,17 +224,98 @@ def test_consistent_runs_have_no_problems(repo):
     assert check_paper_references(runs, repo) == []
 
 
-def test_consistency_refuses_mixed_commits_uncommitted_code_and_dirty_sources(repo):
+def test_consistency_refuses_uncommitted_code_and_dirty_sources(repo):
     make_result(repo, "biominer", "biovista", BIOMINER_BIOVISTA, dirty=True)
     make_result(repo, "openchemie", "biovista", OPENCHEMIE_BIOVISTA, commit="0" * 40)
     dirty_source = {**SOURCE, "dirty": True, "dirty_paths": ["setup.py", "a.py"]}
     make_result(repo, "decimer_ai", "biovista", OPENCHEMIE_BIOVISTA, sources=[SOURCE, dirty_source])
     problems = check_paper_consistency(load_paper_runs(repo / "benchmarks" / "results"))
-    assert problems == [
+    assert problems == [  # the second commit alone is no problem: scoring, references and PDFs all match
         "biominer__biovista ran with uncommitted changes: src/molscout/x.py",
         "decimer_ai__biovista ran with uncommitted upstream code in biominer: setup.py, a.py",
-        f"the runs come from 2 commits: {COMMIT[:12]} (biominer__biovista, decimer_ai__biovista); "
-        "000000000000 (openchemie__biovista)",
+    ]
+
+
+def mixed_commits(repo):
+    """BioMiner and OpenChemIE on both datasets, OpenChemIE from another commit."""
+    for dataset, biominer, openchemie in (
+        ("biovista", BIOMINER_BIOVISTA, OPENCHEMIE_BIOVISTA),
+        ("internal", BIOMINER_INTERNAL, OPENCHEMIE_INTERNAL),
+    ):
+        make_result(repo, "biominer", dataset, biominer)
+        make_result(repo, "openchemie", dataset, openchemie, commit=OTHER_COMMIT)
+    return repo / "benchmarks" / "results"
+
+
+def edit_json(path, change):
+    data = json.loads(path.read_text())
+    change(data)
+    path.write_text(json.dumps(data))
+
+
+MIXED_COMMITS = (
+    f"the runs come from 2 commits: {COMMIT[:12]} (biominer__biovista, biominer__internal); "
+    f"{OTHER_COMMIT[:12]} (openchemie__biovista, openchemie__internal)"
+)
+
+
+def test_runs_from_several_commits_are_one_benchmark_when_scoring_references_and_pdfs_match(repo):
+    runs = load_paper_runs(mixed_commits(repo))
+    assert len({run.meta["git"]["commit"] for run in runs}) == 2
+    assert check_paper_consistency(runs) == []
+
+
+def test_several_commits_with_another_scoring_setup_are_refused(repo):
+    results = mixed_commits(repo)
+    path = results / "openchemie__internal" / "scores.json"
+    edit_json(path, lambda r: r["scoring"].update(rdkit_version="2024.09.1"))
+    problems = check_paper_consistency(load_paper_runs(results))
+    assert len(problems) == 2
+    assert problems[0] == MIXED_COMMITS
+    assert problems[1].startswith("the runs were scored with 2 scoring setups: ")
+    groups = problems[1].split(": ", 1)[1].split("; ")
+    assert sorted(group.split(" ", 1)[1] for group in groups) == [
+        "(biominer__biovista, biominer__internal, openchemie__biovista)",
+        "(openchemie__internal)",
+    ]
+
+
+def test_several_commits_with_other_references_are_refused(repo):
+    results = mixed_commits(repo)
+    edit_json(results / "openchemie__internal" / "scores.json", lambda r: r["inputs"].update(split_sha256="f" * 64))
+    problems = check_paper_consistency(load_paper_runs(results))
+    assert len(problems) == 2
+    assert problems[0] == MIXED_COMMITS
+    assert problems[1].startswith("internal: the tools were scored against 2 reference sets: ")
+
+
+def test_several_commits_with_other_pdf_sets_are_refused(repo):
+    results = mixed_commits(repo)
+    edit_json(results / "openchemie__biovista" / "meta.json", lambda m: m["inputs"].update(pdfs_sha256="9" * 64))
+    problems = check_paper_consistency(load_paper_runs(results))
+    assert len(problems) == 2
+    assert problems[0] == MIXED_COMMITS
+    assert problems[1].startswith("biovista: the tools ran on 2 PDF sets: ")
+
+
+def test_several_commits_are_refused_when_one_is_not_recorded(repo):
+    make_result(repo, "biominer", "biovista", BIOMINER_BIOVISTA)
+    make_result(repo, "openchemie", "biovista", OPENCHEMIE_BIOVISTA, commit=None)
+    assert check_paper_consistency(load_paper_runs(repo / "benchmarks" / "results")) == [
+        f"the runs come from 2 commits: {COMMIT[:12]} (biominer__biovista); unknown (openchemie__biovista)"
+    ]
+
+
+def test_another_scoring_setup_is_reported_within_one_commit(repo):
+    results = two_systems(repo)
+    edit_json(results / "biominer__biovista" / "scores.json", lambda r: r["scoring"].update(numpy_version="1.26.4"))
+    problems = check_paper_consistency(load_paper_runs(results))
+    assert len(problems) == 1
+    assert problems[0].startswith("the runs were scored with 2 scoring setups: ")
+    groups = problems[0].split(": ", 1)[1].split("; ")
+    assert sorted(group.split(" ", 1)[1] for group in groups) == [
+        "(biominer__biovista)",
+        "(biominer__internal, openchemie__biovista, openchemie__internal)",
     ]
 
 
@@ -453,7 +535,8 @@ def figures():
 
 def test_prepare_refuses_inconsistent_results_and_lets_development_override(repo, papers_publisher):
     results = two_systems(repo)
-    make_result(repo, "decimer_ai", "biovista", OPENCHEMIE_BIOVISTA, commit="0" * 40)
+    folder = make_result(repo, "decimer_ai", "biovista", OPENCHEMIE_BIOVISTA, commit="0" * 40)
+    edit_json(folder / "meta.json", lambda m: m["inputs"].update(pdfs_sha256="9" * 64))  # and on other PDFs
     with pytest.raises(InconsistentResults, match="2 commits"):
         papers_publisher.prepare_papers(results, repo)
     warnings = []
@@ -502,8 +585,8 @@ def test_prepare_refuses_an_incomplete_meta(repo, papers_publisher):
 def test_tables_hold_the_leaderboard_every_paper_and_the_biovista_molecules(repo, papers_publisher):
     benchmark = papers_publisher.prepare_papers(two_systems(repo), repo)
     tables = papers_publisher.table_rows(benchmark, repo)
-    assert sorted(tables) == ["leaderboard", "molecules", "papers"]
-    columns, rows = tables["leaderboard"]
+    assert sorted(tables) == ["systems_leaderboard", "systems_molecules", "systems_papers"]
+    columns, rows = tables["systems_leaderboard"]
     assert columns[:2] == ["system", "dataset"] and columns[2:] == list(PAPER_METRIC_KEYS)
     assert [row[:2] for row in rows] == [
         ["BioMiner", "biovista"],
@@ -512,8 +595,8 @@ def test_tables_hold_the_leaderboard_every_paper_and_the_biovista_molecules(repo
         ["OpenChemIE", "internal"],
     ]
     assert rows[0][columns.index("micro/f1")] == approx(3 / 5.5) and rows[1][columns.index("drawn/f1")] is None
-    assert len(tables["papers"][1]) == 10  # three BioVista papers and two Internal, for two systems
-    molecules = tables["molecules"][1]
+    assert len(tables["systems_papers"][1]) == 10  # three BioVista papers and two Internal, for two systems
+    molecules = tables["systems_molecules"][1]
     assert {row[1] for row in molecules} <= set(BIOVISTA_PAPERS)
     assert sum(row[0] == "BioMiner" and row[4] == "tp" for row in molecules) == 3
 
@@ -533,7 +616,7 @@ def test_internal_smiles_reach_no_table_and_no_artifact(repo, papers_publisher):
         cells = [str(cell) for row in rows for cell in row] + columns
         assert not [smiles for smiles in INTERNAL_SMILES if smiles in cells]
     assert not any(
-        row[1] in INTERNAL_PAPERS for row in papers_publisher.table_rows(benchmark, repo)["molecules"][1]
+        row[1] in INTERNAL_PAPERS for row in papers_publisher.table_rows(benchmark, repo)["systems_molecules"][1]
     )  # no Internal paper has molecule rows at all
     for run in benchmark.runs:
         artifact = papers_publisher.artifact_for(run)
@@ -561,27 +644,32 @@ def test_figure_panels_cover_both_datasets_in_both_themes(repo, papers_publisher
     benchmark = papers_publisher.prepare_papers(two_systems(repo), repo)
     light = papers_publisher.figure_panels(benchmark)
     dark = papers_publisher.figure_panels(benchmark, theme=papers_publisher.paper_figures.DARK)
-    assert list(light) == [
-        "viz/biovista_views",
-        "viz/internal_views",
-        "viz/recall_by_paper",
-        "viz/f1_vs_time",
-    ]
+    prefix = papers_publisher.PAPER_FIGURE_PREFIX
+    names = ("biovista_views", "internal_views", "recall_by_paper", "f1_vs_time")
+    assert list(light) == [prefix + name for name in names]
     assert list(dark) == list(light)
     for key in light:
         assert light[key].layout.height == dark[key].layout.height
         papers_publisher.panel_html(light[key], dark[key])  # both themes embed at one height
-    assert light["viz/biovista_views"].data[0].marker.color != dark["viz/biovista_views"].data[0].marker.color
+    views = f"{prefix}biovista_views"
+    assert light[views].data[0].marker.color != dark[views].data[0].marker.color
 
 
 def test_biovista_only_results_get_no_internal_figure(repo, papers_publisher):
     make_result(repo, "biominer", "biovista", BIOMINER_BIOVISTA)
     benchmark = papers_publisher.prepare_papers(repo / "benchmarks" / "results", repo)
+    prefix = papers_publisher.PAPER_FIGURE_PREFIX
     assert list(papers_publisher.figure_panels(benchmark)) == [
-        "viz/biovista_views",
-        "viz/recall_by_paper",
-        "viz/f1_vs_time",
+        prefix + name for name in ("biovista_views", "recall_by_paper", "f1_vs_time")
     ]
+
+
+def test_the_figure_prefix_is_one_no_figure_set_used_before(papers_publisher):
+    from molscout.report.wandb_publish import FIGURE_PREFIX
+
+    used = {"report/", "figures/", "charts/", "plots/", "panels/", "figure/", "htmltest/", "fig/", FIGURE_PREFIX}
+    prefix = papers_publisher.PAPER_FIGURE_PREFIX
+    assert prefix not in used and prefix.endswith("/")
 
 
 def test_view_bars_show_precision_recall_and_f1_per_system_for_each_view(repo, figures):
@@ -649,15 +737,15 @@ def test_publish_logs_one_html_page_per_figure_and_the_tables(repo, papers_publi
     keys = list(papers_publisher.figure_panels(benchmark))
     assert [key for key in logged if key in keys] == keys
     assert all(isinstance(logged[key], wandb.Html) for key in keys)
-    assert all(key.startswith("viz/") for key in keys)
+    assert all(key.startswith(papers_publisher.PAPER_FIGURE_PREFIX) for key in keys)
     light = papers_publisher.figure_panels(benchmark)
     dark = papers_publisher.figure_panels(benchmark, theme=papers_publisher.paper_figures.DARK)
     for key in keys:
         assert Path(logged[key]._path).read_text() == papers_publisher.panel_html(light[key], dark[key])
     assert {key for key, value in logged.items() if isinstance(value, wandb.Table)} == {
-        "leaderboard",
-        "papers",
-        "molecules",
+        "systems_leaderboard",
+        "systems_papers",
+        "systems_molecules",
     }
     jobs = [(init["job_type"], init["name"], init.get("group")) for init in inits]
     assert jobs[:4] == [
@@ -704,7 +792,8 @@ def test_the_uploader_defaults_to_the_structure_readers_and_names_its_choices(re
 def test_upload_refuses_inconsistent_results_before_touching_wandb(repo, papers_publisher, tmp_path, capsys, monkeypatch):
     monkeypatch.setenv("WANDB_DIR", str(tmp_path / "wandb-dir"))
     results = two_systems(repo)
-    make_result(repo, "decimer_ai", "biovista", OPENCHEMIE_BIOVISTA, commit="0" * 40)
+    folder = make_result(repo, "decimer_ai", "biovista", OPENCHEMIE_BIOVISTA, commit="0" * 40)
+    edit_json(folder / "meta.json", lambda m: m["inputs"].update(pdfs_sha256="9" * 64))  # and on other PDFs
     assert upload(results, repo, "--benchmark", "complete-systems", "--offline") == 1
     assert "2 commits" in capsys.readouterr().err
     assert not (tmp_path / "wandb-dir").exists()
@@ -756,16 +845,14 @@ def test_offline_upload_logs_one_run_per_folder_and_one_summary_and_no_internal_
     analysis = logged_values(analysis_dir)
     assert analysis["run"] == {"tags": [], "group": "", "job_type": "analysis"}
     history = analysis["history"]
+    prefix = papers_publisher.PAPER_FIGURE_PREFIX
     assert {key.removesuffix("/_type") for key, value in history.items() if value == "html-file"} == {
-        "viz/biovista_views",
-        "viz/internal_views",
-        "viz/recall_by_paper",
-        "viz/f1_vs_time",
+        prefix + name for name in ("biovista_views", "internal_views", "recall_by_paper", "f1_vs_time")
     }
     assert {key.removesuffix("/_type") for key, value in history.items() if value == "table-file"} == {
-        "leaderboard",
-        "papers",
-        "molecules",
+        "systems_leaderboard",
+        "systems_papers",
+        "systems_molecules",
     }
     # Nothing under any W&B folder (run logs, tables, artifact files and manifests) names an Internal structure,
     # while the BioVista structures are there, so the search does reach the files.

@@ -1,8 +1,9 @@
 """Publish the complete-system (Type 2) benchmark to Weights & Biases.
 
 The paper twin of report.wandb_publish: one `eval` run per `<tool>__<dataset>` result folder (config, namespaced
-summary, the folder as an artifact) in group `complete-systems`, and one `analysis` run (figures and tables). Run
-IDs come from the predictions' sha256, so uploading the same results again updates those runs.
+summary, the folder as an artifact) in group `complete-systems`, and one `analysis` run (figures under
+PAPER_FIGURE_PREFIX, and tables named systems_* to tell them from the structure readers'). Run IDs come from the
+predictions' sha256, so uploading the same results again updates those runs.
 
 The Internal set is private: its runs publish metrics and per-paper counts only. No Internal SMILES reaches a table,
 a config or an artifact (the artifact leaves out predictions.csv, and its errors.json keeps only the error types).
@@ -46,7 +47,6 @@ from molscout.report.paper_analysis import (
 )
 from molscout.report.wandb_publish import (
     ARTIFACT_TYPE,
-    FIGURE_PREFIX,
     HASH_SHOWN,
     _settings,
     panel_html,
@@ -57,6 +57,10 @@ from molscout.tables_papers import crash_warning
 
 GROUP = "complete-systems"
 SUMMARY_NAME = "summary-complete-systems"
+# Each republish adds a history step to a summary run, so a republished figure set needs a key prefix never used
+# before. Used so far: report/, figures/, charts/, plots/, panels/, figure/, htmltest/, fig/, viz/ (structure
+# readers), sys/ (complete systems).
+PAPER_FIGURE_PREFIX = "sys/"
 # Python exception names, which never hold a structure; anything else is reported as plain "error".
 ERROR_TYPE = re.compile(r"[A-Za-z_][\w.]*(Error|Exception|Exit|Warning|Interrupt)")
 
@@ -121,17 +125,24 @@ def summary_run_id(runs: tuple[PaperRun, ...] | list[PaperRun]) -> str:
 
 
 def figure_panels(benchmark: PaperBenchmark, theme: Theme = LIGHT) -> dict[str, go.Figure]:
-    """The summary run's figures by W&B key, in report order; a dataset with no run has no figure."""
+    """The summary run's figures by W&B key (under PAPER_FIGURE_PREFIX), in report order.
+
+    A dataset with no run has no figure.
+    """
     runs, metrics = benchmark.runs, benchmark.metrics
     datasets = {run.dataset for run in runs}
     sizes = view_sizes(runs)
     panels = {}
     for dataset in (BIOVISTA, INTERNAL):
         if dataset in datasets:
-            panels[f"{FIGURE_PREFIX}{dataset}_views"] = paper_figures.view_bars(metrics, dataset, sizes, theme=theme)
+            panels[f"{PAPER_FIGURE_PREFIX}{dataset}_views"] = paper_figures.view_bars(
+                metrics, dataset, sizes, theme=theme
+            )
     if BIOVISTA in datasets:
-        panels[f"{FIGURE_PREFIX}recall_by_paper"] = paper_figures.recall_by_paper(paper_rows(runs), theme=theme)
-    panels[f"{FIGURE_PREFIX}f1_vs_time"] = paper_figures.f1_vs_time(metrics, theme=theme)
+        panels[f"{PAPER_FIGURE_PREFIX}recall_by_paper"] = paper_figures.recall_by_paper(
+            paper_rows(runs), theme=theme
+        )
+    panels[f"{PAPER_FIGURE_PREFIX}f1_vs_time"] = paper_figures.f1_vs_time(metrics, theme=theme)
     return panels
 
 
@@ -146,11 +157,12 @@ def leaderboard_rows(benchmark: PaperBenchmark) -> Rows:
 
 
 def table_rows(benchmark: PaperBenchmark, repo_root: str | Path) -> dict[str, Rows]:
-    """The summary run's tables: leaderboard and per-paper counts for every run, molecules for BioVista only.
+    """The summary run's tables: systems_leaderboard and systems_papers (per-paper counts) for every run, and
+    systems_molecules for BioVista only. The names differ from the structure-reader summary's `leaderboard`.
 
     Internal runs appear in the first two as counts and metrics; their molecules are never listed.
     """
-    tables = {"leaderboard": leaderboard_rows(benchmark), "papers": paper_rows(benchmark.runs)}
+    tables = {"systems_leaderboard": leaderboard_rows(benchmark), "systems_papers": paper_rows(benchmark.runs)}
     if any(run.dataset == BIOVISTA for run in benchmark.runs):
         root = Path(repo_root)
         truth = load_biovista_truth(root / BIOVISTA_ROOT, root / BIOVISTA_PAPERS_PATH)
@@ -160,7 +172,7 @@ def table_rows(benchmark: PaperBenchmark, repo_root: str | Path) -> dict[str, Ro
             raise ResultsError(
                 "molecule rows disagree with scores.json:\n" + "\n".join(f"  - {problem}" for problem in problems)
             )
-        tables["molecules"] = (columns, rows)
+        tables["systems_molecules"] = (columns, rows)
     return tables
 
 

@@ -8,6 +8,8 @@ only: `molecule_rows` is BioVista-only.
 
 from __future__ import annotations
 
+import hashlib
+import json
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, fields
@@ -170,8 +172,14 @@ def load_paper_runs(root: str | Path) -> tuple[PaperRun, ...]:
 
 
 def check_paper_consistency(runs: Sequence[PaperRun]) -> list[str]:
-    """Why the runs are not one benchmark: several or unknown commits, uncommitted code (ours or an upstream
-    clone's), or different references or PDF sets within a dataset."""
+    """Why the runs are not one benchmark; empty when they are.
+
+    A run is a problem when it ran with uncommitted code (ours or an upstream clone's) or does not record whether
+    it did. Across runs, the problems are scoring setups that differ (scores.json's `scoring` block: versions,
+    match rule and CI methods) and, within a dataset, different reference sets or PDF sets. Runs from several
+    commits are one benchmark only when none of those differ and every commit is known; otherwise the commits are
+    reported too, as is a single commit that is not recorded.
+    """
     problems = []
     by_commit: dict[str | None, list[str]] = defaultdict(list)
     for run in runs:
@@ -187,11 +195,37 @@ def check_paper_consistency(runs: Sequence[PaperRun]) -> list[str]:
                     f"{run.name} ran with uncommitted upstream code in {Path(source['path']).name}: "
                     f"{_listed(source.get('dirty_paths') or [])}"
                 )
-    if len(by_commit) > 1:
+    shared = _scoring_problems(runs) + _dataset_input_problems(runs)
+    if len(by_commit) > 1 and (shared or None in by_commit):
         groups = "; ".join(f"{_short(commit)} ({', '.join(names)})" for commit, names in by_commit.items())
         problems.append(f"the runs come from {len(by_commit)} commits: {groups}")
-    elif None in by_commit:
+    elif len(by_commit) == 1 and None in by_commit:
         problems.append(f"no git commit recorded for {', '.join(by_commit[None])}")
+    return problems + shared
+
+
+def _scoring_problems(runs: Sequence[PaperRun]) -> list[str]:
+    """The scoring setups, when the runs were scored with more than one (or a run records none)."""
+    by_scoring: dict[str | None, list[str]] = defaultdict(list)
+    for run in runs:
+        by_scoring[_scoring_key(run)].append(run.name)
+    if len(by_scoring) == 1 and None not in by_scoring:
+        return []
+    groups = "; ".join(f"{_short(key)} ({', '.join(names)})" for key, names in by_scoring.items())
+    return [f"the runs were scored with {len(by_scoring)} scoring setups: {groups}"]
+
+
+def _scoring_key(run: PaperRun) -> str | None:
+    """The sha256 of the run's scores.json `scoring` block, or None when it records none."""
+    scoring = run.report.get("scoring")
+    if not scoring:
+        return None
+    return hashlib.sha256(json.dumps(scoring, sort_keys=True).encode()).hexdigest()
+
+
+def _dataset_input_problems(runs: Sequence[PaperRun]) -> list[str]:
+    """Datasets whose runs were scored against several reference sets, or ran on several PDF sets."""
+    problems = []
     by_references: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
     for run in runs:
         by_references[run.dataset][_references_key(run)].append(run.tool)
