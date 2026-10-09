@@ -1,0 +1,348 @@
+{
+  "run": "decimer_ai__biovista",
+  "tool": {
+    "tool": "decimer_ai",
+    "name": "DECIMER.ai",
+    "version": "app 1fc858a (DECIMER 2.4.0 3db6954, Segmentation 1.3.0 2e0b78f, Classifier 146b00b; Zenodo 8300489 + 10142866)",
+    "checkpoints": [
+      {
+        "path": "/scratch/abdulsalam.m/molscout-store/models/decimer_ai/DECIMER-V2/DECIMER_model",
+        "sha256": "e32bceecf1fb8f26a371fe5ecbfc62e776982d65987ea0e61630f468e461dd70"
+      },
+      {
+        "path": "/scratch/abdulsalam.m/molscout-store/models/decimer_ai/mask_rcnn_molecule.h5",
+        "sha256": "d42382a22585f98d8d7c8b480d2e0fcab58a9fa503133199fac839cb0f5fd4f9"
+      },
+      {
+        "path": "/scratch/abdulsalam.m/molscout-store/envs/decimer_ai/lib/python3.9/site-packages/decimer_image_classifier/model",
+        "sha256": "21c24fa3d6bb67981629350a29e7d7b2cb555ce0986bcf0c7340029ae713a445"
+      }
+    ]
+  },
+  "dataset": "biovista",
+  "items": 145,
+  "tool_errors": 0,
+  "inputs": {
+    "pdfs": "/scratch/abdulsalam.m/molscout/data/raw/biovista/pdfs",
+    "pdfs_sha256": "c0e944ce69df1412a9672560e4b1c0fec8ae63e65d125a15e3a36c739256d0c9",
+    "papers": "/scratch/abdulsalam.m/molscout/data/manifests/biovista_papers.csv",
+    "papers_sha256": "27c3028c5eddc03c21695fbce5fe61efa104f348ca60fa2b6270eede35ccb6b3"
+  },
+  "git": {
+    "commit": "c3e931fd8aef11c43b33d4a68ce0e77870fd1688",
+    "dirty": false,
+    "dirty_paths": [],
+    "code_fingerprint": "d7c6f81bd88f3a3fbfd419c7c067c476e4fcdcbeab762fd55aafad402c69f733"
+  },
+  "sources": [
+    {
+      "path": "/scratch/abdulsalam.m/molscout-store/src/DECIMER.ai",
+      "commit": "1fc858a35eb89de636c1002f1ca2d12afe04cdd8",
+      "dirty": false,
+      "dirty_paths": [],
+      "untracked": 0
+    }
+  ],
+  "environment": {
+    "python": "/scratch/abdulsalam.m/molscout-store/envs/decimer_ai/bin/python",
+    "freeze_command": [
+      "/home/abdulsalam.m/.local/bin/uv",
+      "pip",
+      "freeze",
+      "--python",
+      "/scratch/abdulsalam.m/molscout-store/envs/decimer_ai/bin/python"
+    ],
+    "python_version": "3.9.25",
+    "packages": [
+      "absl-py==2.3.1",
+      "asttokens==3.0.2",
+      "astunparse==1.6.3",
+      "backcall==0.2.0",
+      "certifi==2026.7.22",
+      "cffi==2.0.0",
+      "charset-normalizer==3.5.2",
+      "click==8.1.8",
+      "cryptography==50.0.2",
+      "cycler==0.12.1",
+      "decimer @ git+https://github.com/Kohulan/DECIMER-Image_Transformer@3db69546ed706af2be474e774de888bd3a067c6e",
+      "decimer-image-classifier @ git+https://github.com/Iagea/DECIMER-Image-Classifier@146b00be2fe6f8fa6670a4255969d4747502b7f2",
+      "decimer-segmentation @ git+https://github.com/Kohulan/DECIMER-Image-Segmentation@2e0b78fc6d117a0efa816c280082b3462eed0865",
+      "decorator==5.3.1",
+      "efficientnet==1.1.1",
+      "executing==2.2.1",
+      "flatbuffers==2.0.7",
+      "gast==0.4.0",
+      "google-auth==2.50.0",
+      "google-auth-oauthlib==0.4.6",
+      "google-pasta==0.2.0",
+      "grpcio==1.80.0",
+      "h5py==3.14.0",
+      "idna==3.20",
+      "imageio==2.37.2",
+      "importlib-metadata==8.7.1",
+      "ipython==8.10.0",
+      "jedi==0.19.2",
+      "keras==2.3.0",
+      "keras-applications==1.0.8",
+      "keras-preprocessing==1.1.2",
+      "kiwisolver==1.4.7",
+      "libclang==18.1.1",
+      "markdown==3.9",
+      "markupsafe==3.0.4",
+      "matplotlib==3.4.3",
+      "matplotlib-inline==0.2.2",
+      "networkx==3.2.1",
+      "numpy==1.21.6",
+      "nvidia-cublas-cu11==11.11.3.6",
+      "nvidia-cuda-nvrtc-cu11==11.8.89",
+      "nvidia-cuda-runtime-cu11==11.8.89",
+      "nvidia-cudnn-cu11==8.9.6.50",
+      "nvidia-cufft-cu11==10.9.0.58",
+      "nvidia-curand-cu11==10.3.0.86",
+      "nvidia-cusolver-cu11==11.4.1.48",
+      "nvidia-cusparse-cu11==11.7.5.86",
+      "oauthlib==4.0.0",
+      "opencv-python-headless==4.7.0.68",
+      "opt-einsum==3.4.0",
+      "packaging==26.3",
+      "parso==0.8.7",
+      "pdf2image==1.16.2",
+      "pexpect==4.9.0",
+      "pickleshare==0.7.5",
+      "pillow==9.4.0",
+      "pillow-heif==0.11.1",
+      "prompt-toolkit==3.0.52",
+      "protobuf==3.19.0",
+      "ptyprocess==0.7.0",
+      "pure-eval==0.2.4",
+      "pyasn1==0.6.4",
+      "pyasn1-modules==0.4.2",
+      "pycparser==2.23",
+      "pygments==2.21.0",
+      "pyparsing==3.3.3",
+      "pystow==0.4.9",
+      "python-dateutil==2.9.0.post0",
+      "pywavelets==1.4.1",
+      "pyyaml==6.0.3",
+      "requests==2.32.5",
+      "requests-oauthlib==2.0.0",
+      "scikit-image==0.19.3",
+      "scipy==1.9.3",
+      "selfies==2.1.0",
+      "setuptools==82.0.1",
+      "six==1.17.0",
+      "stack-data==0.6.3",
+      "tensorboard==2.11.2",
+      "tensorboard-data-server==0.6.1",
+      "tensorboard-plugin-wit==1.8.1",
+      "tensorflow==2.7.0",
+      "tensorflow-estimator==2.7.0",
+      "tensorflow-io-gcs-filesystem==0.37.1",
+      "termcolor==3.1.0",
+      "tifffile==2024.8.30",
+      "tqdm==4.70.1",
+      "traitlets==5.15.1",
+      "typing-extensions==4.16.0",
+      "unicodedata2==15.0.0",
+      "urllib3==2.6.3",
+      "wcwidth==0.9.2",
+      "werkzeug==3.1.9",
+      "wheel==0.48.0",
+      "wrapt==2.5.0",
+      "zipp==3.23.1"
+    ],
+    "conda_meta": null,
+    "lock_commands": [
+      {
+        "command": [
+          "ls",
+          "/scratch/abdulsalam.m/molscout-store/envs/decimer_ai/poppler/conda-meta"
+        ],
+        "output": "_openmp_mutex-4.5-20_gnu.json\nbzip2-1.0.8-hda65f42_10.json\nc-ares-1.34.8-hebe6cf0_2.json\nca-certificates-2026.7.22-hbd8a1cb_0.json\ncairo-1.18.6-h3c89d7e_0.json\nfont-ttf-dejavu-sans-mono-2.37-hab24e00_0.json\nfont-ttf-inconsolata-3.000-h77eed37_0.json\nfont-ttf-source-code-pro-2.038-h77eed37_0.json\nfont-ttf-ubuntu-0.83-h77eed37_3.json\nfontconfig-2.18.3-h4db4eae_1.json\nfonts-conda-ecosystem-1-0.json\nfonts-conda-forge-1-hc364b38_1.json\ngraphite2-1.3.15-h54a6638_1.json\nhistory\nicu-78.3-py310h44b86e0_2.json\nkeyutils-1.6.3-h7cc23a3_1.json\nkrb5-1.22.2-hbc21106_2.json\nlcms2-2.19.1-h9073bf1_3.json\nlerc-4.2.0-hdb68285_0.json\nlibcurl-8.22.0-ha042cf0_0.json\nlibdeflate-1.25-hd45a770_1.json\nlibedit-3.1.20260512-pl5321h373387f_0.json\nlibegl-1.7.0-ha4b6fd6_5.json\nlibev-4.33-h280c20c_3.json\nlibexpat-2.8.5-hd2095e1_0.json\nlibffi-3.7.0-h81df57d_1.json\nlibfreetype-2.14.3-ha770c72_2.json\nlibfreetype6-2.14.3-h5e6c136_2.json\nlibgcc-16.2.0-ha9f2e26_7.json\nlibgl-1.7.0-ha4b6fd6_5.json\nlibglib-2.90.0-h569388d_0.json\nlibglvnd-1.7.0-ha4b6fd6_5.json\nlibglx-1.7.0-ha4b6fd6_5.json\nlibgomp-16.2.0-he0feb66_7.json\nlibharfbuzz-14.6.0-h23af247_1.json\nlibiconv-1.18-h0cb94f2_3.json\nlibjpeg-turbo-3.2.0-hb03c661_1.json\nliblzma-5.8.3-hb03c661_1.json\nlibnghttp2-1.68.1-h74cf4be_1.json\nlibpng-1.6.59-h922cc85_0.json\nlibpsl-0.23.1-hd9e3e90_1.json\nlibsqlite-3.53.4-h0737f62_102.json\nlibssh2-1.11.1-h6154650_1.json\nlibstdcxx-16.2.0-h934c35e_7.json\nlibtiff-4.7.2-hcc2c06a_1.json\nlibuuid-2.42.4-hcfc3c73_0.json\nlibwebp-base-1.6.0-hd42ef1d_1.json\nlibxcb-1.17.0-hb83e432_2.json\nlibzlib-1.3.2-h25fd6f3_3.json\nncurses-6.6-hdb14827_1.json\nnspr-4.40-h29cc59b_0.json\nnss-3.118-h445c969_0.json\nopenjpeg-2.5.4-heb1ab33_2.json\nopenssl-3.6.5-h781a0a9_0.json\npcre2-10.47-h8b3dc9c_1.json\npixman-0.46.4-h54a6638_3.json\npoppler-26.09.0-h0b47b50_0.json\npoppler-data-0.4.12-hd8ed1ab_0.json\npthread-stubs-0.4-h7cc23a3_1004.json\nxorg-libice-1.1.2-h280c20c_0.json\nxorg-libsm-1.2.6-h0d788c3_1.json\nxorg-libx11-1.8.13-he1eb515_1.json\nxorg-libxau-1.0.12-h7cc23a3_2.json\nxorg-libxdmcp-1.1.5-h7cc23a3_2.json\nxorg-libxext-1.3.7-h7cc23a3_1.json\nxorg-libxfixes-6.0.2-h7cc23a3_1.json\nxorg-libxi-1.8.3-h7cc23a3_1.json\nxorg-libxrender-0.9.12-hb03c661_1.json\nxorg-libxscrnsaver-1.2.4-hb9d3cd8_0.json\nxorg-libxtst-1.2.5-h7cc23a3_4.json\nzstd-1.5.7-hb78ec9c_7.json\n"
+      }
+    ],
+    "sha256": "57cfbc5c8d30877d4402507df79d330cbf5c6d3d352feb30a1d898013c4c8828",
+    "variables": {
+      "CUDA_VISIBLE_DEVICES": "0",
+      "OMP_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null,
+      "HF_HOME": "/scratch/abdulsalam.m/hf_cache",
+      "HF_HUB_OFFLINE": "1",
+      "TRANSFORMERS_OFFLINE": "1",
+      "PYSTOW_HOME": "/scratch/abdulsalam.m/molscout-store/models/decimer_ai",
+      "MOLSCOUT_STORE": "/scratch/abdulsalam.m/molscout-store",
+      "SLURM_CPUS_PER_TASK": "8",
+      "SLURM_JOB_PARTITION": "sharing"
+    }
+  },
+  "hardware": {
+    "host": "d4077",
+    "platform": "Linux-5.14.0-611.5.1.el9_7.x86_64-x86_64-with-glibc2.34",
+    "cluster": "explorer",
+    "cpu_model": "AMD EPYC 9455 48-Core Processor",
+    "cpus_available": 8,
+    "slurm_mem_per_node_mb": 65536,
+    "slurm_mem_per_cpu_mb": null,
+    "gpus": [
+      {
+        "name": "NVIDIA H200 NVL",
+        "memory": "143771 MiB",
+        "driver": "595.58.03"
+      }
+    ]
+  },
+  "slurm": {
+    "job": "10930611",
+    "array_job": null,
+    "array_task": null,
+    "partition": "sharing",
+    "nodes": "d4077"
+  },
+  "timing": {
+    "started_utc": "2026-10-09T00:48:23.234Z",
+    "finished_utc": "2026-10-09T00:57:11.906Z",
+    "wall_seconds": 528.672,
+    "tool_seconds": 10528.912,
+    "scoring_seconds": 7.52,
+    "item_seconds_total": 9514.637812737375
+  },
+  "resources": {
+    "tool_peak_rss_mib": 8268.4,
+    "tool_cpu_seconds": 9146.015,
+    "gpu": {
+      "name": "NVIDIA H200 NVL",
+      "peak_memory_mib": 6179.0,
+      "mean_utilization_pct": 5.0,
+      "samples": 2071,
+      "interval_seconds": 5.0
+    }
+  },
+  "segments": [
+    {
+      "slurm": {
+        "job": "10928747",
+        "array_job": null,
+        "array_task": null,
+        "partition": "sharing"
+      },
+      "host": "d4077",
+      "gpus": [
+        "NVIDIA H200 NVL"
+      ],
+      "started_utc": "2026-10-08T21:59:06.951Z",
+      "finished_utc": "2026-10-08T22:52:31.072Z",
+      "rows": 1036,
+      "tool_seconds": 3204.121,
+      "resources": {
+        "tool_peak_rss_mib": 6732.8,
+        "tool_cpu_seconds": 2871.781,
+        "gpu": {
+          "name": "NVIDIA H200 NVL",
+          "peak_memory_mib": 6179.0,
+          "mean_utilization_pct": 4.8,
+          "samples": 628,
+          "interval_seconds": 5.0
+        }
+      }
+    },
+    {
+      "slurm": {
+        "job": "10929345",
+        "array_job": null,
+        "array_task": null,
+        "partition": "sharing"
+      },
+      "host": "d4077",
+      "gpus": [
+        "NVIDIA H200 NVL"
+      ],
+      "started_utc": "2026-10-08T22:53:31.645Z",
+      "finished_utc": "2026-10-08T23:50:24.620Z",
+      "rows": 2136,
+      "tool_seconds": 3412.975,
+      "resources": {
+        "tool_peak_rss_mib": 7290.1,
+        "tool_cpu_seconds": 2939.935,
+        "gpu": {
+          "name": "NVIDIA H200 NVL",
+          "peak_memory_mib": 6179.0,
+          "mean_utilization_pct": 4.2,
+          "samples": 671,
+          "interval_seconds": 5.0
+        }
+      }
+    },
+    {
+      "slurm": {
+        "job": "10930034",
+        "array_job": null,
+        "array_task": null,
+        "partition": "sharing"
+      },
+      "host": "d4077",
+      "gpus": [
+        "NVIDIA H200 NVL"
+      ],
+      "started_utc": "2026-10-08T23:51:18.799Z",
+      "finished_utc": "2026-10-09T00:47:56.295Z",
+      "rows": 3047,
+      "tool_seconds": 3397.495,
+      "resources": {
+        "tool_peak_rss_mib": 8268.4,
+        "tool_cpu_seconds": 2883.291,
+        "gpu": {
+          "name": "NVIDIA H200 NVL",
+          "peak_memory_mib": 6179.0,
+          "mean_utilization_pct": 5.7,
+          "samples": 670,
+          "interval_seconds": 5.0
+        }
+      }
+    },
+    {
+      "slurm": {
+        "job": "10930611",
+        "array_job": null,
+        "array_task": null,
+        "partition": "sharing"
+      },
+      "host": "d4077",
+      "gpus": [
+        "NVIDIA H200 NVL"
+      ],
+      "started_utc": "2026-10-09T00:48:29.714Z",
+      "finished_utc": "2026-10-09T00:57:04.035Z",
+      "rows": 3184,
+      "tool_seconds": 514.321,
+      "resources": {
+        "tool_peak_rss_mib": 5526.8,
+        "tool_cpu_seconds": 451.008,
+        "gpu": {
+          "name": "NVIDIA H200 NVL",
+          "peak_memory_mib": 6179.0,
+          "mean_utilization_pct": 6.9,
+          "samples": 102,
+          "interval_seconds": 5.0
+        }
+      }
+    }
+  ],
+  "command": [
+    "/scratch/abdulsalam.m/molscout-store/envs/decimer_ai/bin/python",
+    "run.py",
+    "--papers",
+    "/scratch/abdulsalam.m/molscout/benchmarks/results/.staging-decimer_ai__biovista-596895/papers.csv",
+    "--dataset",
+    "biovista",
+    "--tool",
+    "DECIMER.ai app 1fc858a (DECIMER 2.4.0 3db6954, Segmentation 1.3.0 2e0b78f, Classifier 146b00b; Zenodo 8300489 + 10142866)",
+    "--output",
+    "/scratch/abdulsalam.m/molscout/benchmarks/results/.staging-decimer_ai__biovista-596895/predictions.csv",
+    "--resume",
+    "/scratch/abdulsalam.m/molscout/benchmarks/results/.checkpoints/decimer_ai__biovista/predictions.csv",
+    "--poppler-path",
+    "/scratch/abdulsalam.m/molscout-store/envs/decimer_ai/poppler/bin",
+    "--device",
+    "gpu"
+  ]
+}

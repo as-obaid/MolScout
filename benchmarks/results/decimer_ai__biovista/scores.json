@@ -1,0 +1,6696 @@
+{
+  "dataset": "biovista",
+  "tool": "DECIMER.ai app 1fc858a (DECIMER 2.4.0 3db6954, Segmentation 1.3.0 2e0b78f, Classifier 146b00b; Zenodo 8300489 + 10142866)",
+  "predictions": {
+    "path": "benchmarks/results/decimer_ai__biovista/predictions.csv",
+    "sha256": "cad768bfad03391e5e812a99155ded9e48cd5f6ee6a842255279f42d2cf126eb"
+  },
+  "inputs": {
+    "references": {
+      "directory": "data/raw/biovista",
+      "manifest": "data/manifests/biovista_papers.csv",
+      "manifest_sha256": "27c3028c5eddc03c21695fbce5fe61efa104f348ca60fa2b6270eede35ccb6b3",
+      "sha256": "8710d3e18d8c190430a8f5872c3982d651aafaf2e19f0254548471ed1bae2d24",
+      "papers": 145,
+      "papers_without_submitted": 110,
+      "labels": 2435,
+      "unreadable": {
+        "38_6s9d:19": "RDKit cannot parse it",
+        "38_6s9d:21": "RDKit cannot parse it",
+        "38_6s9d:22": "RDKit cannot parse it",
+        "38_6s9d:42": "RDKit cannot parse it",
+        "50_6rtn:22": "RDKit cannot parse it",
+        "67_6ra1:17": "RDKit cannot parse it",
+        "67_6ra1:18": "RDKit cannot parse it",
+        "67_6ra1:22": "RDKit cannot parse it",
+        "67_6ra1:37": "RDKit cannot parse it",
+        "73_6r5f:26": "RDKit cannot parse it",
+        "77_6r49:7": "RDKit cannot parse it",
+        "77_6r49:24": "RDKit cannot parse it",
+        "77_6r49:29": "RDKit cannot parse it",
+        "77_6r49:32": "RDKit cannot parse it",
+        "77_6r49:35": "RDKit cannot parse it",
+        "102_6ql3:23": "RDKit cannot parse it",
+        "111_6qfx:6": "RDKit cannot parse it",
+        "149_6prf:2": "RDKit cannot parse it",
+        "167_6peu:2": "RDKit cannot parse it",
+        "167_6peu:3": "RDKit cannot parse it",
+        "176_6p5w:23": "RDKit cannot parse it",
+        "244_6nzg:8": "RDKit cannot parse it",
+        "244_6nzg:9": "RDKit cannot parse it",
+        "295_6n5c:10": "RDKit cannot parse it",
+        "323_6mny:3": "RDKit cannot parse it",
+        "427_6ic7:11": "RDKit cannot parse it",
+        "427_6ic7:13": "RDKit cannot parse it",
+        "448_6i18:19": "RDKit cannot parse it",
+        "448_6i18:20": "RDKit cannot parse it",
+        "448_6i18:21": "RDKit cannot parse it",
+        "448_6i18:22": "RDKit cannot parse it",
+        "451_6i0c:5": "RDKit cannot parse it",
+        "451_6i0c:42": "RDKit cannot parse it",
+        "451_6i0c:43": "RDKit cannot parse it",
+        "451_6i0c:44": "RDKit cannot parse it",
+        "451_6i0c:45": "RDKit cannot parse it",
+        "451_6i0c:46": "RDKit cannot parse it",
+        "451_6i0c:47": "RDKit cannot parse it",
+        "451_6i0c:48": "RDKit cannot parse it",
+        "451_6i0c:55": "RDKit cannot parse it",
+        "461_6hvw:2": "RDKit cannot parse it",
+        "461_6hvw:3": "RDKit cannot parse it",
+        "461_6hvw:5": "RDKit cannot parse it",
+        "461_6hvw:96": "RDKit cannot parse it",
+        "461_6hvw:100": "RDKit cannot parse it",
+        "465_6hs0:2": "RDKit cannot parse it",
+        "465_6hs0:4": "RDKit cannot parse it",
+        "465_6hs0:5": "RDKit cannot parse it",
+        "465_6hs0:7": "RDKit cannot parse it",
+        "465_6hs0:8": "RDKit cannot parse it",
+        "465_6hs0:9": "RDKit cannot parse it",
+        "465_6hs0:10": "RDKit cannot parse it",
+        "465_6hs0:12": "RDKit cannot parse it",
+        "465_6hs0:13": "RDKit cannot parse it",
+        "465_6hs0:14": "RDKit cannot parse it",
+        "465_6hs0:15": "RDKit cannot parse it",
+        "465_6hs0:16": "RDKit cannot parse it",
+        "465_6hs0:17": "RDKit cannot parse it",
+        "465_6hs0:18": "RDKit cannot parse it",
+        "465_6hs0:19": "RDKit cannot parse it",
+        "465_6hs0:22": "RDKit cannot parse it",
+        "465_6hs0:23": "RDKit cannot parse it",
+        "465_6hs0:24": "RDKit cannot parse it",
+        "465_6hs0:25": "RDKit cannot parse it",
+        "465_6hs0:26": "RDKit cannot parse it",
+        "465_6hs0:27": "RDKit cannot parse it",
+        "465_6hs0:28": "RDKit cannot parse it",
+        "465_6hs0:29": "RDKit cannot parse it",
+        "465_6hs0:30": "RDKit cannot parse it",
+        "465_6hs0:31": "RDKit cannot parse it",
+        "465_6hs0:32": "RDKit cannot parse it",
+        "465_6hs0:33": "RDKit cannot parse it"
+      },
+      "dropped_papers": [
+        "102_6ql3",
+        "111_6qfx",
+        "149_6prf",
+        "167_6peu",
+        "176_6p5w",
+        "244_6nzg",
+        "295_6n5c",
+        "323_6mny",
+        "38_6s9d",
+        "427_6ic7",
+        "448_6i18",
+        "451_6i0c",
+        "461_6hvw",
+        "465_6hs0",
+        "50_6rtn",
+        "67_6ra1",
+        "73_6r5f",
+        "77_6r49"
+      ],
+      "dropped_reason": "has an unreadable label",
+      "drawn_only": {
+        "papers": 142,
+        "labels": 1310,
+        "papers_without_drawn": [
+          "129_6q4q",
+          "156_6pka",
+          "230_6o5t"
+        ]
+      }
+    }
+  },
+  "scoring": {
+    "molscout_version": "0.1.0",
+    "rdkit_version": "2026.03.2",
+    "numpy_version": "2.5.3",
+    "python_version": "3.12.14",
+    "match": "exact RDKit canonical SMILES, stereo-aware and stereo-stripped",
+    "ci95_proportions": {
+      "micro_precision_recall_f1": {
+        "method": "paper bootstrap",
+        "resamples": 10000,
+        "seed": 6630
+      },
+      "valid_output_rate": {
+        "method": "wilson",
+        "z": 1.959963984540054
+      }
+    },
+    "ci95_macro": {
+      "method": "percentile bootstrap over papers",
+      "resamples": 10000,
+      "seed": 6630
+    }
+  },
+  "scores": {
+    "kind": "paper",
+    "papers": {
+      "100_6qm7": {
+        "molecules": 10,
+        "tp": 2,
+        "fp": 7,
+        "fn": 8,
+        "precision": 0.2222222222222222,
+        "recall": 0.2,
+        "stereo_stripped": {
+          "tp": 2,
+          "fp": 7,
+          "fn": 8,
+          "precision": 0.2222222222222222,
+          "recall": 0.2
+        },
+        "valid_outputs": 7,
+        "invalid_outputs": 2,
+        "rows": 10,
+        "invalid_rows": 2
+      },
+      "101_6qlu": {
+        "molecules": 9,
+        "tp": 0,
+        "fp": 22,
+        "fn": 9,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 21,
+          "fn": 8,
+          "precision": 0.045454545454545456,
+          "recall": 0.1111111111111111
+        },
+        "valid_outputs": 20,
+        "invalid_outputs": 2,
+        "rows": 22,
+        "invalid_rows": 2
+      },
+      "105_6qi4": {
+        "molecules": 15,
+        "tp": 8,
+        "fp": 21,
+        "fn": 7,
+        "precision": 0.27586206896551724,
+        "recall": 0.5333333333333333,
+        "stereo_stripped": {
+          "tp": 9,
+          "fp": 20,
+          "fn": 6,
+          "precision": 0.3103448275862069,
+          "recall": 0.6
+        },
+        "valid_outputs": 24,
+        "invalid_outputs": 5,
+        "rows": 29,
+        "invalid_rows": 5
+      },
+      "109_6qgk": {
+        "molecules": 28,
+        "tp": 17,
+        "fp": 8,
+        "fn": 11,
+        "precision": 0.68,
+        "recall": 0.6071428571428571,
+        "stereo_stripped": {
+          "tp": 18,
+          "fp": 7,
+          "fn": 10,
+          "precision": 0.72,
+          "recall": 0.6428571428571429
+        },
+        "valid_outputs": 23,
+        "invalid_outputs": 2,
+        "rows": 25,
+        "invalid_rows": 2
+      },
+      "10_6ueg": {
+        "molecules": 5,
+        "tp": 5,
+        "fp": 6,
+        "fn": 0,
+        "precision": 0.45454545454545453,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 5,
+          "fp": 6,
+          "fn": 0,
+          "precision": 0.45454545454545453,
+          "recall": 1.0
+        },
+        "valid_outputs": 11,
+        "invalid_outputs": 0,
+        "rows": 11,
+        "invalid_rows": 0
+      },
+      "110_6qgf": {
+        "molecules": 4,
+        "tp": 0,
+        "fp": 6,
+        "fn": 4,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 5,
+          "fn": 3,
+          "precision": 0.16666666666666666,
+          "recall": 0.25
+        },
+        "valid_outputs": 4,
+        "invalid_outputs": 2,
+        "rows": 6,
+        "invalid_rows": 2
+      },
+      "114_6qe5": {
+        "molecules": 10,
+        "tp": 1,
+        "fp": 11,
+        "fn": 9,
+        "precision": 0.08333333333333333,
+        "recall": 0.1,
+        "stereo_stripped": {
+          "tp": 5,
+          "fp": 7,
+          "fn": 5,
+          "precision": 0.4166666666666667,
+          "recall": 0.5
+        },
+        "valid_outputs": 11,
+        "invalid_outputs": 1,
+        "rows": 12,
+        "invalid_rows": 1
+      },
+      "115_6qcj": {
+        "molecules": 5,
+        "tp": 4,
+        "fp": 1,
+        "fn": 1,
+        "precision": 0.8,
+        "recall": 0.8,
+        "stereo_stripped": {
+          "tp": 4,
+          "fp": 1,
+          "fn": 1,
+          "precision": 0.8,
+          "recall": 0.8
+        },
+        "valid_outputs": 5,
+        "invalid_outputs": 0,
+        "rows": 5,
+        "invalid_rows": 0
+      },
+      "117_6qav": {
+        "molecules": 11,
+        "tp": 2,
+        "fp": 10,
+        "fn": 9,
+        "precision": 0.16666666666666666,
+        "recall": 0.18181818181818182,
+        "stereo_stripped": {
+          "tp": 4,
+          "fp": 8,
+          "fn": 7,
+          "precision": 0.3333333333333333,
+          "recall": 0.36363636363636365
+        },
+        "valid_outputs": 10,
+        "invalid_outputs": 2,
+        "rows": 12,
+        "invalid_rows": 2
+      },
+      "118_6qaf": {
+        "molecules": 3,
+        "tp": 0,
+        "fp": 5,
+        "fn": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 2,
+          "fp": 3,
+          "fn": 1,
+          "precision": 0.4,
+          "recall": 0.6666666666666666
+        },
+        "valid_outputs": 3,
+        "invalid_outputs": 2,
+        "rows": 11,
+        "invalid_rows": 8
+      },
+      "121_6q9t": {
+        "molecules": 8,
+        "tp": 1,
+        "fp": 11,
+        "fn": 7,
+        "precision": 0.08333333333333333,
+        "recall": 0.125,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 11,
+          "fn": 7,
+          "precision": 0.08333333333333333,
+          "recall": 0.125
+        },
+        "valid_outputs": 5,
+        "invalid_outputs": 7,
+        "rows": 12,
+        "invalid_rows": 7
+      },
+      "122_6q8p": {
+        "molecules": 50,
+        "tp": 4,
+        "fp": 9,
+        "fn": 46,
+        "precision": 0.3076923076923077,
+        "recall": 0.08,
+        "stereo_stripped": {
+          "tp": 4,
+          "fp": 9,
+          "fn": 46,
+          "precision": 0.3076923076923077,
+          "recall": 0.08
+        },
+        "valid_outputs": 10,
+        "invalid_outputs": 3,
+        "rows": 14,
+        "invalid_rows": 3
+      },
+      "123_6q8c": {
+        "molecules": 21,
+        "tp": 0,
+        "fp": 13,
+        "fn": 21,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 13,
+          "fn": 21,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 7,
+        "invalid_outputs": 6,
+        "rows": 13,
+        "invalid_rows": 6
+      },
+      "124_6q7w": {
+        "molecules": 25,
+        "tp": 6,
+        "fp": 20,
+        "fn": 19,
+        "precision": 0.23076923076923078,
+        "recall": 0.24,
+        "stereo_stripped": {
+          "tp": 6,
+          "fp": 20,
+          "fn": 19,
+          "precision": 0.23076923076923078,
+          "recall": 0.24
+        },
+        "valid_outputs": 22,
+        "invalid_outputs": 4,
+        "rows": 28,
+        "invalid_rows": 4
+      },
+      "129_6q4q": {
+        "molecules": 5,
+        "tp": 0,
+        "fp": 10,
+        "fn": 5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 10,
+          "fn": 5,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 5,
+        "invalid_outputs": 5,
+        "rows": 10,
+        "invalid_rows": 5
+      },
+      "130_6q4g": {
+        "molecules": 31,
+        "tp": 7,
+        "fp": 48,
+        "fn": 24,
+        "precision": 0.12727272727272726,
+        "recall": 0.22580645161290322,
+        "stereo_stripped": {
+          "tp": 7,
+          "fp": 48,
+          "fn": 24,
+          "precision": 0.12727272727272726,
+          "recall": 0.22580645161290322
+        },
+        "valid_outputs": 38,
+        "invalid_outputs": 17,
+        "rows": 66,
+        "invalid_rows": 19
+      },
+      "131_6q3z": {
+        "molecules": 16,
+        "tp": 3,
+        "fp": 34,
+        "fn": 13,
+        "precision": 0.08108108108108109,
+        "recall": 0.1875,
+        "stereo_stripped": {
+          "tp": 3,
+          "fp": 34,
+          "fn": 13,
+          "precision": 0.08108108108108109,
+          "recall": 0.1875
+        },
+        "valid_outputs": 17,
+        "invalid_outputs": 20,
+        "rows": 46,
+        "invalid_rows": 22
+      },
+      "138_6pyb": {
+        "molecules": 2,
+        "tp": 2,
+        "fp": 1,
+        "fn": 0,
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 2,
+          "fp": 1,
+          "fn": 0,
+          "precision": 0.6666666666666666,
+          "recall": 1.0
+        },
+        "valid_outputs": 3,
+        "invalid_outputs": 0,
+        "rows": 3,
+        "invalid_rows": 0
+      },
+      "141_6pvz": {
+        "molecules": 36,
+        "tp": 12,
+        "fp": 35,
+        "fn": 24,
+        "precision": 0.2553191489361702,
+        "recall": 0.3333333333333333,
+        "stereo_stripped": {
+          "tp": 12,
+          "fp": 34,
+          "fn": 24,
+          "precision": 0.2608695652173913,
+          "recall": 0.3333333333333333
+        },
+        "valid_outputs": 38,
+        "invalid_outputs": 9,
+        "rows": 60,
+        "invalid_rows": 9
+      },
+      "142_6pvx": {
+        "molecules": 3,
+        "tp": 2,
+        "fp": 11,
+        "fn": 1,
+        "precision": 0.15384615384615385,
+        "recall": 0.6666666666666666,
+        "stereo_stripped": {
+          "tp": 2,
+          "fp": 11,
+          "fn": 1,
+          "precision": 0.15384615384615385,
+          "recall": 0.6666666666666666
+        },
+        "valid_outputs": 12,
+        "invalid_outputs": 1,
+        "rows": 16,
+        "invalid_rows": 1
+      },
+      "145_6pt3": {
+        "molecules": 7,
+        "tp": 1,
+        "fp": 7,
+        "fn": 6,
+        "precision": 0.125,
+        "recall": 0.14285714285714285,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 7,
+          "fn": 6,
+          "precision": 0.125,
+          "recall": 0.14285714285714285
+        },
+        "valid_outputs": 8,
+        "invalid_outputs": 0,
+        "rows": 8,
+        "invalid_rows": 0
+      },
+      "147_6ps6": {
+        "molecules": 8,
+        "tp": 6,
+        "fp": 7,
+        "fn": 2,
+        "precision": 0.46153846153846156,
+        "recall": 0.75,
+        "stereo_stripped": {
+          "tp": 6,
+          "fp": 7,
+          "fn": 2,
+          "precision": 0.46153846153846156,
+          "recall": 0.75
+        },
+        "valid_outputs": 11,
+        "invalid_outputs": 2,
+        "rows": 16,
+        "invalid_rows": 2
+      },
+      "14_6u7p": {
+        "molecules": 21,
+        "tp": 4,
+        "fp": 26,
+        "fn": 17,
+        "precision": 0.13333333333333333,
+        "recall": 0.19047619047619047,
+        "stereo_stripped": {
+          "tp": 4,
+          "fp": 26,
+          "fn": 17,
+          "precision": 0.13333333333333333,
+          "recall": 0.19047619047619047
+        },
+        "valid_outputs": 28,
+        "invalid_outputs": 2,
+        "rows": 33,
+        "invalid_rows": 2
+      },
+      "153_6plg": {
+        "molecules": 21,
+        "tp": 21,
+        "fp": 1,
+        "fn": 0,
+        "precision": 0.9545454545454546,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 20,
+          "fp": 1,
+          "fn": 0,
+          "precision": 0.9523809523809523,
+          "recall": 1.0
+        },
+        "valid_outputs": 21,
+        "invalid_outputs": 1,
+        "rows": 24,
+        "invalid_rows": 1
+      },
+      "156_6pka": {
+        "molecules": 17,
+        "tp": 0,
+        "fp": 24,
+        "fn": 17,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 24,
+          "fn": 17,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 20,
+        "invalid_outputs": 4,
+        "rows": 25,
+        "invalid_rows": 4
+      },
+      "159_6pii": {
+        "molecules": 15,
+        "tp": 14,
+        "fp": 1,
+        "fn": 1,
+        "precision": 0.9333333333333333,
+        "recall": 0.9333333333333333,
+        "stereo_stripped": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "valid_outputs": 15,
+        "invalid_outputs": 0,
+        "rows": 16,
+        "invalid_rows": 0
+      },
+      "160_6pid": {
+        "molecules": 14,
+        "tp": 11,
+        "fp": 4,
+        "fn": 3,
+        "precision": 0.7333333333333333,
+        "recall": 0.7857142857142857,
+        "stereo_stripped": {
+          "tp": 11,
+          "fp": 4,
+          "fn": 3,
+          "precision": 0.7333333333333333,
+          "recall": 0.7857142857142857
+        },
+        "valid_outputs": 13,
+        "invalid_outputs": 2,
+        "rows": 16,
+        "invalid_rows": 2
+      },
+      "164_6pge": {
+        "molecules": 39,
+        "tp": 13,
+        "fp": 38,
+        "fn": 26,
+        "precision": 0.2549019607843137,
+        "recall": 0.3333333333333333,
+        "stereo_stripped": {
+          "tp": 13,
+          "fp": 38,
+          "fn": 26,
+          "precision": 0.2549019607843137,
+          "recall": 0.3333333333333333
+        },
+        "valid_outputs": 42,
+        "invalid_outputs": 9,
+        "rows": 55,
+        "invalid_rows": 12
+      },
+      "172_6p9e": {
+        "molecules": 3,
+        "tp": 3,
+        "fp": 3,
+        "fn": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 3,
+          "fn": 0,
+          "precision": 0.25,
+          "recall": 1.0
+        },
+        "valid_outputs": 6,
+        "invalid_outputs": 0,
+        "rows": 7,
+        "invalid_rows": 0
+      },
+      "179_6p3v": {
+        "molecules": 4,
+        "tp": 3,
+        "fp": 1,
+        "fn": 1,
+        "precision": 0.75,
+        "recall": 0.75,
+        "stereo_stripped": {
+          "tp": 3,
+          "fp": 1,
+          "fn": 1,
+          "precision": 0.75,
+          "recall": 0.75
+        },
+        "valid_outputs": 4,
+        "invalid_outputs": 0,
+        "rows": 4,
+        "invalid_rows": 0
+      },
+      "17_6tld": {
+        "molecules": 39,
+        "tp": 11,
+        "fp": 22,
+        "fn": 28,
+        "precision": 0.3333333333333333,
+        "recall": 0.28205128205128205,
+        "stereo_stripped": {
+          "tp": 11,
+          "fp": 22,
+          "fn": 28,
+          "precision": 0.3333333333333333,
+          "recall": 0.28205128205128205
+        },
+        "valid_outputs": 15,
+        "invalid_outputs": 18,
+        "rows": 34,
+        "invalid_rows": 19
+      },
+      "185_6oy2": {
+        "molecules": 41,
+        "tp": 16,
+        "fp": 17,
+        "fn": 25,
+        "precision": 0.48484848484848486,
+        "recall": 0.3902439024390244,
+        "stereo_stripped": {
+          "tp": 11,
+          "fp": 16,
+          "fn": 18,
+          "precision": 0.4074074074074074,
+          "recall": 0.3793103448275862
+        },
+        "valid_outputs": 20,
+        "invalid_outputs": 13,
+        "rows": 36,
+        "invalid_rows": 14
+      },
+      "18_6tl2": {
+        "molecules": 7,
+        "tp": 7,
+        "fp": 11,
+        "fn": 0,
+        "precision": 0.3888888888888889,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 7,
+          "fp": 11,
+          "fn": 0,
+          "precision": 0.3888888888888889,
+          "recall": 1.0
+        },
+        "valid_outputs": 17,
+        "invalid_outputs": 1,
+        "rows": 29,
+        "invalid_rows": 1
+      },
+      "193_6otg": {
+        "molecules": 4,
+        "tp": 0,
+        "fp": 5,
+        "fn": 4,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 3,
+          "fp": 2,
+          "fn": 1,
+          "precision": 0.6,
+          "recall": 0.75
+        },
+        "valid_outputs": 4,
+        "invalid_outputs": 1,
+        "rows": 5,
+        "invalid_rows": 1
+      },
+      "194_6os6": {
+        "molecules": 10,
+        "tp": 3,
+        "fp": 12,
+        "fn": 7,
+        "precision": 0.2,
+        "recall": 0.3,
+        "stereo_stripped": {
+          "tp": 5,
+          "fp": 10,
+          "fn": 4,
+          "precision": 0.3333333333333333,
+          "recall": 0.5555555555555556
+        },
+        "valid_outputs": 15,
+        "invalid_outputs": 0,
+        "rows": 17,
+        "invalid_rows": 0
+      },
+      "197_6op0": {
+        "molecules": 4,
+        "tp": 3,
+        "fp": 2,
+        "fn": 1,
+        "precision": 0.6,
+        "recall": 0.75,
+        "stereo_stripped": {
+          "tp": 3,
+          "fp": 2,
+          "fn": 1,
+          "precision": 0.6,
+          "recall": 0.75
+        },
+        "valid_outputs": 5,
+        "invalid_outputs": 0,
+        "rows": 6,
+        "invalid_rows": 0
+      },
+      "201_6om4": {
+        "molecules": 2,
+        "tp": 0,
+        "fp": 4,
+        "fn": 2,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 2,
+          "fp": 2,
+          "fn": 0,
+          "precision": 0.5,
+          "recall": 1.0
+        },
+        "valid_outputs": 2,
+        "invalid_outputs": 2,
+        "rows": 4,
+        "invalid_rows": 2
+      },
+      "203_6olx": {
+        "molecules": 1,
+        "tp": 0,
+        "fp": 4,
+        "fn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 3,
+          "fn": 0,
+          "precision": 0.25,
+          "recall": 1.0
+        },
+        "valid_outputs": 3,
+        "invalid_outputs": 1,
+        "rows": 4,
+        "invalid_rows": 1
+      },
+      "20_6t6a": {
+        "molecules": 21,
+        "tp": 12,
+        "fp": 16,
+        "fn": 9,
+        "precision": 0.42857142857142855,
+        "recall": 0.5714285714285714,
+        "stereo_stripped": {
+          "tp": 16,
+          "fp": 12,
+          "fn": 5,
+          "precision": 0.5714285714285714,
+          "recall": 0.7619047619047619
+        },
+        "valid_outputs": 27,
+        "invalid_outputs": 1,
+        "rows": 33,
+        "invalid_rows": 1
+      },
+      "210_6ohu": {
+        "molecules": 13,
+        "tp": 3,
+        "fp": 12,
+        "fn": 10,
+        "precision": 0.2,
+        "recall": 0.23076923076923078,
+        "stereo_stripped": {
+          "tp": 3,
+          "fp": 12,
+          "fn": 10,
+          "precision": 0.2,
+          "recall": 0.23076923076923078
+        },
+        "valid_outputs": 12,
+        "invalid_outputs": 3,
+        "rows": 15,
+        "invalid_rows": 3
+      },
+      "214_6oe3": {
+        "molecules": 3,
+        "tp": 3,
+        "fp": 1,
+        "fn": 0,
+        "precision": 0.75,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 3,
+          "fp": 1,
+          "fn": 0,
+          "precision": 0.75,
+          "recall": 1.0
+        },
+        "valid_outputs": 4,
+        "invalid_outputs": 0,
+        "rows": 4,
+        "invalid_rows": 0
+      },
+      "221_6oac": {
+        "molecules": 47,
+        "tp": 26,
+        "fp": 65,
+        "fn": 21,
+        "precision": 0.2857142857142857,
+        "recall": 0.5531914893617021,
+        "stereo_stripped": {
+          "tp": 21,
+          "fp": 55,
+          "fn": 14,
+          "precision": 0.27631578947368424,
+          "recall": 0.6
+        },
+        "valid_outputs": 84,
+        "invalid_outputs": 7,
+        "rows": 98,
+        "invalid_rows": 7
+      },
+      "222_6oa3": {
+        "molecules": 7,
+        "tp": 3,
+        "fp": 3,
+        "fn": 4,
+        "precision": 0.5,
+        "recall": 0.42857142857142855,
+        "stereo_stripped": {
+          "tp": 3,
+          "fp": 3,
+          "fn": 4,
+          "precision": 0.5,
+          "recall": 0.42857142857142855
+        },
+        "valid_outputs": 6,
+        "invalid_outputs": 0,
+        "rows": 7,
+        "invalid_rows": 0
+      },
+      "223_6o9d": {
+        "molecules": 55,
+        "tp": 17,
+        "fp": 60,
+        "fn": 38,
+        "precision": 0.22077922077922077,
+        "recall": 0.3090909090909091,
+        "stereo_stripped": {
+          "tp": 17,
+          "fp": 59,
+          "fn": 37,
+          "precision": 0.2236842105263158,
+          "recall": 0.3148148148148148
+        },
+        "valid_outputs": 57,
+        "invalid_outputs": 20,
+        "rows": 98,
+        "invalid_rows": 26
+      },
+      "228_6o5x": {
+        "molecules": 1,
+        "tp": 0,
+        "fp": 1,
+        "fn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 1,
+        "invalid_outputs": 0,
+        "rows": 1,
+        "invalid_rows": 0
+      },
+      "230_6o5t": {
+        "molecules": 16,
+        "tp": 1,
+        "fp": 2,
+        "fn": 15,
+        "precision": 0.3333333333333333,
+        "recall": 0.0625,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 2,
+          "fn": 15,
+          "precision": 0.3333333333333333,
+          "recall": 0.0625
+        },
+        "valid_outputs": 1,
+        "invalid_outputs": 2,
+        "rows": 3,
+        "invalid_rows": 2
+      },
+      "231_6o5g": {
+        "molecules": 1,
+        "tp": 0,
+        "fp": 2,
+        "fn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 2,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 2,
+        "invalid_outputs": 0,
+        "rows": 2,
+        "invalid_rows": 0
+      },
+      "237_6o0p": {
+        "molecules": 3,
+        "tp": 0,
+        "fp": 4,
+        "fn": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 4,
+          "fn": 3,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 3,
+        "invalid_outputs": 1,
+        "rows": 4,
+        "invalid_rows": 1
+      },
+      "246_6nyh": {
+        "molecules": 1,
+        "tp": 1,
+        "fp": 2,
+        "fn": 0,
+        "precision": 0.3333333333333333,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 2,
+          "fn": 0,
+          "precision": 0.3333333333333333,
+          "recall": 1.0
+        },
+        "valid_outputs": 3,
+        "invalid_outputs": 0,
+        "rows": 3,
+        "invalid_rows": 0
+      },
+      "248_6ny0": {
+        "molecules": 36,
+        "tp": 2,
+        "fp": 31,
+        "fn": 34,
+        "precision": 0.06060606060606061,
+        "recall": 0.05555555555555555,
+        "stereo_stripped": {
+          "tp": 2,
+          "fp": 31,
+          "fn": 34,
+          "precision": 0.06060606060606061,
+          "recall": 0.05555555555555555
+        },
+        "valid_outputs": 19,
+        "invalid_outputs": 14,
+        "rows": 41,
+        "invalid_rows": 17
+      },
+      "251_6nw3": {
+        "molecules": 4,
+        "tp": 0,
+        "fp": 4,
+        "fn": 4,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 4,
+          "fn": 4,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 2,
+        "invalid_outputs": 2,
+        "rows": 4,
+        "invalid_rows": 2
+      },
+      "261_6npv": {
+        "molecules": 68,
+        "tp": 36,
+        "fp": 52,
+        "fn": 32,
+        "precision": 0.4090909090909091,
+        "recall": 0.5294117647058824,
+        "stereo_stripped": {
+          "tp": 39,
+          "fp": 46,
+          "fn": 24,
+          "precision": 0.4588235294117647,
+          "recall": 0.6190476190476191
+        },
+        "valid_outputs": 78,
+        "invalid_outputs": 10,
+        "rows": 106,
+        "invalid_rows": 10
+      },
+      "263_6npf": {
+        "molecules": 2,
+        "tp": 1,
+        "fp": 2,
+        "fn": 1,
+        "precision": 0.3333333333333333,
+        "recall": 0.5,
+        "stereo_stripped": {
+          "tp": 2,
+          "fp": 1,
+          "fn": 0,
+          "precision": 0.6666666666666666,
+          "recall": 1.0
+        },
+        "valid_outputs": 3,
+        "invalid_outputs": 0,
+        "rows": 3,
+        "invalid_rows": 0
+      },
+      "269_6nlj": {
+        "molecules": 15,
+        "tp": 15,
+        "fp": 6,
+        "fn": 0,
+        "precision": 0.7142857142857143,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 15,
+          "fp": 6,
+          "fn": 0,
+          "precision": 0.7142857142857143,
+          "recall": 1.0
+        },
+        "valid_outputs": 16,
+        "invalid_outputs": 5,
+        "rows": 30,
+        "invalid_rows": 5
+      },
+      "26_6st3": {
+        "molecules": 18,
+        "tp": 4,
+        "fp": 22,
+        "fn": 14,
+        "precision": 0.15384615384615385,
+        "recall": 0.2222222222222222,
+        "stereo_stripped": {
+          "tp": 4,
+          "fp": 22,
+          "fn": 14,
+          "precision": 0.15384615384615385,
+          "recall": 0.2222222222222222
+        },
+        "valid_outputs": 18,
+        "invalid_outputs": 8,
+        "rows": 27,
+        "invalid_rows": 8
+      },
+      "271_6njj": {
+        "molecules": 38,
+        "tp": 12,
+        "fp": 10,
+        "fn": 26,
+        "precision": 0.5454545454545454,
+        "recall": 0.3157894736842105,
+        "stereo_stripped": {
+          "tp": 12,
+          "fp": 10,
+          "fn": 26,
+          "precision": 0.5454545454545454,
+          "recall": 0.3157894736842105
+        },
+        "valid_outputs": 17,
+        "invalid_outputs": 5,
+        "rows": 23,
+        "invalid_rows": 5
+      },
+      "272_6nj0": {
+        "molecules": 50,
+        "tp": 24,
+        "fp": 41,
+        "fn": 26,
+        "precision": 0.36923076923076925,
+        "recall": 0.48,
+        "stereo_stripped": {
+          "tp": 25,
+          "fp": 40,
+          "fn": 25,
+          "precision": 0.38461538461538464,
+          "recall": 0.5
+        },
+        "valid_outputs": 61,
+        "invalid_outputs": 4,
+        "rows": 66,
+        "invalid_rows": 4
+      },
+      "274_6nfn": {
+        "molecules": 3,
+        "tp": 0,
+        "fp": 5,
+        "fn": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 5,
+          "fn": 3,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 2,
+        "invalid_outputs": 3,
+        "rows": 5,
+        "invalid_rows": 3
+      },
+      "276_6nem": {
+        "molecules": 22,
+        "tp": 5,
+        "fp": 53,
+        "fn": 17,
+        "precision": 0.08620689655172414,
+        "recall": 0.22727272727272727,
+        "stereo_stripped": {
+          "tp": 5,
+          "fp": 53,
+          "fn": 17,
+          "precision": 0.08620689655172414,
+          "recall": 0.22727272727272727
+        },
+        "valid_outputs": 41,
+        "invalid_outputs": 17,
+        "rows": 88,
+        "invalid_rows": 17
+      },
+      "277_6ne5": {
+        "molecules": 16,
+        "tp": 5,
+        "fp": 45,
+        "fn": 11,
+        "precision": 0.1,
+        "recall": 0.3125,
+        "stereo_stripped": {
+          "tp": 5,
+          "fp": 43,
+          "fn": 9,
+          "precision": 0.10416666666666667,
+          "recall": 0.35714285714285715
+        },
+        "valid_outputs": 45,
+        "invalid_outputs": 5,
+        "rows": 90,
+        "invalid_rows": 8
+      },
+      "289_6n87": {
+        "molecules": 6,
+        "tp": 6,
+        "fp": 2,
+        "fn": 0,
+        "precision": 0.75,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 6,
+          "fp": 2,
+          "fn": 0,
+          "precision": 0.75,
+          "recall": 1.0
+        },
+        "valid_outputs": 6,
+        "invalid_outputs": 2,
+        "rows": 9,
+        "invalid_rows": 2
+      },
+      "296_6n55": {
+        "molecules": 6,
+        "tp": 1,
+        "fp": 15,
+        "fn": 5,
+        "precision": 0.0625,
+        "recall": 0.16666666666666666,
+        "stereo_stripped": {
+          "tp": 2,
+          "fp": 14,
+          "fn": 4,
+          "precision": 0.125,
+          "recall": 0.3333333333333333
+        },
+        "valid_outputs": 12,
+        "invalid_outputs": 4,
+        "rows": 16,
+        "invalid_rows": 4
+      },
+      "299_6n48": {
+        "molecules": 1,
+        "tp": 0,
+        "fp": 2,
+        "fn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 2,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 1,
+        "invalid_outputs": 1,
+        "rows": 2,
+        "invalid_rows": 1
+      },
+      "2_6v1c": {
+        "molecules": 1,
+        "tp": 0,
+        "fp": 2,
+        "fn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 1,
+          "fn": 0,
+          "precision": 0.5,
+          "recall": 1.0
+        },
+        "valid_outputs": 2,
+        "invalid_outputs": 0,
+        "rows": 2,
+        "invalid_rows": 0
+      },
+      "305_6n0m": {
+        "molecules": 1,
+        "tp": 0,
+        "fp": 4,
+        "fn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 4,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 4,
+        "invalid_outputs": 0,
+        "rows": 5,
+        "invalid_rows": 0
+      },
+      "313_6mso": {
+        "molecules": 3,
+        "tp": 0,
+        "fp": 4,
+        "fn": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 4,
+          "fn": 3,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 4,
+        "invalid_outputs": 0,
+        "rows": 6,
+        "invalid_rows": 0
+      },
+      "317_6mq3": {
+        "molecules": 27,
+        "tp": 0,
+        "fp": 26,
+        "fn": 27,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 26,
+          "fn": 27,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 19,
+        "invalid_outputs": 7,
+        "rows": 28,
+        "invalid_rows": 8
+      },
+      "322_6mo2": {
+        "molecules": 5,
+        "tp": 3,
+        "fp": 9,
+        "fn": 2,
+        "precision": 0.25,
+        "recall": 0.6,
+        "stereo_stripped": {
+          "tp": 3,
+          "fp": 9,
+          "fn": 2,
+          "precision": 0.25,
+          "recall": 0.6
+        },
+        "valid_outputs": 8,
+        "invalid_outputs": 4,
+        "rows": 12,
+        "invalid_rows": 4
+      },
+      "325_6mnp": {
+        "molecules": 15,
+        "tp": 15,
+        "fp": 1,
+        "fn": 0,
+        "precision": 0.9375,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 15,
+          "fp": 1,
+          "fn": 0,
+          "precision": 0.9375,
+          "recall": 1.0
+        },
+        "valid_outputs": 16,
+        "invalid_outputs": 0,
+        "rows": 17,
+        "invalid_rows": 0
+      },
+      "328_6mkq": {
+        "molecules": 1,
+        "tp": 0,
+        "fp": 5,
+        "fn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 5,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 5,
+        "invalid_outputs": 0,
+        "rows": 5,
+        "invalid_rows": 0
+      },
+      "329_6mjw": {
+        "molecules": 7,
+        "tp": 7,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "valid_outputs": 7,
+        "invalid_outputs": 0,
+        "rows": 9,
+        "invalid_rows": 0
+      },
+      "332_6mhd": {
+        "molecules": 76,
+        "tp": 29,
+        "fp": 58,
+        "fn": 47,
+        "precision": 0.3333333333333333,
+        "recall": 0.3815789473684211,
+        "stereo_stripped": {
+          "tp": 29,
+          "fp": 58,
+          "fn": 47,
+          "precision": 0.3333333333333333,
+          "recall": 0.3815789473684211
+        },
+        "valid_outputs": 65,
+        "invalid_outputs": 22,
+        "rows": 91,
+        "invalid_rows": 23
+      },
+      "334_6mg5": {
+        "molecules": 12,
+        "tp": 9,
+        "fp": 2,
+        "fn": 3,
+        "precision": 0.8181818181818182,
+        "recall": 0.75,
+        "stereo_stripped": {
+          "tp": 10,
+          "fp": 1,
+          "fn": 2,
+          "precision": 0.9090909090909091,
+          "recall": 0.8333333333333334
+        },
+        "valid_outputs": 11,
+        "invalid_outputs": 0,
+        "rows": 11,
+        "invalid_rows": 0
+      },
+      "336_6me5": {
+        "molecules": 8,
+        "tp": 0,
+        "fp": 11,
+        "fn": 8,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 11,
+          "fn": 8,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 7,
+        "invalid_outputs": 4,
+        "rows": 11,
+        "invalid_rows": 4
+      },
+      "338_6mdd": {
+        "molecules": 22,
+        "tp": 10,
+        "fp": 19,
+        "fn": 12,
+        "precision": 0.3448275862068966,
+        "recall": 0.45454545454545453,
+        "stereo_stripped": {
+          "tp": 10,
+          "fp": 19,
+          "fn": 12,
+          "precision": 0.3448275862068966,
+          "recall": 0.45454545454545453
+        },
+        "valid_outputs": 23,
+        "invalid_outputs": 6,
+        "rows": 30,
+        "invalid_rows": 6
+      },
+      "339_6mdb": {
+        "molecules": 22,
+        "tp": 12,
+        "fp": 17,
+        "fn": 10,
+        "precision": 0.41379310344827586,
+        "recall": 0.5454545454545454,
+        "stereo_stripped": {
+          "tp": 12,
+          "fp": 17,
+          "fn": 10,
+          "precision": 0.41379310344827586,
+          "recall": 0.5454545454545454
+        },
+        "valid_outputs": 28,
+        "invalid_outputs": 1,
+        "rows": 37,
+        "invalid_rows": 1
+      },
+      "33_6sde": {
+        "molecules": 4,
+        "tp": 3,
+        "fp": 3,
+        "fn": 1,
+        "precision": 0.5,
+        "recall": 0.75,
+        "stereo_stripped": {
+          "tp": 3,
+          "fp": 3,
+          "fn": 1,
+          "precision": 0.5,
+          "recall": 0.75
+        },
+        "valid_outputs": 5,
+        "invalid_outputs": 1,
+        "rows": 7,
+        "invalid_rows": 1
+      },
+      "341_6md4": {
+        "molecules": 2,
+        "tp": 2,
+        "fp": 9,
+        "fn": 0,
+        "precision": 0.18181818181818182,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 2,
+          "fp": 8,
+          "fn": 0,
+          "precision": 0.2,
+          "recall": 1.0
+        },
+        "valid_outputs": 10,
+        "invalid_outputs": 1,
+        "rows": 12,
+        "invalid_rows": 1
+      },
+      "343_6mbp": {
+        "molecules": 42,
+        "tp": 14,
+        "fp": 29,
+        "fn": 28,
+        "precision": 0.32558139534883723,
+        "recall": 0.3333333333333333,
+        "stereo_stripped": {
+          "tp": 15,
+          "fp": 28,
+          "fn": 27,
+          "precision": 0.3488372093023256,
+          "recall": 0.35714285714285715
+        },
+        "valid_outputs": 22,
+        "invalid_outputs": 21,
+        "rows": 51,
+        "invalid_rows": 23
+      },
+      "344_6max": {
+        "molecules": 1,
+        "tp": 0,
+        "fp": 7,
+        "fn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 7,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 5,
+        "invalid_outputs": 2,
+        "rows": 8,
+        "invalid_rows": 2
+      },
+      "345_6maj": {
+        "molecules": 1,
+        "tp": 1,
+        "fp": 3,
+        "fn": 0,
+        "precision": 0.25,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 3,
+          "fn": 0,
+          "precision": 0.25,
+          "recall": 1.0
+        },
+        "valid_outputs": 3,
+        "invalid_outputs": 1,
+        "rows": 7,
+        "invalid_rows": 1
+      },
+      "348_6m8e": {
+        "molecules": 16,
+        "tp": 15,
+        "fp": 8,
+        "fn": 1,
+        "precision": 0.6521739130434783,
+        "recall": 0.9375,
+        "stereo_stripped": {
+          "tp": 15,
+          "fp": 8,
+          "fn": 1,
+          "precision": 0.6521739130434783,
+          "recall": 0.9375
+        },
+        "valid_outputs": 23,
+        "invalid_outputs": 0,
+        "rows": 24,
+        "invalid_rows": 0
+      },
+      "350_6m7h": {
+        "molecules": 2,
+        "tp": 1,
+        "fp": 7,
+        "fn": 1,
+        "precision": 0.125,
+        "recall": 0.5,
+        "stereo_stripped": {
+          "tp": 2,
+          "fp": 6,
+          "fn": 0,
+          "precision": 0.25,
+          "recall": 1.0
+        },
+        "valid_outputs": 5,
+        "invalid_outputs": 3,
+        "rows": 8,
+        "invalid_rows": 3
+      },
+      "352_6kqi": {
+        "molecules": 4,
+        "tp": 0,
+        "fp": 0,
+        "fn": 4,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 4,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 0,
+        "invalid_outputs": 0,
+        "rows": 0,
+        "invalid_rows": 0
+      },
+      "35_6sal": {
+        "molecules": 38,
+        "tp": 11,
+        "fp": 36,
+        "fn": 27,
+        "precision": 0.23404255319148937,
+        "recall": 0.2894736842105263,
+        "stereo_stripped": {
+          "tp": 11,
+          "fp": 36,
+          "fn": 26,
+          "precision": 0.23404255319148937,
+          "recall": 0.2972972972972973
+        },
+        "valid_outputs": 32,
+        "invalid_outputs": 15,
+        "rows": 49,
+        "invalid_rows": 17
+      },
+      "360_6kdi": {
+        "molecules": 3,
+        "tp": 0,
+        "fp": 5,
+        "fn": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 5,
+          "fn": 3,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 5,
+        "invalid_outputs": 0,
+        "rows": 5,
+        "invalid_rows": 0
+      },
+      "367_6k1s": {
+        "molecules": 19,
+        "tp": 3,
+        "fp": 20,
+        "fn": 16,
+        "precision": 0.13043478260869565,
+        "recall": 0.15789473684210525,
+        "stereo_stripped": {
+          "tp": 3,
+          "fp": 20,
+          "fn": 16,
+          "precision": 0.13043478260869565,
+          "recall": 0.15789473684210525
+        },
+        "valid_outputs": 22,
+        "invalid_outputs": 1,
+        "rows": 23,
+        "invalid_rows": 1
+      },
+      "368_6k1q": {
+        "molecules": 2,
+        "tp": 1,
+        "fp": 4,
+        "fn": 1,
+        "precision": 0.2,
+        "recall": 0.5,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 4,
+          "fn": 1,
+          "precision": 0.2,
+          "recall": 0.5
+        },
+        "valid_outputs": 3,
+        "invalid_outputs": 2,
+        "rows": 5,
+        "invalid_rows": 2
+      },
+      "369_6k0j": {
+        "molecules": 1,
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "valid_outputs": 1,
+        "invalid_outputs": 0,
+        "rows": 1,
+        "invalid_rows": 0
+      },
+      "374_6jtc": {
+        "molecules": 2,
+        "tp": 0,
+        "fp": 4,
+        "fn": 2,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 4,
+          "fn": 2,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 3,
+        "invalid_outputs": 1,
+        "rows": 4,
+        "invalid_rows": 1
+      },
+      "37_6s9x": {
+        "molecules": 28,
+        "tp": 10,
+        "fp": 8,
+        "fn": 18,
+        "precision": 0.5555555555555556,
+        "recall": 0.35714285714285715,
+        "stereo_stripped": {
+          "tp": 10,
+          "fp": 8,
+          "fn": 18,
+          "precision": 0.5555555555555556,
+          "recall": 0.35714285714285715
+        },
+        "valid_outputs": 12,
+        "invalid_outputs": 6,
+        "rows": 22,
+        "invalid_rows": 9
+      },
+      "380_6jno": {
+        "molecules": 26,
+        "tp": 4,
+        "fp": 24,
+        "fn": 22,
+        "precision": 0.14285714285714285,
+        "recall": 0.15384615384615385,
+        "stereo_stripped": {
+          "tp": 4,
+          "fp": 24,
+          "fn": 22,
+          "precision": 0.14285714285714285,
+          "recall": 0.15384615384615385
+        },
+        "valid_outputs": 25,
+        "invalid_outputs": 3,
+        "rows": 30,
+        "invalid_rows": 3
+      },
+      "383_6jki": {
+        "molecules": 1,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 0,
+        "invalid_outputs": 0,
+        "rows": 0,
+        "invalid_rows": 0
+      },
+      "393_6j81": {
+        "molecules": 11,
+        "tp": 10,
+        "fp": 13,
+        "fn": 1,
+        "precision": 0.43478260869565216,
+        "recall": 0.9090909090909091,
+        "stereo_stripped": {
+          "tp": 8,
+          "fp": 12,
+          "fn": 0,
+          "precision": 0.4,
+          "recall": 1.0
+        },
+        "valid_outputs": 22,
+        "invalid_outputs": 1,
+        "rows": 23,
+        "invalid_rows": 1
+      },
+      "401_6j10": {
+        "molecules": 1,
+        "tp": 1,
+        "fp": 7,
+        "fn": 0,
+        "precision": 0.125,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 7,
+          "fn": 0,
+          "precision": 0.125,
+          "recall": 1.0
+        },
+        "valid_outputs": 6,
+        "invalid_outputs": 2,
+        "rows": 8,
+        "invalid_rows": 2
+      },
+      "40_6s8a": {
+        "molecules": 40,
+        "tp": 5,
+        "fp": 22,
+        "fn": 35,
+        "precision": 0.18518518518518517,
+        "recall": 0.125,
+        "stereo_stripped": {
+          "tp": 5,
+          "fp": 22,
+          "fn": 35,
+          "precision": 0.18518518518518517,
+          "recall": 0.125
+        },
+        "valid_outputs": 17,
+        "invalid_outputs": 10,
+        "rows": 41,
+        "invalid_rows": 17
+      },
+      "410_6iql": {
+        "molecules": 3,
+        "tp": 1,
+        "fp": 3,
+        "fn": 2,
+        "precision": 0.25,
+        "recall": 0.3333333333333333,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 3,
+          "fn": 2,
+          "precision": 0.25,
+          "recall": 0.3333333333333333
+        },
+        "valid_outputs": 2,
+        "invalid_outputs": 2,
+        "rows": 5,
+        "invalid_rows": 3
+      },
+      "417_6ilz": {
+        "molecules": 15,
+        "tp": 2,
+        "fp": 22,
+        "fn": 13,
+        "precision": 0.08333333333333333,
+        "recall": 0.13333333333333333,
+        "stereo_stripped": {
+          "tp": 2,
+          "fp": 22,
+          "fn": 13,
+          "precision": 0.08333333333333333,
+          "recall": 0.13333333333333333
+        },
+        "valid_outputs": 22,
+        "invalid_outputs": 2,
+        "rows": 25,
+        "invalid_rows": 2
+      },
+      "41_6s88": {
+        "molecules": 56,
+        "tp": 22,
+        "fp": 49,
+        "fn": 34,
+        "precision": 0.30985915492957744,
+        "recall": 0.39285714285714285,
+        "stereo_stripped": {
+          "tp": 23,
+          "fp": 48,
+          "fn": 33,
+          "precision": 0.323943661971831,
+          "recall": 0.4107142857142857
+        },
+        "valid_outputs": 57,
+        "invalid_outputs": 14,
+        "rows": 101,
+        "invalid_rows": 18
+      },
+      "42_6s5k": {
+        "molecules": 8,
+        "tp": 7,
+        "fp": 1,
+        "fn": 1,
+        "precision": 0.875,
+        "recall": 0.875,
+        "stereo_stripped": {
+          "tp": 7,
+          "fp": 1,
+          "fn": 1,
+          "precision": 0.875,
+          "recall": 0.875
+        },
+        "valid_outputs": 8,
+        "invalid_outputs": 0,
+        "rows": 8,
+        "invalid_rows": 0
+      },
+      "430_6ibl": {
+        "molecules": 3,
+        "tp": 3,
+        "fp": 16,
+        "fn": 0,
+        "precision": 0.15789473684210525,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 3,
+          "fp": 16,
+          "fn": 0,
+          "precision": 0.15789473684210525,
+          "recall": 1.0
+        },
+        "valid_outputs": 12,
+        "invalid_outputs": 7,
+        "rows": 26,
+        "invalid_rows": 7
+      },
+      "431_6ibk": {
+        "molecules": 20,
+        "tp": 2,
+        "fp": 28,
+        "fn": 18,
+        "precision": 0.06666666666666667,
+        "recall": 0.1,
+        "stereo_stripped": {
+          "tp": 7,
+          "fp": 19,
+          "fn": 11,
+          "precision": 0.2692307692307692,
+          "recall": 0.3888888888888889
+        },
+        "valid_outputs": 24,
+        "invalid_outputs": 6,
+        "rows": 33,
+        "invalid_rows": 6
+      },
+      "434_6iam": {
+        "molecules": 6,
+        "tp": 6,
+        "fp": 8,
+        "fn": 0,
+        "precision": 0.42857142857142855,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 6,
+          "fp": 8,
+          "fn": 0,
+          "precision": 0.42857142857142855,
+          "recall": 1.0
+        },
+        "valid_outputs": 14,
+        "invalid_outputs": 0,
+        "rows": 15,
+        "invalid_rows": 0
+      },
+      "436_6i9a": {
+        "molecules": 1,
+        "tp": 0,
+        "fp": 4,
+        "fn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 4,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 4,
+        "invalid_outputs": 0,
+        "rows": 4,
+        "invalid_rows": 0
+      },
+      "445_6i5g": {
+        "molecules": 2,
+        "tp": 1,
+        "fp": 3,
+        "fn": 1,
+        "precision": 0.25,
+        "recall": 0.5,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 3,
+          "fn": 1,
+          "precision": 0.25,
+          "recall": 0.5
+        },
+        "valid_outputs": 4,
+        "invalid_outputs": 0,
+        "rows": 6,
+        "invalid_rows": 0
+      },
+      "449_6i0x": {
+        "molecules": 1,
+        "tp": 0,
+        "fp": 2,
+        "fn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 2,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 2,
+        "invalid_outputs": 0,
+        "rows": 3,
+        "invalid_rows": 0
+      },
+      "44_6s1s": {
+        "molecules": 8,
+        "tp": 6,
+        "fp": 2,
+        "fn": 2,
+        "precision": 0.75,
+        "recall": 0.75,
+        "stereo_stripped": {
+          "tp": 8,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "valid_outputs": 8,
+        "invalid_outputs": 0,
+        "rows": 8,
+        "invalid_rows": 0
+      },
+      "452_6hzy": {
+        "molecules": 27,
+        "tp": 0,
+        "fp": 23,
+        "fn": 27,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 6,
+          "fp": 16,
+          "fn": 21,
+          "precision": 0.2727272727272727,
+          "recall": 0.2222222222222222
+        },
+        "valid_outputs": 17,
+        "invalid_outputs": 6,
+        "rows": 24,
+        "invalid_rows": 7
+      },
+      "458_6hx8": {
+        "molecules": 4,
+        "tp": 0,
+        "fp": 12,
+        "fn": 4,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 12,
+          "fn": 4,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 9,
+        "invalid_outputs": 3,
+        "rows": 12,
+        "invalid_rows": 3
+      },
+      "459_6hx1": {
+        "molecules": 34,
+        "tp": 6,
+        "fp": 30,
+        "fn": 28,
+        "precision": 0.16666666666666666,
+        "recall": 0.17647058823529413,
+        "stereo_stripped": {
+          "tp": 7,
+          "fp": 29,
+          "fn": 27,
+          "precision": 0.19444444444444445,
+          "recall": 0.20588235294117646
+        },
+        "valid_outputs": 28,
+        "invalid_outputs": 8,
+        "rows": 37,
+        "invalid_rows": 8
+      },
+      "45_6s0e": {
+        "molecules": 1,
+        "tp": 0,
+        "fp": 5,
+        "fn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 5,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 3,
+        "invalid_outputs": 2,
+        "rows": 6,
+        "invalid_rows": 2
+      },
+      "464_6hs4": {
+        "molecules": 10,
+        "tp": 4,
+        "fp": 7,
+        "fn": 6,
+        "precision": 0.36363636363636365,
+        "recall": 0.4,
+        "stereo_stripped": {
+          "tp": 4,
+          "fp": 7,
+          "fn": 6,
+          "precision": 0.36363636363636365,
+          "recall": 0.4
+        },
+        "valid_outputs": 11,
+        "invalid_outputs": 0,
+        "rows": 11,
+        "invalid_rows": 0
+      },
+      "467_6hr2": {
+        "molecules": 2,
+        "tp": 1,
+        "fp": 4,
+        "fn": 1,
+        "precision": 0.2,
+        "recall": 0.5,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 4,
+          "fn": 1,
+          "precision": 0.2,
+          "recall": 0.5
+        },
+        "valid_outputs": 5,
+        "invalid_outputs": 0,
+        "rows": 5,
+        "invalid_rows": 0
+      },
+      "469_6hp9": {
+        "molecules": 43,
+        "tp": 6,
+        "fp": 13,
+        "fn": 37,
+        "precision": 0.3157894736842105,
+        "recall": 0.13953488372093023,
+        "stereo_stripped": {
+          "tp": 6,
+          "fp": 13,
+          "fn": 34,
+          "precision": 0.3157894736842105,
+          "recall": 0.15
+        },
+        "valid_outputs": 10,
+        "invalid_outputs": 9,
+        "rows": 23,
+        "invalid_rows": 12
+      },
+      "472_6hov": {
+        "molecules": 5,
+        "tp": 4,
+        "fp": 6,
+        "fn": 1,
+        "precision": 0.4,
+        "recall": 0.8,
+        "stereo_stripped": {
+          "tp": 5,
+          "fp": 5,
+          "fn": 0,
+          "precision": 0.5,
+          "recall": 1.0
+        },
+        "valid_outputs": 9,
+        "invalid_outputs": 1,
+        "rows": 10,
+        "invalid_rows": 1
+      },
+      "475_6hmy": {
+        "molecules": 4,
+        "tp": 0,
+        "fp": 5,
+        "fn": 4,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 5,
+          "fn": 4,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 4,
+        "invalid_outputs": 1,
+        "rows": 5,
+        "invalid_rows": 1
+      },
+      "477_6hmb": {
+        "molecules": 6,
+        "tp": 3,
+        "fp": 5,
+        "fn": 3,
+        "precision": 0.375,
+        "recall": 0.5,
+        "stereo_stripped": {
+          "tp": 3,
+          "fp": 5,
+          "fn": 3,
+          "precision": 0.375,
+          "recall": 0.5
+        },
+        "valid_outputs": 8,
+        "invalid_outputs": 0,
+        "rows": 8,
+        "invalid_rows": 0
+      },
+      "479_6hky": {
+        "molecules": 2,
+        "tp": 2,
+        "fp": 1,
+        "fn": 0,
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 2,
+          "fp": 1,
+          "fn": 0,
+          "precision": 0.6666666666666666,
+          "recall": 1.0
+        },
+        "valid_outputs": 2,
+        "invalid_outputs": 1,
+        "rows": 4,
+        "invalid_rows": 1
+      },
+      "47_6rz6": {
+        "molecules": 4,
+        "tp": 1,
+        "fp": 5,
+        "fn": 3,
+        "precision": 0.16666666666666666,
+        "recall": 0.25,
+        "stereo_stripped": {
+          "tp": 3,
+          "fp": 3,
+          "fn": 1,
+          "precision": 0.5,
+          "recall": 0.75
+        },
+        "valid_outputs": 5,
+        "invalid_outputs": 1,
+        "rows": 6,
+        "invalid_rows": 1
+      },
+      "484_6hhj": {
+        "molecules": 29,
+        "tp": 16,
+        "fp": 35,
+        "fn": 13,
+        "precision": 0.3137254901960784,
+        "recall": 0.5517241379310345,
+        "stereo_stripped": {
+          "tp": 16,
+          "fp": 35,
+          "fn": 13,
+          "precision": 0.3137254901960784,
+          "recall": 0.5517241379310345
+        },
+        "valid_outputs": 31,
+        "invalid_outputs": 20,
+        "rows": 53,
+        "invalid_rows": 20
+      },
+      "486_6hgx": {
+        "molecules": 8,
+        "tp": 5,
+        "fp": 6,
+        "fn": 3,
+        "precision": 0.45454545454545453,
+        "recall": 0.625,
+        "stereo_stripped": {
+          "tp": 7,
+          "fp": 4,
+          "fn": 1,
+          "precision": 0.6363636363636364,
+          "recall": 0.875
+        },
+        "valid_outputs": 11,
+        "invalid_outputs": 0,
+        "rows": 14,
+        "invalid_rows": 0
+      },
+      "487_6hgs": {
+        "molecules": 8,
+        "tp": 1,
+        "fp": 20,
+        "fn": 7,
+        "precision": 0.047619047619047616,
+        "recall": 0.125,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 20,
+          "fn": 7,
+          "precision": 0.047619047619047616,
+          "recall": 0.125
+        },
+        "valid_outputs": 18,
+        "invalid_outputs": 3,
+        "rows": 22,
+        "invalid_rows": 3
+      },
+      "489_6hcw": {
+        "molecules": 5,
+        "tp": 5,
+        "fp": 2,
+        "fn": 0,
+        "precision": 0.7142857142857143,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 5,
+          "fp": 2,
+          "fn": 0,
+          "precision": 0.7142857142857143,
+          "recall": 1.0
+        },
+        "valid_outputs": 6,
+        "invalid_outputs": 1,
+        "rows": 7,
+        "invalid_rows": 1
+      },
+      "48_6rw1": {
+        "molecules": 7,
+        "tp": 3,
+        "fp": 8,
+        "fn": 4,
+        "precision": 0.2727272727272727,
+        "recall": 0.42857142857142855,
+        "stereo_stripped": {
+          "tp": 3,
+          "fp": 8,
+          "fn": 4,
+          "precision": 0.2727272727272727,
+          "recall": 0.42857142857142855
+        },
+        "valid_outputs": 9,
+        "invalid_outputs": 2,
+        "rows": 12,
+        "invalid_rows": 2
+      },
+      "492_6haj": {
+        "molecules": 3,
+        "tp": 1,
+        "fp": 3,
+        "fn": 2,
+        "precision": 0.25,
+        "recall": 0.3333333333333333,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 3,
+          "fn": 2,
+          "precision": 0.25,
+          "recall": 0.3333333333333333
+        },
+        "valid_outputs": 4,
+        "invalid_outputs": 0,
+        "rows": 4,
+        "invalid_rows": 0
+      },
+      "493_6h9x": {
+        "molecules": 24,
+        "tp": 13,
+        "fp": 16,
+        "fn": 11,
+        "precision": 0.4482758620689655,
+        "recall": 0.5416666666666666,
+        "stereo_stripped": {
+          "tp": 13,
+          "fp": 16,
+          "fn": 11,
+          "precision": 0.4482758620689655,
+          "recall": 0.5416666666666666
+        },
+        "valid_outputs": 18,
+        "invalid_outputs": 11,
+        "rows": 32,
+        "invalid_rows": 13
+      },
+      "494_6h9v": {
+        "molecules": 4,
+        "tp": 2,
+        "fp": 5,
+        "fn": 2,
+        "precision": 0.2857142857142857,
+        "recall": 0.5,
+        "stereo_stripped": {
+          "tp": 2,
+          "fp": 5,
+          "fn": 2,
+          "precision": 0.2857142857142857,
+          "recall": 0.5
+        },
+        "valid_outputs": 6,
+        "invalid_outputs": 1,
+        "rows": 8,
+        "invalid_rows": 1
+      },
+      "498_6h52": {
+        "molecules": 98,
+        "tp": 18,
+        "fp": 44,
+        "fn": 80,
+        "precision": 0.2903225806451613,
+        "recall": 0.1836734693877551,
+        "stereo_stripped": {
+          "tp": 18,
+          "fp": 44,
+          "fn": 80,
+          "precision": 0.2903225806451613,
+          "recall": 0.1836734693877551
+        },
+        "valid_outputs": 50,
+        "invalid_outputs": 12,
+        "rows": 64,
+        "invalid_rows": 13
+      },
+      "53_6rqk": {
+        "molecules": 3,
+        "tp": 2,
+        "fp": 11,
+        "fn": 1,
+        "precision": 0.15384615384615385,
+        "recall": 0.6666666666666666,
+        "stereo_stripped": {
+          "tp": 2,
+          "fp": 11,
+          "fn": 1,
+          "precision": 0.15384615384615385,
+          "recall": 0.6666666666666666
+        },
+        "valid_outputs": 6,
+        "invalid_outputs": 7,
+        "rows": 13,
+        "invalid_rows": 7
+      },
+      "60_6rln": {
+        "molecules": 11,
+        "tp": 6,
+        "fp": 13,
+        "fn": 5,
+        "precision": 0.3157894736842105,
+        "recall": 0.5454545454545454,
+        "stereo_stripped": {
+          "tp": 6,
+          "fp": 13,
+          "fn": 5,
+          "precision": 0.3157894736842105,
+          "recall": 0.5454545454545454
+        },
+        "valid_outputs": 15,
+        "invalid_outputs": 4,
+        "rows": 20,
+        "invalid_rows": 4
+      },
+      "64_6rhe": {
+        "molecules": 3,
+        "tp": 0,
+        "fp": 7,
+        "fn": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 7,
+          "fn": 3,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 7,
+        "invalid_outputs": 0,
+        "rows": 8,
+        "invalid_rows": 0
+      },
+      "65_6rfw": {
+        "molecules": 45,
+        "tp": 7,
+        "fp": 36,
+        "fn": 38,
+        "precision": 0.16279069767441862,
+        "recall": 0.15555555555555556,
+        "stereo_stripped": {
+          "tp": 11,
+          "fp": 32,
+          "fn": 34,
+          "precision": 0.2558139534883721,
+          "recall": 0.24444444444444444
+        },
+        "valid_outputs": 39,
+        "invalid_outputs": 4,
+        "rows": 46,
+        "invalid_rows": 6
+      },
+      "68_6r8r": {
+        "molecules": 50,
+        "tp": 4,
+        "fp": 29,
+        "fn": 46,
+        "precision": 0.12121212121212122,
+        "recall": 0.08,
+        "stereo_stripped": {
+          "tp": 4,
+          "fp": 29,
+          "fn": 46,
+          "precision": 0.12121212121212122,
+          "recall": 0.08
+        },
+        "valid_outputs": 22,
+        "invalid_outputs": 11,
+        "rows": 37,
+        "invalid_rows": 13
+      },
+      "76_6r4k": {
+        "molecules": 9,
+        "tp": 2,
+        "fp": 33,
+        "fn": 7,
+        "precision": 0.05714285714285714,
+        "recall": 0.2222222222222222,
+        "stereo_stripped": {
+          "tp": 2,
+          "fp": 33,
+          "fn": 7,
+          "precision": 0.05714285714285714,
+          "recall": 0.2222222222222222
+        },
+        "valid_outputs": 34,
+        "invalid_outputs": 1,
+        "rows": 42,
+        "invalid_rows": 2
+      },
+      "78_6r1x": {
+        "molecules": 57,
+        "tp": 15,
+        "fp": 37,
+        "fn": 42,
+        "precision": 0.28846153846153844,
+        "recall": 0.2631578947368421,
+        "stereo_stripped": {
+          "tp": 16,
+          "fp": 36,
+          "fn": 41,
+          "precision": 0.3076923076923077,
+          "recall": 0.2807017543859649
+        },
+        "valid_outputs": 35,
+        "invalid_outputs": 17,
+        "rows": 54,
+        "invalid_rows": 18
+      },
+      "79_6r1b": {
+        "molecules": 7,
+        "tp": 5,
+        "fp": 5,
+        "fn": 2,
+        "precision": 0.5,
+        "recall": 0.7142857142857143,
+        "stereo_stripped": {
+          "tp": 6,
+          "fp": 4,
+          "fn": 1,
+          "precision": 0.6,
+          "recall": 0.8571428571428571
+        },
+        "valid_outputs": 8,
+        "invalid_outputs": 2,
+        "rows": 10,
+        "invalid_rows": 2
+      },
+      "83_6qzh": {
+        "molecules": 14,
+        "tp": 1,
+        "fp": 18,
+        "fn": 13,
+        "precision": 0.05263157894736842,
+        "recall": 0.07142857142857142,
+        "stereo_stripped": {
+          "tp": 2,
+          "fp": 17,
+          "fn": 12,
+          "precision": 0.10526315789473684,
+          "recall": 0.14285714285714285
+        },
+        "valid_outputs": 11,
+        "invalid_outputs": 8,
+        "rows": 22,
+        "invalid_rows": 11
+      },
+      "87_6qxd": {
+        "molecules": 27,
+        "tp": 4,
+        "fp": 4,
+        "fn": 23,
+        "precision": 0.5,
+        "recall": 0.14814814814814814,
+        "stereo_stripped": {
+          "tp": 5,
+          "fp": 3,
+          "fn": 22,
+          "precision": 0.625,
+          "recall": 0.18518518518518517
+        },
+        "valid_outputs": 6,
+        "invalid_outputs": 2,
+        "rows": 9,
+        "invalid_rows": 3
+      },
+      "88_6qxa": {
+        "molecules": 9,
+        "tp": 9,
+        "fp": 1,
+        "fn": 0,
+        "precision": 0.9,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 9,
+          "fp": 1,
+          "fn": 0,
+          "precision": 0.9,
+          "recall": 1.0
+        },
+        "valid_outputs": 9,
+        "invalid_outputs": 1,
+        "rows": 10,
+        "invalid_rows": 1
+      },
+      "89_6qwb": {
+        "molecules": 2,
+        "tp": 1,
+        "fp": 12,
+        "fn": 1,
+        "precision": 0.07692307692307693,
+        "recall": 0.5,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 12,
+          "fn": 1,
+          "precision": 0.07692307692307693,
+          "recall": 0.5
+        },
+        "valid_outputs": 4,
+        "invalid_outputs": 9,
+        "rows": 13,
+        "invalid_rows": 9
+      },
+      "90_6quw": {
+        "molecules": 20,
+        "tp": 7,
+        "fp": 9,
+        "fn": 13,
+        "precision": 0.4375,
+        "recall": 0.35,
+        "stereo_stripped": {
+          "tp": 10,
+          "fp": 6,
+          "fn": 10,
+          "precision": 0.625,
+          "recall": 0.5
+        },
+        "valid_outputs": 11,
+        "invalid_outputs": 5,
+        "rows": 16,
+        "invalid_rows": 5
+      },
+      "94_6qri": {
+        "molecules": 1,
+        "tp": 0,
+        "fp": 2,
+        "fn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 1,
+          "fp": 1,
+          "fn": 0,
+          "precision": 0.5,
+          "recall": 1.0
+        },
+        "valid_outputs": 2,
+        "invalid_outputs": 0,
+        "rows": 2,
+        "invalid_rows": 0
+      },
+      "95_6qrg": {
+        "molecules": 114,
+        "tp": 38,
+        "fp": 69,
+        "fn": 76,
+        "precision": 0.35514018691588783,
+        "recall": 0.3333333333333333,
+        "stereo_stripped": {
+          "tp": 39,
+          "fp": 68,
+          "fn": 75,
+          "precision": 0.3644859813084112,
+          "recall": 0.34210526315789475
+        },
+        "valid_outputs": 79,
+        "invalid_outputs": 28,
+        "rows": 125,
+        "invalid_rows": 37
+      },
+      "96_6qpl": {
+        "molecules": 23,
+        "tp": 20,
+        "fp": 4,
+        "fn": 3,
+        "precision": 0.8333333333333334,
+        "recall": 0.8695652173913043,
+        "stereo_stripped": {
+          "tp": 20,
+          "fp": 4,
+          "fn": 3,
+          "precision": 0.8333333333333334,
+          "recall": 0.8695652173913043
+        },
+        "valid_outputs": 24,
+        "invalid_outputs": 0,
+        "rows": 27,
+        "invalid_rows": 0
+      },
+      "97_6qmu": {
+        "molecules": 7,
+        "tp": 1,
+        "fp": 8,
+        "fn": 6,
+        "precision": 0.1111111111111111,
+        "recall": 0.14285714285714285,
+        "stereo_stripped": {
+          "tp": 7,
+          "fp": 2,
+          "fn": 0,
+          "precision": 0.7777777777777778,
+          "recall": 1.0
+        },
+        "valid_outputs": 8,
+        "invalid_outputs": 1,
+        "rows": 9,
+        "invalid_rows": 1
+      }
+    },
+    "groups": {
+      "all": {
+        "papers": [
+          "100_6qm7",
+          "101_6qlu",
+          "105_6qi4",
+          "109_6qgk",
+          "10_6ueg",
+          "110_6qgf",
+          "114_6qe5",
+          "115_6qcj",
+          "117_6qav",
+          "118_6qaf",
+          "121_6q9t",
+          "122_6q8p",
+          "123_6q8c",
+          "124_6q7w",
+          "129_6q4q",
+          "130_6q4g",
+          "131_6q3z",
+          "138_6pyb",
+          "141_6pvz",
+          "142_6pvx",
+          "145_6pt3",
+          "147_6ps6",
+          "14_6u7p",
+          "153_6plg",
+          "156_6pka",
+          "159_6pii",
+          "160_6pid",
+          "164_6pge",
+          "172_6p9e",
+          "179_6p3v",
+          "17_6tld",
+          "185_6oy2",
+          "18_6tl2",
+          "193_6otg",
+          "194_6os6",
+          "197_6op0",
+          "201_6om4",
+          "203_6olx",
+          "20_6t6a",
+          "210_6ohu",
+          "214_6oe3",
+          "221_6oac",
+          "222_6oa3",
+          "223_6o9d",
+          "228_6o5x",
+          "230_6o5t",
+          "231_6o5g",
+          "237_6o0p",
+          "246_6nyh",
+          "248_6ny0",
+          "251_6nw3",
+          "261_6npv",
+          "263_6npf",
+          "269_6nlj",
+          "26_6st3",
+          "271_6njj",
+          "272_6nj0",
+          "274_6nfn",
+          "276_6nem",
+          "277_6ne5",
+          "289_6n87",
+          "296_6n55",
+          "299_6n48",
+          "2_6v1c",
+          "305_6n0m",
+          "313_6mso",
+          "317_6mq3",
+          "322_6mo2",
+          "325_6mnp",
+          "328_6mkq",
+          "329_6mjw",
+          "332_6mhd",
+          "334_6mg5",
+          "336_6me5",
+          "338_6mdd",
+          "339_6mdb",
+          "33_6sde",
+          "341_6md4",
+          "343_6mbp",
+          "344_6max",
+          "345_6maj",
+          "348_6m8e",
+          "350_6m7h",
+          "352_6kqi",
+          "35_6sal",
+          "360_6kdi",
+          "367_6k1s",
+          "368_6k1q",
+          "369_6k0j",
+          "374_6jtc",
+          "37_6s9x",
+          "380_6jno",
+          "383_6jki",
+          "393_6j81",
+          "401_6j10",
+          "40_6s8a",
+          "410_6iql",
+          "417_6ilz",
+          "41_6s88",
+          "42_6s5k",
+          "430_6ibl",
+          "431_6ibk",
+          "434_6iam",
+          "436_6i9a",
+          "445_6i5g",
+          "449_6i0x",
+          "44_6s1s",
+          "452_6hzy",
+          "458_6hx8",
+          "459_6hx1",
+          "45_6s0e",
+          "464_6hs4",
+          "467_6hr2",
+          "469_6hp9",
+          "472_6hov",
+          "475_6hmy",
+          "477_6hmb",
+          "479_6hky",
+          "47_6rz6",
+          "484_6hhj",
+          "486_6hgx",
+          "487_6hgs",
+          "489_6hcw",
+          "48_6rw1",
+          "492_6haj",
+          "493_6h9x",
+          "494_6h9v",
+          "498_6h52",
+          "53_6rqk",
+          "60_6rln",
+          "64_6rhe",
+          "65_6rfw",
+          "68_6r8r",
+          "76_6r4k",
+          "78_6r1x",
+          "79_6r1b",
+          "83_6qzh",
+          "87_6qxd",
+          "88_6qxa",
+          "89_6qwb",
+          "90_6quw",
+          "94_6qri",
+          "95_6qrg",
+          "96_6qpl",
+          "97_6qmu"
+        ],
+        "molecules": 2304,
+        "counts": {
+          "tp": 799,
+          "fp": 1994,
+          "fn": 1505
+        },
+        "micro": {
+          "precision": {
+            "value": 0.28607232366630864,
+            "ci95": [
+              0.25089984420455674,
+              0.3223539905278891
+            ],
+            "successes": 799,
+            "trials": 2793,
+            "ci_method": "paper bootstrap"
+          },
+          "recall": {
+            "value": 0.3467881944444444,
+            "ci95": [
+              0.3023891082545143,
+              0.3985387352152103
+            ],
+            "successes": 799,
+            "trials": 2304,
+            "ci_method": "paper bootstrap"
+          },
+          "f1": {
+            "value": 0.31351775554247596,
+            "ci95": [
+              0.2774599036068013,
+              0.35245365185315025
+            ],
+            "successes": 799,
+            "trials": 2548.5,
+            "ci_method": "paper bootstrap"
+          }
+        },
+        "macro": {
+          "precision": {
+            "value": 0.28266806287995105,
+            "ci95": [
+              0.24055731470089528,
+              0.32729607736701144
+            ],
+            "papers": 145
+          },
+          "recall": {
+            "value": 0.39172837437741775,
+            "ci95": [
+              0.3367871079648028,
+              0.4487012847816829
+            ],
+            "papers": 145
+          }
+        },
+        "stereo_stripped": {
+          "counts": {
+            "tp": 858,
+            "fp": 1895,
+            "fn": 1401
+          },
+          "precision": {
+            "value": 0.31166000726480203,
+            "ci95": [
+              0.276097547522307,
+              0.349323711413241
+            ],
+            "successes": 858,
+            "trials": 2753,
+            "ci_method": "paper bootstrap"
+          },
+          "recall": {
+            "value": 0.3798140770252324,
+            "ci95": [
+              0.3334903163137749,
+              0.43497547547994403
+            ],
+            "successes": 858,
+            "trials": 2259,
+            "ci_method": "paper bootstrap"
+          },
+          "f1": {
+            "value": 0.3423782920989625,
+            "ci95": [
+              0.3054321571852385,
+              0.38365312472238783
+            ],
+            "successes": 858,
+            "trials": 2506.0,
+            "ci_method": "paper bootstrap"
+          }
+        },
+        "valid_output_rate": {
+          "value": 0.7923994974874372,
+          "ci95": [
+            0.7779632767275116,
+            0.8061310153044473
+          ],
+          "successes": 2523,
+          "trials": 3184
+        },
+        "papers_without_output": 2
+      },
+      "without_submitted": {
+        "papers": [
+          "100_6qm7",
+          "101_6qlu",
+          "105_6qi4",
+          "109_6qgk",
+          "10_6ueg",
+          "110_6qgf",
+          "114_6qe5",
+          "115_6qcj",
+          "118_6qaf",
+          "121_6q9t",
+          "124_6q7w",
+          "129_6q4q",
+          "130_6q4g",
+          "131_6q3z",
+          "138_6pyb",
+          "141_6pvz",
+          "142_6pvx",
+          "145_6pt3",
+          "147_6ps6",
+          "159_6pii",
+          "164_6pge",
+          "172_6p9e",
+          "17_6tld",
+          "18_6tl2",
+          "197_6op0",
+          "201_6om4",
+          "20_6t6a",
+          "210_6ohu",
+          "214_6oe3",
+          "222_6oa3",
+          "228_6o5x",
+          "237_6o0p",
+          "246_6nyh",
+          "248_6ny0",
+          "263_6npf",
+          "269_6nlj",
+          "26_6st3",
+          "272_6nj0",
+          "289_6n87",
+          "296_6n55",
+          "2_6v1c",
+          "305_6n0m",
+          "313_6mso",
+          "317_6mq3",
+          "325_6mnp",
+          "328_6mkq",
+          "329_6mjw",
+          "336_6me5",
+          "33_6sde",
+          "341_6md4",
+          "343_6mbp",
+          "344_6max",
+          "345_6maj",
+          "348_6m8e",
+          "350_6m7h",
+          "35_6sal",
+          "360_6kdi",
+          "367_6k1s",
+          "368_6k1q",
+          "369_6k0j",
+          "374_6jtc",
+          "37_6s9x",
+          "383_6jki",
+          "393_6j81",
+          "401_6j10",
+          "40_6s8a",
+          "410_6iql",
+          "417_6ilz",
+          "41_6s88",
+          "42_6s5k",
+          "430_6ibl",
+          "431_6ibk",
+          "434_6iam",
+          "436_6i9a",
+          "445_6i5g",
+          "449_6i0x",
+          "44_6s1s",
+          "452_6hzy",
+          "458_6hx8",
+          "459_6hx1",
+          "45_6s0e",
+          "464_6hs4",
+          "467_6hr2",
+          "469_6hp9",
+          "475_6hmy",
+          "477_6hmb",
+          "479_6hky",
+          "47_6rz6",
+          "484_6hhj",
+          "486_6hgx",
+          "487_6hgs",
+          "489_6hcw",
+          "48_6rw1",
+          "492_6haj",
+          "494_6h9v",
+          "498_6h52",
+          "60_6rln",
+          "64_6rhe",
+          "65_6rfw",
+          "68_6r8r",
+          "78_6r1x",
+          "79_6r1b",
+          "87_6qxd",
+          "88_6qxa",
+          "89_6qwb",
+          "90_6quw",
+          "94_6qri",
+          "95_6qrg",
+          "96_6qpl",
+          "97_6qmu"
+        ],
+        "molecules": 1596,
+        "counts": {
+          "tp": 544,
+          "fp": 1355,
+          "fn": 1052
+        },
+        "micro": {
+          "precision": {
+            "value": 0.2864665613480779,
+            "ci95": [
+              0.24494057699611563,
+              0.3286386477432369
+            ],
+            "successes": 544,
+            "trials": 1899,
+            "ci_method": "paper bootstrap"
+          },
+          "recall": {
+            "value": 0.3408521303258145,
+            "ci95": [
+              0.28827353468763967,
+              0.401060777543936
+            ],
+            "successes": 544,
+            "trials": 1596,
+            "ci_method": "paper bootstrap"
+          },
+          "f1": {
+            "value": 0.31130185979971386,
+            "ci95": [
+              0.2676224364820695,
+              0.35772357723577236
+            ],
+            "successes": 544,
+            "trials": 1747.5,
+            "ci_method": "paper bootstrap"
+          }
+        },
+        "macro": {
+          "precision": {
+            "value": 0.28964528100196807,
+            "ci95": [
+              0.2390648141420704,
+              0.34066313395110337
+            ],
+            "papers": 110
+          },
+          "recall": {
+            "value": 0.41477451029057977,
+            "ci95": [
+              0.3474742007050115,
+              0.4838854192203971
+            ],
+            "papers": 110
+          }
+        },
+        "stereo_stripped": {
+          "counts": {
+            "tp": 600,
+            "fp": 1287,
+            "fn": 985
+          },
+          "precision": {
+            "value": 0.3179650238473768,
+            "ci95": [
+              0.27752533979111454,
+              0.36132715177401037
+            ],
+            "successes": 600,
+            "trials": 1887,
+            "ci_method": "paper bootstrap"
+          },
+          "recall": {
+            "value": 0.3785488958990536,
+            "ci95": [
+              0.3244497942847262,
+              0.4437543808411214
+            ],
+            "successes": 600,
+            "trials": 1585,
+            "ci_method": "paper bootstrap"
+          },
+          "f1": {
+            "value": 0.3456221198156682,
+            "ci95": [
+              0.30203367089494243,
+              0.3947086855509375
+            ],
+            "successes": 600,
+            "trials": 1736.0,
+            "ci_method": "paper bootstrap"
+          }
+        },
+        "valid_output_rate": {
+          "value": 0.7781425891181989,
+          "ci95": [
+            0.7600142470401217,
+            0.7952704137674509
+          ],
+          "successes": 1659,
+          "trials": 2132
+        },
+        "papers_without_output": 1
+      }
+    },
+    "drawn_only": {
+      "papers": {
+        "100_6qm7": {
+          "molecules": 10,
+          "tp": 2,
+          "fp": 7,
+          "fn": 8,
+          "precision": 0.2222222222222222,
+          "recall": 0.2,
+          "stereo_stripped": {
+            "tp": 2,
+            "fp": 7,
+            "fn": 8,
+            "precision": 0.2222222222222222,
+            "recall": 0.2
+          },
+          "valid_outputs": 7,
+          "invalid_outputs": 2,
+          "rows": 10,
+          "invalid_rows": 2,
+          "ignored_outputs": 0
+        },
+        "101_6qlu": {
+          "molecules": 1,
+          "tp": 0,
+          "fp": 22,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 1,
+            "fp": 21,
+            "fn": 0,
+            "precision": 0.045454545454545456,
+            "recall": 1.0
+          },
+          "valid_outputs": 20,
+          "invalid_outputs": 2,
+          "rows": 22,
+          "invalid_rows": 2,
+          "ignored_outputs": 0
+        },
+        "105_6qi4": {
+          "molecules": 5,
+          "tp": 3,
+          "fp": 21,
+          "fn": 2,
+          "precision": 0.125,
+          "recall": 0.6,
+          "stereo_stripped": {
+            "tp": 3,
+            "fp": 20,
+            "fn": 2,
+            "precision": 0.13043478260869565,
+            "recall": 0.6
+          },
+          "valid_outputs": 19,
+          "invalid_outputs": 5,
+          "rows": 29,
+          "invalid_rows": 5,
+          "ignored_outputs": 5
+        },
+        "109_6qgk": {
+          "molecules": 21,
+          "tp": 17,
+          "fp": 8,
+          "fn": 4,
+          "precision": 0.68,
+          "recall": 0.8095238095238095,
+          "stereo_stripped": {
+            "tp": 18,
+            "fp": 7,
+            "fn": 3,
+            "precision": 0.72,
+            "recall": 0.8571428571428571
+          },
+          "valid_outputs": 23,
+          "invalid_outputs": 2,
+          "rows": 25,
+          "invalid_rows": 2,
+          "ignored_outputs": 0
+        },
+        "10_6ueg": {
+          "molecules": 5,
+          "tp": 5,
+          "fp": 6,
+          "fn": 0,
+          "precision": 0.45454545454545453,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 5,
+            "fp": 6,
+            "fn": 0,
+            "precision": 0.45454545454545453,
+            "recall": 1.0
+          },
+          "valid_outputs": 11,
+          "invalid_outputs": 0,
+          "rows": 11,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "110_6qgf": {
+          "molecules": 4,
+          "tp": 0,
+          "fp": 6,
+          "fn": 4,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 1,
+            "fp": 5,
+            "fn": 3,
+            "precision": 0.16666666666666666,
+            "recall": 0.25
+          },
+          "valid_outputs": 4,
+          "invalid_outputs": 2,
+          "rows": 6,
+          "invalid_rows": 2,
+          "ignored_outputs": 0
+        },
+        "114_6qe5": {
+          "molecules": 10,
+          "tp": 1,
+          "fp": 11,
+          "fn": 9,
+          "precision": 0.08333333333333333,
+          "recall": 0.1,
+          "stereo_stripped": {
+            "tp": 5,
+            "fp": 7,
+            "fn": 5,
+            "precision": 0.4166666666666667,
+            "recall": 0.5
+          },
+          "valid_outputs": 11,
+          "invalid_outputs": 1,
+          "rows": 12,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "115_6qcj": {
+          "molecules": 5,
+          "tp": 4,
+          "fp": 1,
+          "fn": 1,
+          "precision": 0.8,
+          "recall": 0.8,
+          "stereo_stripped": {
+            "tp": 4,
+            "fp": 1,
+            "fn": 1,
+            "precision": 0.8,
+            "recall": 0.8
+          },
+          "valid_outputs": 5,
+          "invalid_outputs": 0,
+          "rows": 5,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "117_6qav": {
+          "molecules": 11,
+          "tp": 2,
+          "fp": 10,
+          "fn": 9,
+          "precision": 0.16666666666666666,
+          "recall": 0.18181818181818182,
+          "stereo_stripped": {
+            "tp": 4,
+            "fp": 8,
+            "fn": 7,
+            "precision": 0.3333333333333333,
+            "recall": 0.36363636363636365
+          },
+          "valid_outputs": 10,
+          "invalid_outputs": 2,
+          "rows": 12,
+          "invalid_rows": 2,
+          "ignored_outputs": 0
+        },
+        "118_6qaf": {
+          "molecules": 3,
+          "tp": 0,
+          "fp": 5,
+          "fn": 3,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 2,
+            "fp": 3,
+            "fn": 1,
+            "precision": 0.4,
+            "recall": 0.6666666666666666
+          },
+          "valid_outputs": 3,
+          "invalid_outputs": 2,
+          "rows": 11,
+          "invalid_rows": 8,
+          "ignored_outputs": 0
+        },
+        "121_6q9t": {
+          "molecules": 1,
+          "tp": 1,
+          "fp": 11,
+          "fn": 0,
+          "precision": 0.08333333333333333,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 1,
+            "fp": 11,
+            "fn": 0,
+            "precision": 0.08333333333333333,
+            "recall": 1.0
+          },
+          "valid_outputs": 5,
+          "invalid_outputs": 7,
+          "rows": 12,
+          "invalid_rows": 7,
+          "ignored_outputs": 0
+        },
+        "122_6q8p": {
+          "molecules": 5,
+          "tp": 3,
+          "fp": 9,
+          "fn": 2,
+          "precision": 0.25,
+          "recall": 0.6,
+          "stereo_stripped": {
+            "tp": 3,
+            "fp": 9,
+            "fn": 2,
+            "precision": 0.25,
+            "recall": 0.6
+          },
+          "valid_outputs": 9,
+          "invalid_outputs": 3,
+          "rows": 14,
+          "invalid_rows": 3,
+          "ignored_outputs": 1
+        },
+        "123_6q8c": {
+          "molecules": 1,
+          "tp": 0,
+          "fp": 13,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 13,
+            "fn": 1,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 7,
+          "invalid_outputs": 6,
+          "rows": 13,
+          "invalid_rows": 6,
+          "ignored_outputs": 0
+        },
+        "124_6q7w": {
+          "molecules": 6,
+          "tp": 4,
+          "fp": 20,
+          "fn": 2,
+          "precision": 0.16666666666666666,
+          "recall": 0.6666666666666666,
+          "stereo_stripped": {
+            "tp": 4,
+            "fp": 20,
+            "fn": 2,
+            "precision": 0.16666666666666666,
+            "recall": 0.6666666666666666
+          },
+          "valid_outputs": 20,
+          "invalid_outputs": 4,
+          "rows": 28,
+          "invalid_rows": 4,
+          "ignored_outputs": 2
+        },
+        "130_6q4g": {
+          "molecules": 31,
+          "tp": 7,
+          "fp": 48,
+          "fn": 24,
+          "precision": 0.12727272727272726,
+          "recall": 0.22580645161290322,
+          "stereo_stripped": {
+            "tp": 7,
+            "fp": 48,
+            "fn": 24,
+            "precision": 0.12727272727272726,
+            "recall": 0.22580645161290322
+          },
+          "valid_outputs": 38,
+          "invalid_outputs": 17,
+          "rows": 66,
+          "invalid_rows": 19,
+          "ignored_outputs": 0
+        },
+        "131_6q3z": {
+          "molecules": 2,
+          "tp": 2,
+          "fp": 34,
+          "fn": 0,
+          "precision": 0.05555555555555555,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 2,
+            "fp": 34,
+            "fn": 0,
+            "precision": 0.05555555555555555,
+            "recall": 1.0
+          },
+          "valid_outputs": 16,
+          "invalid_outputs": 20,
+          "rows": 46,
+          "invalid_rows": 22,
+          "ignored_outputs": 1
+        },
+        "138_6pyb": {
+          "molecules": 2,
+          "tp": 2,
+          "fp": 1,
+          "fn": 0,
+          "precision": 0.6666666666666666,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 2,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.6666666666666666,
+            "recall": 1.0
+          },
+          "valid_outputs": 3,
+          "invalid_outputs": 0,
+          "rows": 3,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "141_6pvz": {
+          "molecules": 22,
+          "tp": 12,
+          "fp": 35,
+          "fn": 10,
+          "precision": 0.2553191489361702,
+          "recall": 0.5454545454545454,
+          "stereo_stripped": {
+            "tp": 12,
+            "fp": 34,
+            "fn": 10,
+            "precision": 0.2608695652173913,
+            "recall": 0.5454545454545454
+          },
+          "valid_outputs": 38,
+          "invalid_outputs": 9,
+          "rows": 60,
+          "invalid_rows": 9,
+          "ignored_outputs": 0
+        },
+        "142_6pvx": {
+          "molecules": 3,
+          "tp": 2,
+          "fp": 11,
+          "fn": 1,
+          "precision": 0.15384615384615385,
+          "recall": 0.6666666666666666,
+          "stereo_stripped": {
+            "tp": 2,
+            "fp": 11,
+            "fn": 1,
+            "precision": 0.15384615384615385,
+            "recall": 0.6666666666666666
+          },
+          "valid_outputs": 12,
+          "invalid_outputs": 1,
+          "rows": 16,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "145_6pt3": {
+          "molecules": 7,
+          "tp": 1,
+          "fp": 7,
+          "fn": 6,
+          "precision": 0.125,
+          "recall": 0.14285714285714285,
+          "stereo_stripped": {
+            "tp": 1,
+            "fp": 7,
+            "fn": 6,
+            "precision": 0.125,
+            "recall": 0.14285714285714285
+          },
+          "valid_outputs": 8,
+          "invalid_outputs": 0,
+          "rows": 8,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "147_6ps6": {
+          "molecules": 8,
+          "tp": 6,
+          "fp": 7,
+          "fn": 2,
+          "precision": 0.46153846153846156,
+          "recall": 0.75,
+          "stereo_stripped": {
+            "tp": 6,
+            "fp": 7,
+            "fn": 2,
+            "precision": 0.46153846153846156,
+            "recall": 0.75
+          },
+          "valid_outputs": 11,
+          "invalid_outputs": 2,
+          "rows": 16,
+          "invalid_rows": 2,
+          "ignored_outputs": 0
+        },
+        "14_6u7p": {
+          "molecules": 17,
+          "tp": 4,
+          "fp": 26,
+          "fn": 13,
+          "precision": 0.13333333333333333,
+          "recall": 0.23529411764705882,
+          "stereo_stripped": {
+            "tp": 4,
+            "fp": 26,
+            "fn": 13,
+            "precision": 0.13333333333333333,
+            "recall": 0.23529411764705882
+          },
+          "valid_outputs": 28,
+          "invalid_outputs": 2,
+          "rows": 33,
+          "invalid_rows": 2,
+          "ignored_outputs": 0
+        },
+        "153_6plg": {
+          "molecules": 21,
+          "tp": 21,
+          "fp": 1,
+          "fn": 0,
+          "precision": 0.9545454545454546,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 20,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.9523809523809523,
+            "recall": 1.0
+          },
+          "valid_outputs": 21,
+          "invalid_outputs": 1,
+          "rows": 24,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "159_6pii": {
+          "molecules": 15,
+          "tp": 14,
+          "fp": 1,
+          "fn": 1,
+          "precision": 0.9333333333333333,
+          "recall": 0.9333333333333333,
+          "stereo_stripped": {
+            "tp": 15,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "valid_outputs": 15,
+          "invalid_outputs": 0,
+          "rows": 16,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "160_6pid": {
+          "molecules": 14,
+          "tp": 11,
+          "fp": 4,
+          "fn": 3,
+          "precision": 0.7333333333333333,
+          "recall": 0.7857142857142857,
+          "stereo_stripped": {
+            "tp": 11,
+            "fp": 4,
+            "fn": 3,
+            "precision": 0.7333333333333333,
+            "recall": 0.7857142857142857
+          },
+          "valid_outputs": 13,
+          "invalid_outputs": 2,
+          "rows": 16,
+          "invalid_rows": 2,
+          "ignored_outputs": 0
+        },
+        "164_6pge": {
+          "molecules": 19,
+          "tp": 12,
+          "fp": 38,
+          "fn": 7,
+          "precision": 0.24,
+          "recall": 0.631578947368421,
+          "stereo_stripped": {
+            "tp": 12,
+            "fp": 38,
+            "fn": 7,
+            "precision": 0.24,
+            "recall": 0.631578947368421
+          },
+          "valid_outputs": 41,
+          "invalid_outputs": 9,
+          "rows": 55,
+          "invalid_rows": 12,
+          "ignored_outputs": 1
+        },
+        "172_6p9e": {
+          "molecules": 3,
+          "tp": 3,
+          "fp": 3,
+          "fn": 0,
+          "precision": 0.5,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 1,
+            "fp": 3,
+            "fn": 0,
+            "precision": 0.25,
+            "recall": 1.0
+          },
+          "valid_outputs": 6,
+          "invalid_outputs": 0,
+          "rows": 7,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "179_6p3v": {
+          "molecules": 4,
+          "tp": 3,
+          "fp": 1,
+          "fn": 1,
+          "precision": 0.75,
+          "recall": 0.75,
+          "stereo_stripped": {
+            "tp": 3,
+            "fp": 1,
+            "fn": 1,
+            "precision": 0.75,
+            "recall": 0.75
+          },
+          "valid_outputs": 4,
+          "invalid_outputs": 0,
+          "rows": 4,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "17_6tld": {
+          "molecules": 13,
+          "tp": 11,
+          "fp": 22,
+          "fn": 2,
+          "precision": 0.3333333333333333,
+          "recall": 0.8461538461538461,
+          "stereo_stripped": {
+            "tp": 11,
+            "fp": 22,
+            "fn": 2,
+            "precision": 0.3333333333333333,
+            "recall": 0.8461538461538461
+          },
+          "valid_outputs": 15,
+          "invalid_outputs": 18,
+          "rows": 34,
+          "invalid_rows": 19,
+          "ignored_outputs": 0
+        },
+        "185_6oy2": {
+          "molecules": 8,
+          "tp": 4,
+          "fp": 17,
+          "fn": 4,
+          "precision": 0.19047619047619047,
+          "recall": 0.5,
+          "stereo_stripped": {
+            "tp": 5,
+            "fp": 16,
+            "fn": 3,
+            "precision": 0.23809523809523808,
+            "recall": 0.625
+          },
+          "valid_outputs": 8,
+          "invalid_outputs": 13,
+          "rows": 36,
+          "invalid_rows": 14,
+          "ignored_outputs": 12
+        },
+        "18_6tl2": {
+          "molecules": 7,
+          "tp": 7,
+          "fp": 11,
+          "fn": 0,
+          "precision": 0.3888888888888889,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 7,
+            "fp": 11,
+            "fn": 0,
+            "precision": 0.3888888888888889,
+            "recall": 1.0
+          },
+          "valid_outputs": 17,
+          "invalid_outputs": 1,
+          "rows": 29,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "193_6otg": {
+          "molecules": 4,
+          "tp": 0,
+          "fp": 5,
+          "fn": 4,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 3,
+            "fp": 2,
+            "fn": 1,
+            "precision": 0.6,
+            "recall": 0.75
+          },
+          "valid_outputs": 4,
+          "invalid_outputs": 1,
+          "rows": 5,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "194_6os6": {
+          "molecules": 10,
+          "tp": 3,
+          "fp": 12,
+          "fn": 7,
+          "precision": 0.2,
+          "recall": 0.3,
+          "stereo_stripped": {
+            "tp": 5,
+            "fp": 10,
+            "fn": 4,
+            "precision": 0.3333333333333333,
+            "recall": 0.5555555555555556
+          },
+          "valid_outputs": 15,
+          "invalid_outputs": 0,
+          "rows": 17,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "197_6op0": {
+          "molecules": 4,
+          "tp": 3,
+          "fp": 2,
+          "fn": 1,
+          "precision": 0.6,
+          "recall": 0.75,
+          "stereo_stripped": {
+            "tp": 3,
+            "fp": 2,
+            "fn": 1,
+            "precision": 0.6,
+            "recall": 0.75
+          },
+          "valid_outputs": 5,
+          "invalid_outputs": 0,
+          "rows": 6,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "201_6om4": {
+          "molecules": 2,
+          "tp": 0,
+          "fp": 4,
+          "fn": 2,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 2,
+            "fp": 2,
+            "fn": 0,
+            "precision": 0.5,
+            "recall": 1.0
+          },
+          "valid_outputs": 2,
+          "invalid_outputs": 2,
+          "rows": 4,
+          "invalid_rows": 2,
+          "ignored_outputs": 0
+        },
+        "203_6olx": {
+          "molecules": 1,
+          "tp": 0,
+          "fp": 4,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 1,
+            "fp": 3,
+            "fn": 0,
+            "precision": 0.25,
+            "recall": 1.0
+          },
+          "valid_outputs": 3,
+          "invalid_outputs": 1,
+          "rows": 4,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "20_6t6a": {
+          "molecules": 21,
+          "tp": 12,
+          "fp": 16,
+          "fn": 9,
+          "precision": 0.42857142857142855,
+          "recall": 0.5714285714285714,
+          "stereo_stripped": {
+            "tp": 16,
+            "fp": 12,
+            "fn": 5,
+            "precision": 0.5714285714285714,
+            "recall": 0.7619047619047619
+          },
+          "valid_outputs": 27,
+          "invalid_outputs": 1,
+          "rows": 33,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "210_6ohu": {
+          "molecules": 7,
+          "tp": 3,
+          "fp": 12,
+          "fn": 4,
+          "precision": 0.2,
+          "recall": 0.42857142857142855,
+          "stereo_stripped": {
+            "tp": 3,
+            "fp": 12,
+            "fn": 4,
+            "precision": 0.2,
+            "recall": 0.42857142857142855
+          },
+          "valid_outputs": 12,
+          "invalid_outputs": 3,
+          "rows": 15,
+          "invalid_rows": 3,
+          "ignored_outputs": 0
+        },
+        "214_6oe3": {
+          "molecules": 3,
+          "tp": 3,
+          "fp": 1,
+          "fn": 0,
+          "precision": 0.75,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 3,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.75,
+            "recall": 1.0
+          },
+          "valid_outputs": 4,
+          "invalid_outputs": 0,
+          "rows": 4,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "221_6oac": {
+          "molecules": 18,
+          "tp": 12,
+          "fp": 65,
+          "fn": 6,
+          "precision": 0.15584415584415584,
+          "recall": 0.6666666666666666,
+          "stereo_stripped": {
+            "tp": 12,
+            "fp": 55,
+            "fn": 6,
+            "precision": 0.1791044776119403,
+            "recall": 0.6666666666666666
+          },
+          "valid_outputs": 70,
+          "invalid_outputs": 7,
+          "rows": 98,
+          "invalid_rows": 7,
+          "ignored_outputs": 14
+        },
+        "222_6oa3": {
+          "molecules": 7,
+          "tp": 3,
+          "fp": 3,
+          "fn": 4,
+          "precision": 0.5,
+          "recall": 0.42857142857142855,
+          "stereo_stripped": {
+            "tp": 3,
+            "fp": 3,
+            "fn": 4,
+            "precision": 0.5,
+            "recall": 0.42857142857142855
+          },
+          "valid_outputs": 6,
+          "invalid_outputs": 0,
+          "rows": 7,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "223_6o9d": {
+          "molecules": 20,
+          "tp": 17,
+          "fp": 60,
+          "fn": 3,
+          "precision": 0.22077922077922077,
+          "recall": 0.85,
+          "stereo_stripped": {
+            "tp": 17,
+            "fp": 59,
+            "fn": 3,
+            "precision": 0.2236842105263158,
+            "recall": 0.85
+          },
+          "valid_outputs": 57,
+          "invalid_outputs": 20,
+          "rows": 98,
+          "invalid_rows": 26,
+          "ignored_outputs": 0
+        },
+        "228_6o5x": {
+          "molecules": 1,
+          "tp": 0,
+          "fp": 1,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 1,
+            "fn": 1,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 1,
+          "invalid_outputs": 0,
+          "rows": 1,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "231_6o5g": {
+          "molecules": 1,
+          "tp": 0,
+          "fp": 2,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 2,
+            "fn": 1,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 2,
+          "invalid_outputs": 0,
+          "rows": 2,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "237_6o0p": {
+          "molecules": 3,
+          "tp": 0,
+          "fp": 4,
+          "fn": 3,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 4,
+            "fn": 3,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 3,
+          "invalid_outputs": 1,
+          "rows": 4,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "246_6nyh": {
+          "molecules": 1,
+          "tp": 1,
+          "fp": 2,
+          "fn": 0,
+          "precision": 0.3333333333333333,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 1,
+            "fp": 2,
+            "fn": 0,
+            "precision": 0.3333333333333333,
+            "recall": 1.0
+          },
+          "valid_outputs": 3,
+          "invalid_outputs": 0,
+          "rows": 3,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "248_6ny0": {
+          "molecules": 7,
+          "tp": 2,
+          "fp": 31,
+          "fn": 5,
+          "precision": 0.06060606060606061,
+          "recall": 0.2857142857142857,
+          "stereo_stripped": {
+            "tp": 2,
+            "fp": 31,
+            "fn": 5,
+            "precision": 0.06060606060606061,
+            "recall": 0.2857142857142857
+          },
+          "valid_outputs": 19,
+          "invalid_outputs": 14,
+          "rows": 41,
+          "invalid_rows": 17,
+          "ignored_outputs": 0
+        },
+        "251_6nw3": {
+          "molecules": 4,
+          "tp": 0,
+          "fp": 4,
+          "fn": 4,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 4,
+            "fn": 4,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 2,
+          "invalid_outputs": 2,
+          "rows": 4,
+          "invalid_rows": 2,
+          "ignored_outputs": 0
+        },
+        "261_6npv": {
+          "molecules": 41,
+          "tp": 33,
+          "fp": 52,
+          "fn": 8,
+          "precision": 0.38823529411764707,
+          "recall": 0.8048780487804879,
+          "stereo_stripped": {
+            "tp": 36,
+            "fp": 46,
+            "fn": 0,
+            "precision": 0.43902439024390244,
+            "recall": 1.0
+          },
+          "valid_outputs": 75,
+          "invalid_outputs": 10,
+          "rows": 106,
+          "invalid_rows": 10,
+          "ignored_outputs": 3
+        },
+        "263_6npf": {
+          "molecules": 2,
+          "tp": 1,
+          "fp": 2,
+          "fn": 1,
+          "precision": 0.3333333333333333,
+          "recall": 0.5,
+          "stereo_stripped": {
+            "tp": 2,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.6666666666666666,
+            "recall": 1.0
+          },
+          "valid_outputs": 3,
+          "invalid_outputs": 0,
+          "rows": 3,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "269_6nlj": {
+          "molecules": 15,
+          "tp": 15,
+          "fp": 6,
+          "fn": 0,
+          "precision": 0.7142857142857143,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 15,
+            "fp": 6,
+            "fn": 0,
+            "precision": 0.7142857142857143,
+            "recall": 1.0
+          },
+          "valid_outputs": 16,
+          "invalid_outputs": 5,
+          "rows": 30,
+          "invalid_rows": 5,
+          "ignored_outputs": 0
+        },
+        "26_6st3": {
+          "molecules": 9,
+          "tp": 4,
+          "fp": 22,
+          "fn": 5,
+          "precision": 0.15384615384615385,
+          "recall": 0.4444444444444444,
+          "stereo_stripped": {
+            "tp": 4,
+            "fp": 22,
+            "fn": 5,
+            "precision": 0.15384615384615385,
+            "recall": 0.4444444444444444
+          },
+          "valid_outputs": 18,
+          "invalid_outputs": 8,
+          "rows": 27,
+          "invalid_rows": 8,
+          "ignored_outputs": 0
+        },
+        "271_6njj": {
+          "molecules": 15,
+          "tp": 12,
+          "fp": 10,
+          "fn": 3,
+          "precision": 0.5454545454545454,
+          "recall": 0.8,
+          "stereo_stripped": {
+            "tp": 12,
+            "fp": 10,
+            "fn": 3,
+            "precision": 0.5454545454545454,
+            "recall": 0.8
+          },
+          "valid_outputs": 17,
+          "invalid_outputs": 5,
+          "rows": 23,
+          "invalid_rows": 5,
+          "ignored_outputs": 0
+        },
+        "272_6nj0": {
+          "molecules": 49,
+          "tp": 24,
+          "fp": 41,
+          "fn": 25,
+          "precision": 0.36923076923076925,
+          "recall": 0.4897959183673469,
+          "stereo_stripped": {
+            "tp": 25,
+            "fp": 40,
+            "fn": 24,
+            "precision": 0.38461538461538464,
+            "recall": 0.5102040816326531
+          },
+          "valid_outputs": 61,
+          "invalid_outputs": 4,
+          "rows": 66,
+          "invalid_rows": 4,
+          "ignored_outputs": 0
+        },
+        "274_6nfn": {
+          "molecules": 1,
+          "tp": 0,
+          "fp": 5,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 5,
+            "fn": 1,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 2,
+          "invalid_outputs": 3,
+          "rows": 5,
+          "invalid_rows": 3,
+          "ignored_outputs": 0
+        },
+        "276_6nem": {
+          "molecules": 16,
+          "tp": 5,
+          "fp": 53,
+          "fn": 11,
+          "precision": 0.08620689655172414,
+          "recall": 0.3125,
+          "stereo_stripped": {
+            "tp": 5,
+            "fp": 53,
+            "fn": 11,
+            "precision": 0.08620689655172414,
+            "recall": 0.3125
+          },
+          "valid_outputs": 41,
+          "invalid_outputs": 17,
+          "rows": 88,
+          "invalid_rows": 17,
+          "ignored_outputs": 0
+        },
+        "277_6ne5": {
+          "molecules": 6,
+          "tp": 5,
+          "fp": 45,
+          "fn": 1,
+          "precision": 0.1,
+          "recall": 0.8333333333333334,
+          "stereo_stripped": {
+            "tp": 5,
+            "fp": 43,
+            "fn": 0,
+            "precision": 0.10416666666666667,
+            "recall": 1.0
+          },
+          "valid_outputs": 45,
+          "invalid_outputs": 5,
+          "rows": 90,
+          "invalid_rows": 8,
+          "ignored_outputs": 0
+        },
+        "289_6n87": {
+          "molecules": 6,
+          "tp": 6,
+          "fp": 2,
+          "fn": 0,
+          "precision": 0.75,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 6,
+            "fp": 2,
+            "fn": 0,
+            "precision": 0.75,
+            "recall": 1.0
+          },
+          "valid_outputs": 6,
+          "invalid_outputs": 2,
+          "rows": 9,
+          "invalid_rows": 2,
+          "ignored_outputs": 0
+        },
+        "296_6n55": {
+          "molecules": 6,
+          "tp": 1,
+          "fp": 15,
+          "fn": 5,
+          "precision": 0.0625,
+          "recall": 0.16666666666666666,
+          "stereo_stripped": {
+            "tp": 2,
+            "fp": 14,
+            "fn": 4,
+            "precision": 0.125,
+            "recall": 0.3333333333333333
+          },
+          "valid_outputs": 12,
+          "invalid_outputs": 4,
+          "rows": 16,
+          "invalid_rows": 4,
+          "ignored_outputs": 0
+        },
+        "299_6n48": {
+          "molecules": 1,
+          "tp": 0,
+          "fp": 2,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 2,
+            "fn": 1,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 1,
+          "invalid_outputs": 1,
+          "rows": 2,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "2_6v1c": {
+          "molecules": 1,
+          "tp": 0,
+          "fp": 2,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 1,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.5,
+            "recall": 1.0
+          },
+          "valid_outputs": 2,
+          "invalid_outputs": 0,
+          "rows": 2,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "305_6n0m": {
+          "molecules": 1,
+          "tp": 0,
+          "fp": 4,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 4,
+            "fn": 1,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 4,
+          "invalid_outputs": 0,
+          "rows": 5,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "313_6mso": {
+          "molecules": 3,
+          "tp": 0,
+          "fp": 4,
+          "fn": 3,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 4,
+            "fn": 3,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 4,
+          "invalid_outputs": 0,
+          "rows": 6,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "317_6mq3": {
+          "molecules": 9,
+          "tp": 0,
+          "fp": 26,
+          "fn": 9,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 26,
+            "fn": 9,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 19,
+          "invalid_outputs": 7,
+          "rows": 28,
+          "invalid_rows": 8,
+          "ignored_outputs": 0
+        },
+        "322_6mo2": {
+          "molecules": 5,
+          "tp": 3,
+          "fp": 9,
+          "fn": 2,
+          "precision": 0.25,
+          "recall": 0.6,
+          "stereo_stripped": {
+            "tp": 3,
+            "fp": 9,
+            "fn": 2,
+            "precision": 0.25,
+            "recall": 0.6
+          },
+          "valid_outputs": 8,
+          "invalid_outputs": 4,
+          "rows": 12,
+          "invalid_rows": 4,
+          "ignored_outputs": 0
+        },
+        "325_6mnp": {
+          "molecules": 15,
+          "tp": 15,
+          "fp": 1,
+          "fn": 0,
+          "precision": 0.9375,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 15,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.9375,
+            "recall": 1.0
+          },
+          "valid_outputs": 16,
+          "invalid_outputs": 0,
+          "rows": 17,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "328_6mkq": {
+          "molecules": 1,
+          "tp": 0,
+          "fp": 5,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 5,
+            "fn": 1,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 5,
+          "invalid_outputs": 0,
+          "rows": 5,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "329_6mjw": {
+          "molecules": 7,
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 7,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "valid_outputs": 7,
+          "invalid_outputs": 0,
+          "rows": 9,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "332_6mhd": {
+          "molecules": 35,
+          "tp": 29,
+          "fp": 58,
+          "fn": 6,
+          "precision": 0.3333333333333333,
+          "recall": 0.8285714285714286,
+          "stereo_stripped": {
+            "tp": 29,
+            "fp": 58,
+            "fn": 6,
+            "precision": 0.3333333333333333,
+            "recall": 0.8285714285714286
+          },
+          "valid_outputs": 65,
+          "invalid_outputs": 22,
+          "rows": 91,
+          "invalid_rows": 23,
+          "ignored_outputs": 0
+        },
+        "334_6mg5": {
+          "molecules": 12,
+          "tp": 9,
+          "fp": 2,
+          "fn": 3,
+          "precision": 0.8181818181818182,
+          "recall": 0.75,
+          "stereo_stripped": {
+            "tp": 10,
+            "fp": 1,
+            "fn": 2,
+            "precision": 0.9090909090909091,
+            "recall": 0.8333333333333334
+          },
+          "valid_outputs": 11,
+          "invalid_outputs": 0,
+          "rows": 11,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "336_6me5": {
+          "molecules": 8,
+          "tp": 0,
+          "fp": 11,
+          "fn": 8,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 11,
+            "fn": 8,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 7,
+          "invalid_outputs": 4,
+          "rows": 11,
+          "invalid_rows": 4,
+          "ignored_outputs": 0
+        },
+        "338_6mdd": {
+          "molecules": 10,
+          "tp": 9,
+          "fp": 19,
+          "fn": 1,
+          "precision": 0.32142857142857145,
+          "recall": 0.9,
+          "stereo_stripped": {
+            "tp": 9,
+            "fp": 19,
+            "fn": 1,
+            "precision": 0.32142857142857145,
+            "recall": 0.9
+          },
+          "valid_outputs": 22,
+          "invalid_outputs": 6,
+          "rows": 30,
+          "invalid_rows": 6,
+          "ignored_outputs": 1
+        },
+        "339_6mdb": {
+          "molecules": 12,
+          "tp": 12,
+          "fp": 17,
+          "fn": 0,
+          "precision": 0.41379310344827586,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 12,
+            "fp": 17,
+            "fn": 0,
+            "precision": 0.41379310344827586,
+            "recall": 1.0
+          },
+          "valid_outputs": 28,
+          "invalid_outputs": 1,
+          "rows": 37,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "33_6sde": {
+          "molecules": 4,
+          "tp": 3,
+          "fp": 3,
+          "fn": 1,
+          "precision": 0.5,
+          "recall": 0.75,
+          "stereo_stripped": {
+            "tp": 3,
+            "fp": 3,
+            "fn": 1,
+            "precision": 0.5,
+            "recall": 0.75
+          },
+          "valid_outputs": 5,
+          "invalid_outputs": 1,
+          "rows": 7,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "341_6md4": {
+          "molecules": 2,
+          "tp": 2,
+          "fp": 9,
+          "fn": 0,
+          "precision": 0.18181818181818182,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 2,
+            "fp": 8,
+            "fn": 0,
+            "precision": 0.2,
+            "recall": 1.0
+          },
+          "valid_outputs": 10,
+          "invalid_outputs": 1,
+          "rows": 12,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "343_6mbp": {
+          "molecules": 22,
+          "tp": 14,
+          "fp": 29,
+          "fn": 8,
+          "precision": 0.32558139534883723,
+          "recall": 0.6363636363636364,
+          "stereo_stripped": {
+            "tp": 15,
+            "fp": 28,
+            "fn": 7,
+            "precision": 0.3488372093023256,
+            "recall": 0.6818181818181818
+          },
+          "valid_outputs": 22,
+          "invalid_outputs": 21,
+          "rows": 51,
+          "invalid_rows": 23,
+          "ignored_outputs": 0
+        },
+        "344_6max": {
+          "molecules": 1,
+          "tp": 0,
+          "fp": 7,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 7,
+            "fn": 1,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 5,
+          "invalid_outputs": 2,
+          "rows": 8,
+          "invalid_rows": 2,
+          "ignored_outputs": 0
+        },
+        "345_6maj": {
+          "molecules": 1,
+          "tp": 1,
+          "fp": 3,
+          "fn": 0,
+          "precision": 0.25,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 1,
+            "fp": 3,
+            "fn": 0,
+            "precision": 0.25,
+            "recall": 1.0
+          },
+          "valid_outputs": 3,
+          "invalid_outputs": 1,
+          "rows": 7,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "348_6m8e": {
+          "molecules": 16,
+          "tp": 15,
+          "fp": 8,
+          "fn": 1,
+          "precision": 0.6521739130434783,
+          "recall": 0.9375,
+          "stereo_stripped": {
+            "tp": 15,
+            "fp": 8,
+            "fn": 1,
+            "precision": 0.6521739130434783,
+            "recall": 0.9375
+          },
+          "valid_outputs": 23,
+          "invalid_outputs": 0,
+          "rows": 24,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "350_6m7h": {
+          "molecules": 2,
+          "tp": 1,
+          "fp": 7,
+          "fn": 1,
+          "precision": 0.125,
+          "recall": 0.5,
+          "stereo_stripped": {
+            "tp": 2,
+            "fp": 6,
+            "fn": 0,
+            "precision": 0.25,
+            "recall": 1.0
+          },
+          "valid_outputs": 5,
+          "invalid_outputs": 3,
+          "rows": 8,
+          "invalid_rows": 3,
+          "ignored_outputs": 0
+        },
+        "352_6kqi": {
+          "molecules": 4,
+          "tp": 0,
+          "fp": 0,
+          "fn": 4,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 4,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 0,
+          "invalid_outputs": 0,
+          "rows": 0,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "35_6sal": {
+          "molecules": 20,
+          "tp": 11,
+          "fp": 36,
+          "fn": 9,
+          "precision": 0.23404255319148937,
+          "recall": 0.55,
+          "stereo_stripped": {
+            "tp": 11,
+            "fp": 36,
+            "fn": 9,
+            "precision": 0.23404255319148937,
+            "recall": 0.55
+          },
+          "valid_outputs": 32,
+          "invalid_outputs": 15,
+          "rows": 49,
+          "invalid_rows": 17,
+          "ignored_outputs": 0
+        },
+        "360_6kdi": {
+          "molecules": 3,
+          "tp": 0,
+          "fp": 5,
+          "fn": 3,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 5,
+            "fn": 3,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 5,
+          "invalid_outputs": 0,
+          "rows": 5,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "367_6k1s": {
+          "molecules": 19,
+          "tp": 3,
+          "fp": 20,
+          "fn": 16,
+          "precision": 0.13043478260869565,
+          "recall": 0.15789473684210525,
+          "stereo_stripped": {
+            "tp": 3,
+            "fp": 20,
+            "fn": 16,
+            "precision": 0.13043478260869565,
+            "recall": 0.15789473684210525
+          },
+          "valid_outputs": 22,
+          "invalid_outputs": 1,
+          "rows": 23,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "368_6k1q": {
+          "molecules": 2,
+          "tp": 1,
+          "fp": 4,
+          "fn": 1,
+          "precision": 0.2,
+          "recall": 0.5,
+          "stereo_stripped": {
+            "tp": 1,
+            "fp": 4,
+            "fn": 1,
+            "precision": 0.2,
+            "recall": 0.5
+          },
+          "valid_outputs": 3,
+          "invalid_outputs": 2,
+          "rows": 5,
+          "invalid_rows": 2,
+          "ignored_outputs": 0
+        },
+        "369_6k0j": {
+          "molecules": 1,
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "valid_outputs": 1,
+          "invalid_outputs": 0,
+          "rows": 1,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "374_6jtc": {
+          "molecules": 2,
+          "tp": 0,
+          "fp": 4,
+          "fn": 2,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 4,
+            "fn": 2,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 3,
+          "invalid_outputs": 1,
+          "rows": 4,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "37_6s9x": {
+          "molecules": 10,
+          "tp": 10,
+          "fp": 8,
+          "fn": 0,
+          "precision": 0.5555555555555556,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 10,
+            "fp": 8,
+            "fn": 0,
+            "precision": 0.5555555555555556,
+            "recall": 1.0
+          },
+          "valid_outputs": 12,
+          "invalid_outputs": 6,
+          "rows": 22,
+          "invalid_rows": 9,
+          "ignored_outputs": 0
+        },
+        "380_6jno": {
+          "molecules": 26,
+          "tp": 4,
+          "fp": 24,
+          "fn": 22,
+          "precision": 0.14285714285714285,
+          "recall": 0.15384615384615385,
+          "stereo_stripped": {
+            "tp": 4,
+            "fp": 24,
+            "fn": 22,
+            "precision": 0.14285714285714285,
+            "recall": 0.15384615384615385
+          },
+          "valid_outputs": 25,
+          "invalid_outputs": 3,
+          "rows": 30,
+          "invalid_rows": 3,
+          "ignored_outputs": 0
+        },
+        "383_6jki": {
+          "molecules": 1,
+          "tp": 0,
+          "fp": 0,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 1,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 0,
+          "invalid_outputs": 0,
+          "rows": 0,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "393_6j81": {
+          "molecules": 11,
+          "tp": 10,
+          "fp": 13,
+          "fn": 1,
+          "precision": 0.43478260869565216,
+          "recall": 0.9090909090909091,
+          "stereo_stripped": {
+            "tp": 8,
+            "fp": 12,
+            "fn": 0,
+            "precision": 0.4,
+            "recall": 1.0
+          },
+          "valid_outputs": 22,
+          "invalid_outputs": 1,
+          "rows": 23,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "401_6j10": {
+          "molecules": 1,
+          "tp": 1,
+          "fp": 7,
+          "fn": 0,
+          "precision": 0.125,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 1,
+            "fp": 7,
+            "fn": 0,
+            "precision": 0.125,
+            "recall": 1.0
+          },
+          "valid_outputs": 6,
+          "invalid_outputs": 2,
+          "rows": 8,
+          "invalid_rows": 2,
+          "ignored_outputs": 0
+        },
+        "40_6s8a": {
+          "molecules": 12,
+          "tp": 5,
+          "fp": 22,
+          "fn": 7,
+          "precision": 0.18518518518518517,
+          "recall": 0.4166666666666667,
+          "stereo_stripped": {
+            "tp": 5,
+            "fp": 22,
+            "fn": 7,
+            "precision": 0.18518518518518517,
+            "recall": 0.4166666666666667
+          },
+          "valid_outputs": 17,
+          "invalid_outputs": 10,
+          "rows": 41,
+          "invalid_rows": 17,
+          "ignored_outputs": 0
+        },
+        "410_6iql": {
+          "molecules": 3,
+          "tp": 1,
+          "fp": 3,
+          "fn": 2,
+          "precision": 0.25,
+          "recall": 0.3333333333333333,
+          "stereo_stripped": {
+            "tp": 1,
+            "fp": 3,
+            "fn": 2,
+            "precision": 0.25,
+            "recall": 0.3333333333333333
+          },
+          "valid_outputs": 2,
+          "invalid_outputs": 2,
+          "rows": 5,
+          "invalid_rows": 3,
+          "ignored_outputs": 0
+        },
+        "417_6ilz": {
+          "molecules": 2,
+          "tp": 2,
+          "fp": 22,
+          "fn": 0,
+          "precision": 0.08333333333333333,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 2,
+            "fp": 22,
+            "fn": 0,
+            "precision": 0.08333333333333333,
+            "recall": 1.0
+          },
+          "valid_outputs": 22,
+          "invalid_outputs": 2,
+          "rows": 25,
+          "invalid_rows": 2,
+          "ignored_outputs": 0
+        },
+        "41_6s88": {
+          "molecules": 29,
+          "tp": 20,
+          "fp": 49,
+          "fn": 9,
+          "precision": 0.2898550724637681,
+          "recall": 0.6896551724137931,
+          "stereo_stripped": {
+            "tp": 21,
+            "fp": 48,
+            "fn": 8,
+            "precision": 0.30434782608695654,
+            "recall": 0.7241379310344828
+          },
+          "valid_outputs": 55,
+          "invalid_outputs": 14,
+          "rows": 101,
+          "invalid_rows": 18,
+          "ignored_outputs": 2
+        },
+        "42_6s5k": {
+          "molecules": 8,
+          "tp": 7,
+          "fp": 1,
+          "fn": 1,
+          "precision": 0.875,
+          "recall": 0.875,
+          "stereo_stripped": {
+            "tp": 7,
+            "fp": 1,
+            "fn": 1,
+            "precision": 0.875,
+            "recall": 0.875
+          },
+          "valid_outputs": 8,
+          "invalid_outputs": 0,
+          "rows": 8,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "430_6ibl": {
+          "molecules": 3,
+          "tp": 3,
+          "fp": 16,
+          "fn": 0,
+          "precision": 0.15789473684210525,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 3,
+            "fp": 16,
+            "fn": 0,
+            "precision": 0.15789473684210525,
+            "recall": 1.0
+          },
+          "valid_outputs": 12,
+          "invalid_outputs": 7,
+          "rows": 26,
+          "invalid_rows": 7,
+          "ignored_outputs": 0
+        },
+        "431_6ibk": {
+          "molecules": 12,
+          "tp": 2,
+          "fp": 28,
+          "fn": 10,
+          "precision": 0.06666666666666667,
+          "recall": 0.16666666666666666,
+          "stereo_stripped": {
+            "tp": 7,
+            "fp": 19,
+            "fn": 4,
+            "precision": 0.2692307692307692,
+            "recall": 0.6363636363636364
+          },
+          "valid_outputs": 24,
+          "invalid_outputs": 6,
+          "rows": 33,
+          "invalid_rows": 6,
+          "ignored_outputs": 0
+        },
+        "434_6iam": {
+          "molecules": 6,
+          "tp": 6,
+          "fp": 8,
+          "fn": 0,
+          "precision": 0.42857142857142855,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 6,
+            "fp": 8,
+            "fn": 0,
+            "precision": 0.42857142857142855,
+            "recall": 1.0
+          },
+          "valid_outputs": 14,
+          "invalid_outputs": 0,
+          "rows": 15,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "436_6i9a": {
+          "molecules": 1,
+          "tp": 0,
+          "fp": 4,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 4,
+            "fn": 1,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 4,
+          "invalid_outputs": 0,
+          "rows": 4,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "445_6i5g": {
+          "molecules": 2,
+          "tp": 1,
+          "fp": 3,
+          "fn": 1,
+          "precision": 0.25,
+          "recall": 0.5,
+          "stereo_stripped": {
+            "tp": 1,
+            "fp": 3,
+            "fn": 1,
+            "precision": 0.25,
+            "recall": 0.5
+          },
+          "valid_outputs": 4,
+          "invalid_outputs": 0,
+          "rows": 6,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "449_6i0x": {
+          "molecules": 1,
+          "tp": 0,
+          "fp": 2,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 2,
+            "fn": 1,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 2,
+          "invalid_outputs": 0,
+          "rows": 3,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "44_6s1s": {
+          "molecules": 8,
+          "tp": 6,
+          "fp": 2,
+          "fn": 2,
+          "precision": 0.75,
+          "recall": 0.75,
+          "stereo_stripped": {
+            "tp": 8,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "valid_outputs": 8,
+          "invalid_outputs": 0,
+          "rows": 8,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "452_6hzy": {
+          "molecules": 13,
+          "tp": 0,
+          "fp": 23,
+          "fn": 13,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 6,
+            "fp": 16,
+            "fn": 7,
+            "precision": 0.2727272727272727,
+            "recall": 0.46153846153846156
+          },
+          "valid_outputs": 17,
+          "invalid_outputs": 6,
+          "rows": 24,
+          "invalid_rows": 7,
+          "ignored_outputs": 0
+        },
+        "458_6hx8": {
+          "molecules": 2,
+          "tp": 0,
+          "fp": 12,
+          "fn": 2,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 12,
+            "fn": 2,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 9,
+          "invalid_outputs": 3,
+          "rows": 12,
+          "invalid_rows": 3,
+          "ignored_outputs": 0
+        },
+        "459_6hx1": {
+          "molecules": 9,
+          "tp": 6,
+          "fp": 30,
+          "fn": 3,
+          "precision": 0.16666666666666666,
+          "recall": 0.6666666666666666,
+          "stereo_stripped": {
+            "tp": 7,
+            "fp": 29,
+            "fn": 2,
+            "precision": 0.19444444444444445,
+            "recall": 0.7777777777777778
+          },
+          "valid_outputs": 28,
+          "invalid_outputs": 8,
+          "rows": 37,
+          "invalid_rows": 8,
+          "ignored_outputs": 0
+        },
+        "45_6s0e": {
+          "molecules": 1,
+          "tp": 0,
+          "fp": 5,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 5,
+            "fn": 1,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 3,
+          "invalid_outputs": 2,
+          "rows": 6,
+          "invalid_rows": 2,
+          "ignored_outputs": 0
+        },
+        "464_6hs4": {
+          "molecules": 10,
+          "tp": 4,
+          "fp": 7,
+          "fn": 6,
+          "precision": 0.36363636363636365,
+          "recall": 0.4,
+          "stereo_stripped": {
+            "tp": 4,
+            "fp": 7,
+            "fn": 6,
+            "precision": 0.36363636363636365,
+            "recall": 0.4
+          },
+          "valid_outputs": 11,
+          "invalid_outputs": 0,
+          "rows": 11,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "467_6hr2": {
+          "molecules": 2,
+          "tp": 1,
+          "fp": 4,
+          "fn": 1,
+          "precision": 0.2,
+          "recall": 0.5,
+          "stereo_stripped": {
+            "tp": 1,
+            "fp": 4,
+            "fn": 1,
+            "precision": 0.2,
+            "recall": 0.5
+          },
+          "valid_outputs": 5,
+          "invalid_outputs": 0,
+          "rows": 5,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "469_6hp9": {
+          "molecules": 11,
+          "tp": 6,
+          "fp": 13,
+          "fn": 5,
+          "precision": 0.3157894736842105,
+          "recall": 0.5454545454545454,
+          "stereo_stripped": {
+            "tp": 6,
+            "fp": 13,
+            "fn": 4,
+            "precision": 0.3157894736842105,
+            "recall": 0.6
+          },
+          "valid_outputs": 10,
+          "invalid_outputs": 9,
+          "rows": 23,
+          "invalid_rows": 12,
+          "ignored_outputs": 0
+        },
+        "472_6hov": {
+          "molecules": 5,
+          "tp": 4,
+          "fp": 6,
+          "fn": 1,
+          "precision": 0.4,
+          "recall": 0.8,
+          "stereo_stripped": {
+            "tp": 5,
+            "fp": 5,
+            "fn": 0,
+            "precision": 0.5,
+            "recall": 1.0
+          },
+          "valid_outputs": 9,
+          "invalid_outputs": 1,
+          "rows": 10,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "475_6hmy": {
+          "molecules": 4,
+          "tp": 0,
+          "fp": 5,
+          "fn": 4,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 5,
+            "fn": 4,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 4,
+          "invalid_outputs": 1,
+          "rows": 5,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "477_6hmb": {
+          "molecules": 6,
+          "tp": 3,
+          "fp": 5,
+          "fn": 3,
+          "precision": 0.375,
+          "recall": 0.5,
+          "stereo_stripped": {
+            "tp": 3,
+            "fp": 5,
+            "fn": 3,
+            "precision": 0.375,
+            "recall": 0.5
+          },
+          "valid_outputs": 8,
+          "invalid_outputs": 0,
+          "rows": 8,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "479_6hky": {
+          "molecules": 2,
+          "tp": 2,
+          "fp": 1,
+          "fn": 0,
+          "precision": 0.6666666666666666,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 2,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.6666666666666666,
+            "recall": 1.0
+          },
+          "valid_outputs": 2,
+          "invalid_outputs": 1,
+          "rows": 4,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "47_6rz6": {
+          "molecules": 4,
+          "tp": 1,
+          "fp": 5,
+          "fn": 3,
+          "precision": 0.16666666666666666,
+          "recall": 0.25,
+          "stereo_stripped": {
+            "tp": 3,
+            "fp": 3,
+            "fn": 1,
+            "precision": 0.5,
+            "recall": 0.75
+          },
+          "valid_outputs": 5,
+          "invalid_outputs": 1,
+          "rows": 6,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "484_6hhj": {
+          "molecules": 18,
+          "tp": 14,
+          "fp": 35,
+          "fn": 4,
+          "precision": 0.2857142857142857,
+          "recall": 0.7777777777777778,
+          "stereo_stripped": {
+            "tp": 14,
+            "fp": 35,
+            "fn": 4,
+            "precision": 0.2857142857142857,
+            "recall": 0.7777777777777778
+          },
+          "valid_outputs": 29,
+          "invalid_outputs": 20,
+          "rows": 53,
+          "invalid_rows": 20,
+          "ignored_outputs": 2
+        },
+        "486_6hgx": {
+          "molecules": 8,
+          "tp": 5,
+          "fp": 6,
+          "fn": 3,
+          "precision": 0.45454545454545453,
+          "recall": 0.625,
+          "stereo_stripped": {
+            "tp": 7,
+            "fp": 4,
+            "fn": 1,
+            "precision": 0.6363636363636364,
+            "recall": 0.875
+          },
+          "valid_outputs": 11,
+          "invalid_outputs": 0,
+          "rows": 14,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "487_6hgs": {
+          "molecules": 2,
+          "tp": 1,
+          "fp": 20,
+          "fn": 1,
+          "precision": 0.047619047619047616,
+          "recall": 0.5,
+          "stereo_stripped": {
+            "tp": 1,
+            "fp": 20,
+            "fn": 1,
+            "precision": 0.047619047619047616,
+            "recall": 0.5
+          },
+          "valid_outputs": 18,
+          "invalid_outputs": 3,
+          "rows": 22,
+          "invalid_rows": 3,
+          "ignored_outputs": 0
+        },
+        "489_6hcw": {
+          "molecules": 5,
+          "tp": 5,
+          "fp": 2,
+          "fn": 0,
+          "precision": 0.7142857142857143,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 5,
+            "fp": 2,
+            "fn": 0,
+            "precision": 0.7142857142857143,
+            "recall": 1.0
+          },
+          "valid_outputs": 6,
+          "invalid_outputs": 1,
+          "rows": 7,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "48_6rw1": {
+          "molecules": 7,
+          "tp": 3,
+          "fp": 8,
+          "fn": 4,
+          "precision": 0.2727272727272727,
+          "recall": 0.42857142857142855,
+          "stereo_stripped": {
+            "tp": 3,
+            "fp": 8,
+            "fn": 4,
+            "precision": 0.2727272727272727,
+            "recall": 0.42857142857142855
+          },
+          "valid_outputs": 9,
+          "invalid_outputs": 2,
+          "rows": 12,
+          "invalid_rows": 2,
+          "ignored_outputs": 0
+        },
+        "492_6haj": {
+          "molecules": 3,
+          "tp": 1,
+          "fp": 3,
+          "fn": 2,
+          "precision": 0.25,
+          "recall": 0.3333333333333333,
+          "stereo_stripped": {
+            "tp": 1,
+            "fp": 3,
+            "fn": 2,
+            "precision": 0.25,
+            "recall": 0.3333333333333333
+          },
+          "valid_outputs": 4,
+          "invalid_outputs": 0,
+          "rows": 4,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "493_6h9x": {
+          "molecules": 20,
+          "tp": 13,
+          "fp": 16,
+          "fn": 7,
+          "precision": 0.4482758620689655,
+          "recall": 0.65,
+          "stereo_stripped": {
+            "tp": 13,
+            "fp": 16,
+            "fn": 7,
+            "precision": 0.4482758620689655,
+            "recall": 0.65
+          },
+          "valid_outputs": 18,
+          "invalid_outputs": 11,
+          "rows": 32,
+          "invalid_rows": 13,
+          "ignored_outputs": 0
+        },
+        "494_6h9v": {
+          "molecules": 4,
+          "tp": 2,
+          "fp": 5,
+          "fn": 2,
+          "precision": 0.2857142857142857,
+          "recall": 0.5,
+          "stereo_stripped": {
+            "tp": 2,
+            "fp": 5,
+            "fn": 2,
+            "precision": 0.2857142857142857,
+            "recall": 0.5
+          },
+          "valid_outputs": 6,
+          "invalid_outputs": 1,
+          "rows": 8,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "498_6h52": {
+          "molecules": 18,
+          "tp": 18,
+          "fp": 44,
+          "fn": 0,
+          "precision": 0.2903225806451613,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 18,
+            "fp": 44,
+            "fn": 0,
+            "precision": 0.2903225806451613,
+            "recall": 1.0
+          },
+          "valid_outputs": 50,
+          "invalid_outputs": 12,
+          "rows": 64,
+          "invalid_rows": 13,
+          "ignored_outputs": 0
+        },
+        "53_6rqk": {
+          "molecules": 3,
+          "tp": 2,
+          "fp": 11,
+          "fn": 1,
+          "precision": 0.15384615384615385,
+          "recall": 0.6666666666666666,
+          "stereo_stripped": {
+            "tp": 2,
+            "fp": 11,
+            "fn": 1,
+            "precision": 0.15384615384615385,
+            "recall": 0.6666666666666666
+          },
+          "valid_outputs": 6,
+          "invalid_outputs": 7,
+          "rows": 13,
+          "invalid_rows": 7,
+          "ignored_outputs": 0
+        },
+        "60_6rln": {
+          "molecules": 3,
+          "tp": 3,
+          "fp": 13,
+          "fn": 0,
+          "precision": 0.1875,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 3,
+            "fp": 13,
+            "fn": 0,
+            "precision": 0.1875,
+            "recall": 1.0
+          },
+          "valid_outputs": 12,
+          "invalid_outputs": 4,
+          "rows": 20,
+          "invalid_rows": 4,
+          "ignored_outputs": 3
+        },
+        "64_6rhe": {
+          "molecules": 3,
+          "tp": 0,
+          "fp": 7,
+          "fn": 3,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 0,
+            "fp": 7,
+            "fn": 3,
+            "precision": 0.0,
+            "recall": 0.0
+          },
+          "valid_outputs": 7,
+          "invalid_outputs": 0,
+          "rows": 8,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "65_6rfw": {
+          "molecules": 15,
+          "tp": 7,
+          "fp": 36,
+          "fn": 8,
+          "precision": 0.16279069767441862,
+          "recall": 0.4666666666666667,
+          "stereo_stripped": {
+            "tp": 11,
+            "fp": 32,
+            "fn": 4,
+            "precision": 0.2558139534883721,
+            "recall": 0.7333333333333333
+          },
+          "valid_outputs": 39,
+          "invalid_outputs": 4,
+          "rows": 46,
+          "invalid_rows": 6,
+          "ignored_outputs": 0
+        },
+        "68_6r8r": {
+          "molecules": 5,
+          "tp": 4,
+          "fp": 29,
+          "fn": 1,
+          "precision": 0.12121212121212122,
+          "recall": 0.8,
+          "stereo_stripped": {
+            "tp": 4,
+            "fp": 29,
+            "fn": 1,
+            "precision": 0.12121212121212122,
+            "recall": 0.8
+          },
+          "valid_outputs": 22,
+          "invalid_outputs": 11,
+          "rows": 37,
+          "invalid_rows": 13,
+          "ignored_outputs": 0
+        },
+        "76_6r4k": {
+          "molecules": 7,
+          "tp": 2,
+          "fp": 33,
+          "fn": 5,
+          "precision": 0.05714285714285714,
+          "recall": 0.2857142857142857,
+          "stereo_stripped": {
+            "tp": 2,
+            "fp": 33,
+            "fn": 5,
+            "precision": 0.05714285714285714,
+            "recall": 0.2857142857142857
+          },
+          "valid_outputs": 34,
+          "invalid_outputs": 1,
+          "rows": 42,
+          "invalid_rows": 2,
+          "ignored_outputs": 0
+        },
+        "78_6r1x": {
+          "molecules": 37,
+          "tp": 14,
+          "fp": 37,
+          "fn": 23,
+          "precision": 0.27450980392156865,
+          "recall": 0.3783783783783784,
+          "stereo_stripped": {
+            "tp": 15,
+            "fp": 36,
+            "fn": 22,
+            "precision": 0.29411764705882354,
+            "recall": 0.40540540540540543
+          },
+          "valid_outputs": 34,
+          "invalid_outputs": 17,
+          "rows": 54,
+          "invalid_rows": 18,
+          "ignored_outputs": 1
+        },
+        "79_6r1b": {
+          "molecules": 7,
+          "tp": 5,
+          "fp": 5,
+          "fn": 2,
+          "precision": 0.5,
+          "recall": 0.7142857142857143,
+          "stereo_stripped": {
+            "tp": 6,
+            "fp": 4,
+            "fn": 1,
+            "precision": 0.6,
+            "recall": 0.8571428571428571
+          },
+          "valid_outputs": 8,
+          "invalid_outputs": 2,
+          "rows": 10,
+          "invalid_rows": 2,
+          "ignored_outputs": 0
+        },
+        "83_6qzh": {
+          "molecules": 10,
+          "tp": 1,
+          "fp": 18,
+          "fn": 9,
+          "precision": 0.05263157894736842,
+          "recall": 0.1,
+          "stereo_stripped": {
+            "tp": 2,
+            "fp": 17,
+            "fn": 8,
+            "precision": 0.10526315789473684,
+            "recall": 0.2
+          },
+          "valid_outputs": 11,
+          "invalid_outputs": 8,
+          "rows": 22,
+          "invalid_rows": 11,
+          "ignored_outputs": 0
+        },
+        "87_6qxd": {
+          "molecules": 6,
+          "tp": 4,
+          "fp": 4,
+          "fn": 2,
+          "precision": 0.5,
+          "recall": 0.6666666666666666,
+          "stereo_stripped": {
+            "tp": 5,
+            "fp": 3,
+            "fn": 1,
+            "precision": 0.625,
+            "recall": 0.8333333333333334
+          },
+          "valid_outputs": 6,
+          "invalid_outputs": 2,
+          "rows": 9,
+          "invalid_rows": 3,
+          "ignored_outputs": 0
+        },
+        "88_6qxa": {
+          "molecules": 9,
+          "tp": 9,
+          "fp": 1,
+          "fn": 0,
+          "precision": 0.9,
+          "recall": 1.0,
+          "stereo_stripped": {
+            "tp": 9,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.9,
+            "recall": 1.0
+          },
+          "valid_outputs": 9,
+          "invalid_outputs": 1,
+          "rows": 10,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        },
+        "89_6qwb": {
+          "molecules": 2,
+          "tp": 1,
+          "fp": 12,
+          "fn": 1,
+          "precision": 0.07692307692307693,
+          "recall": 0.5,
+          "stereo_stripped": {
+            "tp": 1,
+            "fp": 12,
+            "fn": 1,
+            "precision": 0.07692307692307693,
+            "recall": 0.5
+          },
+          "valid_outputs": 4,
+          "invalid_outputs": 9,
+          "rows": 13,
+          "invalid_rows": 9,
+          "ignored_outputs": 0
+        },
+        "90_6quw": {
+          "molecules": 10,
+          "tp": 7,
+          "fp": 9,
+          "fn": 3,
+          "precision": 0.4375,
+          "recall": 0.7,
+          "stereo_stripped": {
+            "tp": 10,
+            "fp": 6,
+            "fn": 0,
+            "precision": 0.625,
+            "recall": 1.0
+          },
+          "valid_outputs": 11,
+          "invalid_outputs": 5,
+          "rows": 16,
+          "invalid_rows": 5,
+          "ignored_outputs": 0
+        },
+        "94_6qri": {
+          "molecules": 1,
+          "tp": 0,
+          "fp": 2,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "stereo_stripped": {
+            "tp": 1,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.5,
+            "recall": 1.0
+          },
+          "valid_outputs": 2,
+          "invalid_outputs": 0,
+          "rows": 2,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "95_6qrg": {
+          "molecules": 43,
+          "tp": 26,
+          "fp": 69,
+          "fn": 17,
+          "precision": 0.2736842105263158,
+          "recall": 0.6046511627906976,
+          "stereo_stripped": {
+            "tp": 27,
+            "fp": 68,
+            "fn": 16,
+            "precision": 0.28421052631578947,
+            "recall": 0.627906976744186
+          },
+          "valid_outputs": 67,
+          "invalid_outputs": 28,
+          "rows": 125,
+          "invalid_rows": 37,
+          "ignored_outputs": 12
+        },
+        "96_6qpl": {
+          "molecules": 23,
+          "tp": 20,
+          "fp": 4,
+          "fn": 3,
+          "precision": 0.8333333333333334,
+          "recall": 0.8695652173913043,
+          "stereo_stripped": {
+            "tp": 20,
+            "fp": 4,
+            "fn": 3,
+            "precision": 0.8333333333333334,
+            "recall": 0.8695652173913043
+          },
+          "valid_outputs": 24,
+          "invalid_outputs": 0,
+          "rows": 27,
+          "invalid_rows": 0,
+          "ignored_outputs": 0
+        },
+        "97_6qmu": {
+          "molecules": 7,
+          "tp": 1,
+          "fp": 8,
+          "fn": 6,
+          "precision": 0.1111111111111111,
+          "recall": 0.14285714285714285,
+          "stereo_stripped": {
+            "tp": 7,
+            "fp": 2,
+            "fn": 0,
+            "precision": 0.7777777777777778,
+            "recall": 1.0
+          },
+          "valid_outputs": 8,
+          "invalid_outputs": 1,
+          "rows": 9,
+          "invalid_rows": 1,
+          "ignored_outputs": 0
+        }
+      },
+      "groups": {
+        "all": {
+          "papers": [
+            "100_6qm7",
+            "101_6qlu",
+            "105_6qi4",
+            "109_6qgk",
+            "10_6ueg",
+            "110_6qgf",
+            "114_6qe5",
+            "115_6qcj",
+            "117_6qav",
+            "118_6qaf",
+            "121_6q9t",
+            "122_6q8p",
+            "123_6q8c",
+            "124_6q7w",
+            "130_6q4g",
+            "131_6q3z",
+            "138_6pyb",
+            "141_6pvz",
+            "142_6pvx",
+            "145_6pt3",
+            "147_6ps6",
+            "14_6u7p",
+            "153_6plg",
+            "159_6pii",
+            "160_6pid",
+            "164_6pge",
+            "172_6p9e",
+            "179_6p3v",
+            "17_6tld",
+            "185_6oy2",
+            "18_6tl2",
+            "193_6otg",
+            "194_6os6",
+            "197_6op0",
+            "201_6om4",
+            "203_6olx",
+            "20_6t6a",
+            "210_6ohu",
+            "214_6oe3",
+            "221_6oac",
+            "222_6oa3",
+            "223_6o9d",
+            "228_6o5x",
+            "231_6o5g",
+            "237_6o0p",
+            "246_6nyh",
+            "248_6ny0",
+            "251_6nw3",
+            "261_6npv",
+            "263_6npf",
+            "269_6nlj",
+            "26_6st3",
+            "271_6njj",
+            "272_6nj0",
+            "274_6nfn",
+            "276_6nem",
+            "277_6ne5",
+            "289_6n87",
+            "296_6n55",
+            "299_6n48",
+            "2_6v1c",
+            "305_6n0m",
+            "313_6mso",
+            "317_6mq3",
+            "322_6mo2",
+            "325_6mnp",
+            "328_6mkq",
+            "329_6mjw",
+            "332_6mhd",
+            "334_6mg5",
+            "336_6me5",
+            "338_6mdd",
+            "339_6mdb",
+            "33_6sde",
+            "341_6md4",
+            "343_6mbp",
+            "344_6max",
+            "345_6maj",
+            "348_6m8e",
+            "350_6m7h",
+            "352_6kqi",
+            "35_6sal",
+            "360_6kdi",
+            "367_6k1s",
+            "368_6k1q",
+            "369_6k0j",
+            "374_6jtc",
+            "37_6s9x",
+            "380_6jno",
+            "383_6jki",
+            "393_6j81",
+            "401_6j10",
+            "40_6s8a",
+            "410_6iql",
+            "417_6ilz",
+            "41_6s88",
+            "42_6s5k",
+            "430_6ibl",
+            "431_6ibk",
+            "434_6iam",
+            "436_6i9a",
+            "445_6i5g",
+            "449_6i0x",
+            "44_6s1s",
+            "452_6hzy",
+            "458_6hx8",
+            "459_6hx1",
+            "45_6s0e",
+            "464_6hs4",
+            "467_6hr2",
+            "469_6hp9",
+            "472_6hov",
+            "475_6hmy",
+            "477_6hmb",
+            "479_6hky",
+            "47_6rz6",
+            "484_6hhj",
+            "486_6hgx",
+            "487_6hgs",
+            "489_6hcw",
+            "48_6rw1",
+            "492_6haj",
+            "493_6h9x",
+            "494_6h9v",
+            "498_6h52",
+            "53_6rqk",
+            "60_6rln",
+            "64_6rhe",
+            "65_6rfw",
+            "68_6r8r",
+            "76_6r4k",
+            "78_6r1x",
+            "79_6r1b",
+            "83_6qzh",
+            "87_6qxd",
+            "88_6qxa",
+            "89_6qwb",
+            "90_6quw",
+            "94_6qri",
+            "95_6qrg",
+            "96_6qpl",
+            "97_6qmu"
+          ],
+          "molecules": 1264,
+          "counts": {
+            "tp": 738,
+            "fp": 1958,
+            "fn": 526
+          },
+          "micro": {
+            "precision": {
+              "value": 0.2737388724035608,
+              "ci95": [
+                0.23823933046053444,
+                0.31195375494364613
+              ],
+              "successes": 738,
+              "trials": 2696,
+              "ci_method": "paper bootstrap"
+            },
+            "recall": {
+              "value": 0.5838607594936709,
+              "ci95": [
+                0.5239465791711158,
+                0.6431752427839222
+              ],
+              "successes": 738,
+              "trials": 1264,
+              "ci_method": "paper bootstrap"
+            },
+            "f1": {
+              "value": 0.37272727272727274,
+              "ci95": [
+                0.3301395389032774,
+                0.4168000103187564
+              ],
+              "successes": 738,
+              "trials": 1980.0,
+              "ci_method": "paper bootstrap"
+            }
+          },
+          "macro": {
+            "precision": {
+              "value": 0.2788749424762955,
+              "ci95": [
+                0.23484212544024677,
+                0.32366995846178315
+              ],
+              "papers": 142
+            },
+            "recall": {
+              "value": 0.5132414305942077,
+              "ci95": [
+                0.45287794408047954,
+                0.5719394768663677
+              ],
+              "papers": 142
+            }
+          },
+          "stereo_stripped": {
+            "counts": {
+              "tp": 807,
+              "fp": 1859,
+              "fn": 442
+            },
+            "precision": {
+              "value": 0.3027006751687922,
+              "ci95": [
+                0.2659189329883272,
+                0.34227211597937107
+              ],
+              "successes": 807,
+              "trials": 2666,
+              "ci_method": "paper bootstrap"
+            },
+            "recall": {
+              "value": 0.6461168935148118,
+              "ci95": [
+                0.5848207758980786,
+                0.7057110715606816
+              ],
+              "successes": 807,
+              "trials": 1249,
+              "ci_method": "paper bootstrap"
+            },
+            "f1": {
+              "value": 0.41226053639846744,
+              "ci95": [
+                0.36899410828983803,
+                0.45755875869187146
+              ],
+              "successes": 807,
+              "trials": 1957.5,
+              "ci_method": "paper bootstrap"
+            }
+          },
+          "valid_output_rate": {
+            "value": 0.7933884297520661,
+            "ci95": [
+              0.7788869222117957,
+              0.8071743205947376
+            ],
+            "successes": 2496,
+            "trials": 3146
+          },
+          "papers_without_output": 2,
+          "ignored_outputs": 60
+        },
+        "without_submitted": {
+          "papers": [
+            "100_6qm7",
+            "101_6qlu",
+            "105_6qi4",
+            "109_6qgk",
+            "10_6ueg",
+            "110_6qgf",
+            "114_6qe5",
+            "115_6qcj",
+            "118_6qaf",
+            "121_6q9t",
+            "124_6q7w",
+            "130_6q4g",
+            "131_6q3z",
+            "138_6pyb",
+            "141_6pvz",
+            "142_6pvx",
+            "145_6pt3",
+            "147_6ps6",
+            "159_6pii",
+            "164_6pge",
+            "172_6p9e",
+            "17_6tld",
+            "18_6tl2",
+            "197_6op0",
+            "201_6om4",
+            "20_6t6a",
+            "210_6ohu",
+            "214_6oe3",
+            "222_6oa3",
+            "228_6o5x",
+            "237_6o0p",
+            "246_6nyh",
+            "248_6ny0",
+            "263_6npf",
+            "269_6nlj",
+            "26_6st3",
+            "272_6nj0",
+            "289_6n87",
+            "296_6n55",
+            "2_6v1c",
+            "305_6n0m",
+            "313_6mso",
+            "317_6mq3",
+            "325_6mnp",
+            "328_6mkq",
+            "329_6mjw",
+            "336_6me5",
+            "33_6sde",
+            "341_6md4",
+            "343_6mbp",
+            "344_6max",
+            "345_6maj",
+            "348_6m8e",
+            "350_6m7h",
+            "35_6sal",
+            "360_6kdi",
+            "367_6k1s",
+            "368_6k1q",
+            "369_6k0j",
+            "374_6jtc",
+            "37_6s9x",
+            "383_6jki",
+            "393_6j81",
+            "401_6j10",
+            "40_6s8a",
+            "410_6iql",
+            "417_6ilz",
+            "41_6s88",
+            "42_6s5k",
+            "430_6ibl",
+            "431_6ibk",
+            "434_6iam",
+            "436_6i9a",
+            "445_6i5g",
+            "449_6i0x",
+            "44_6s1s",
+            "452_6hzy",
+            "458_6hx8",
+            "459_6hx1",
+            "45_6s0e",
+            "464_6hs4",
+            "467_6hr2",
+            "469_6hp9",
+            "475_6hmy",
+            "477_6hmb",
+            "479_6hky",
+            "47_6rz6",
+            "484_6hhj",
+            "486_6hgx",
+            "487_6hgs",
+            "489_6hcw",
+            "48_6rw1",
+            "492_6haj",
+            "494_6h9v",
+            "498_6h52",
+            "60_6rln",
+            "64_6rhe",
+            "65_6rfw",
+            "68_6r8r",
+            "78_6r1x",
+            "79_6r1b",
+            "87_6qxd",
+            "88_6qxa",
+            "89_6qwb",
+            "90_6quw",
+            "94_6qri",
+            "95_6qrg",
+            "96_6qpl",
+            "97_6qmu"
+          ],
+          "molecules": 896,
+          "counts": {
+            "tp": 515,
+            "fp": 1345,
+            "fn": 381
+          },
+          "micro": {
+            "precision": {
+              "value": 0.2768817204301075,
+              "ci95": [
+                0.23661286332003234,
+                0.31980546556128686
+              ],
+              "successes": 515,
+              "trials": 1860,
+              "ci_method": "paper bootstrap"
+            },
+            "recall": {
+              "value": 0.5747767857142857,
+              "ci95": [
+                0.5079899942992236,
+                0.6407197429465394
+              ],
+              "successes": 515,
+              "trials": 896,
+              "ci_method": "paper bootstrap"
+            },
+            "f1": {
+              "value": 0.3737300435413643,
+              "ci95": [
+                0.3250576727080401,
+                0.42222262596899224
+              ],
+              "successes": 515,
+              "trials": 1378.0,
+              "ci_method": "paper bootstrap"
+            }
+          },
+          "macro": {
+            "precision": {
+              "value": 0.28746675522272674,
+              "ci95": [
+                0.237249807910879,
+                0.33921071441108835
+              ],
+              "papers": 109
+            },
+            "recall": {
+              "value": 0.5277548621616417,
+              "ci95": [
+                0.457040513168479,
+                0.5969501366857775
+              ],
+              "papers": 109
+            }
+          },
+          "stereo_stripped": {
+            "counts": {
+              "tp": 570,
+              "fp": 1277,
+              "fn": 319
+            },
+            "precision": {
+              "value": 0.3086085544125609,
+              "ci95": [
+                0.2673164051648478,
+                0.3540101989952019
+              ],
+              "successes": 570,
+              "trials": 1847,
+              "ci_method": "paper bootstrap"
+            },
+            "recall": {
+              "value": 0.641169853768279,
+              "ci95": [
+                0.5765262139338494,
+                0.7067973351678385
+              ],
+              "successes": 570,
+              "trials": 889,
+              "ci_method": "paper bootstrap"
+            },
+            "f1": {
+              "value": 0.4166666666666667,
+              "ci95": [
+                0.36795774647887325,
+                0.4669161029124161
+              ],
+              "successes": 570,
+              "trials": 1368.0,
+              "ci_method": "paper bootstrap"
+            }
+          },
+          "valid_output_rate": {
+            "value": 0.7794533459000943,
+            "ci95": [
+              0.7613161801896187,
+              0.7965805505750221
+            ],
+            "successes": 1654,
+            "trials": 2122
+          },
+          "papers_without_output": 1,
+          "ignored_outputs": 29
+        }
+      }
+    },
+    "seconds_per_item": {
+      "mean": 65.6181918119819,
+      "median": 54.751041231676936,
+      "items": 145,
+      "total": 9514.637812737375
+    }
+  }
+}
