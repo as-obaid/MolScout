@@ -1,0 +1,71 @@
+tool: biominer
+name: BioMiner
+# BioMiner's README version, the upstream commit, and the weights: MinerU 1.3.1's pipeline models
+# (jiaxianustc/BioMiner-MinerU-Model b3f7c96), MolDetV2 (UniParser/MolDetv2 88b3836), MolGlyph large
+# (jiaxianustc/MolGlyph 18db8e0) and BioMiner-Instruct (jiaxianustc/BioMiner-Instruct c865482).
+version: 1.0.0 (git 17c6161; MinerU 1.3.1, MolDetV2 88b3836, MolGlyph large, BioMiner-Instruct c865482)
+python: ${MOLSCOUT_STORE}/envs/biominer/bin/python
+args:
+- --source
+- ${MOLSCOUT_STORE}/src/BioMiner
+- --commit
+- 17c6161b40e34e2c377b2871f760baab3fdeea06
+- --models
+- ${MOLSCOUT_STORE}/models/biominer
+- --molglyph
+- ${MOLSCOUT_STORE}/models/molglyph/molglyph_large.pt
+- --vllm-python
+- ${MOLSCOUT_STORE}/envs/biominer_vllm/bin/python
+# Non-default: upstream serves BioMiner-Instruct with --tensor-parallel-size 4 on 4 A800 80 GB GPUs and
+# recommends at least two. The benchmark runs BioMiner on one H200 (140 GiB; the user's decision, since
+# 2-GPU jobs got no start time), so no tensor parallelism.
+- --tensor-parallel-size
+- 1
+# Non-default: upstream's --gpu-memory-utilization is 0.6. On one H200, 0.6 leaves about 17 GiB of KV
+# cache beside the 63 GiB of bf16 weights, below the 31 GiB that one request of upstream's
+# --max-model-len 128000 needs (256 KiB a token), so vLLM would not start. 0.8 leaves about 45 GiB.
+# The MinerU, MolDetV2 and MolGlyph servers (one worker each, as upstream gives each GPU) share the
+# card's other 20% (together they peaked at 10.6 GB).
+- --gpu-memory-utilization
+- 0.8
+checkpoints:
+- path: ${MOLSCOUT_STORE}/models/biominer/moldet_v2_yolo11n_960_doc.pt
+  sha256: 59471d39650952145983795a9c8d6ca5007d9c453a1839b535028b457800168a
+- path: ${MOLSCOUT_STORE}/models/biominer/mineru
+  sha256: d62313a415e9c279d9e3e6de88c5caf053b13b4254eb881809a50395a5bd6154
+- path: ${MOLSCOUT_STORE}/models/biominer/layoutreader
+  sha256: 1efb10e82d79f9c22aab7b00249bc4afe6f455aa299b073e7531c9adf8c8eb36
+- path: ${MOLSCOUT_STORE}/models/biominer/BioMiner-Instruct
+  sha256: 32d6f37f0fb87c37425701d05298ace96f1643e668c1caf643b66744a97a864c
+- path: ${MOLSCOUT_STORE}/models/molglyph/molglyph_large.pt
+  sha256: 15a0fab1aeb75d35e1aeaf8a49da4d39c15131892e64fd5c415a66bbddbc3d51
+# Non-default start-up in run.py, none of which changes a result (task 9b, 2026-10-07). /scratch is NFS:
+# creating a file there took 0.4 s from a compute node, and on a busy GPU node (d4077) every metadata
+# round trip took about 0.7 s, so Python's imports, which open thousands of files, could not finish.
+# - run.py first unpacks both environments (archives setup.sh packs beside them) and copies
+#   BioMiner-Instruct's weights into its work folder, on node-local disk in harness runs, with large
+#   direct reads, then runs again from the staged main environment (stage.py). vLLM serves the staged
+#   copy of the weights. The archives are refused if their packages differ from the environments'.
+# - It waits up to VLLM_START_SECONDS for vLLM to list the model and LITSERVE_START_SECONDS for each
+#   LitServe server, more than the slowest start measured.
+# - Triton's kernel cache (TRITON_CACHE_DIR) and vLLM's compile cache (VLLM_CACHE_ROOT) go in the work
+#   folder instead of under the NFS home folder.
+env:
+  # albumentations 2.0.5 (MolGlyph's server) checks PyPI for updates on import; runs are offline.
+  NO_ALBUMENTATIONS_UPDATE: '1'
+  # Non-default, no effect on results: a module whose .pyc is stale is compiled in memory instead of
+  # having its .pyc written again on /scratch. Stale .pyc files (setup.sh used to compile before it
+  # refreshed the files' mtimes) made vLLM's first start take over 30 min, about 0.4 s a file
+  # (task 9b). run.py sets it for its servers too.
+  PYTHONDONTWRITEBYTECODE: '1'
+lock_commands:
+# the second environment, which serves BioMiner-Instruct (the harness locks the main one itself,
+# its conda packages included)
+- - ${HOME}/.local/bin/uv
+  - pip
+  - freeze
+  - --python
+  - ${MOLSCOUT_STORE}/envs/biominer_vllm/bin/python
+sources:
+# run.py copies BioMiner/, scripts/ and magic-pdf.json out of this clone at the pinned commit
+- ${MOLSCOUT_STORE}/src/BioMiner
