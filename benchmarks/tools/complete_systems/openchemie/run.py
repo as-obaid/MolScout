@@ -20,6 +20,12 @@ A forked worker can inherit a lock another thread held, and then waits on it for
 paper 19 the call sat idle (0.3% GPU, 102 CPU seconds in 39 minutes) with one worker blocked in
 SemLock.acquire. chemistry.py looks multiprocessing up at call time, so this file gives it a pool
 that runs each item here, in order; the results are the same as the forked pool's.
+
+Depiction. openchemie/utils.py calls rdDepictor.SetPreferCoordGen(True) on import, so the
+MolToMolBlock that chemistry.py runs for each molecule's molfile lays out 2D coordinates with
+CoordGen. On BioVista paper 14_6u7p CoordGen's macrocycle builder ran on one CPU for over two
+hours. The molfile is built from a copy of the molecule and the SMILES comes from a separate
+call, and MolScout reads only the SMILES and boxes, so this file sets RDKit's default depictor back.
 """
 
 import os
@@ -56,6 +62,13 @@ class InlinePool:
 def pools_in_process(module):
     """Make module's multiprocessing.Pool an InlinePool, leaving the real multiprocessing alone."""
     module.multiprocessing = types.SimpleNamespace(Pool=InlinePool)
+
+
+def depict_without_coordgen():
+    """Undo openchemie/utils.py's SetPreferCoordGen(True); see Depiction in the docstring."""
+    from rdkit.Chem import rdDepictor
+
+    rdDepictor.SetPreferCoordGen(False)
 
 
 def page_tops(pdf):
@@ -117,6 +130,7 @@ def main() -> int:
     from openchemie import OpenChemIE
 
     pools_in_process(molscribe.chemistry)  # see Pools in the docstring
+    depict_without_coordgen()  # after the openchemie import, which turns CoordGen on
     model = OpenChemIE(device=torch.device(args.device))
     kept = []
     extract_figures = model.extract_figures_from_pdf

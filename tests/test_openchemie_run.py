@@ -22,6 +22,18 @@ def test_inline_pool_maps_in_order_in_this_process():
         assert pool.map(lambda _: multiprocessing.current_process().name, [0]) == ["MainProcess"]
 
 
+def test_depict_without_coordgen_turns_off_the_preference_openchemie_sets():
+    from rdkit.Chem import rdDepictor
+
+    run = load_run()
+    rdDepictor.SetPreferCoordGen(True)  # what openchemie/utils.py does on import
+    try:
+        run.depict_without_coordgen()
+        assert rdDepictor.GetPreferCoordGen() is False
+    finally:
+        rdDepictor.SetPreferCoordGen(False)
+
+
 def test_pools_in_process_swaps_the_module_pool():
     run = load_run()
     chemistry = types.SimpleNamespace(multiprocessing=multiprocessing)
