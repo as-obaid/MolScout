@@ -1,0 +1,17 @@
+{
+ "viz/": {
+  "accuracy_by_dataset": 12,
+  "stereo_gain": 11,
+  "journal_crops": 13,
+  "hardcases": 12,
+  "error_mix": 11,
+  "headroom": 11,
+  "accuracy_vs_time": 11
+ },
+ "sys/": {
+  "biovista_views": 13,
+  "recall_by_paper": 12,
+  "internal_views": 13,
+  "f1_vs_time": 11
+ }
+}

@@ -33,8 +33,9 @@ htmlcov/
 # OS
 .DS_Store
 
-# W&B local run files
+# W&B local run files, and the report specs scripts/report/raw_spec.py saves as backups
 wandb/
+scripts/report/backups/
 
 # Docs: kept local until the public write-up
 docs/
