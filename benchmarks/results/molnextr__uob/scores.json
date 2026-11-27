@@ -1,0 +1,71 @@
+{
+  "dataset": "uob",
+  "tool": "MolNexTR 1.0.2 (git 6f6502b, molnextr_best.pth @ 9ac2da6, pad-to-square)",
+  "predictions": {
+    "path": "benchmarks/results/molnextr__uob/predictions.csv",
+    "sha256": "2937d524f38757172020424912ca91f82dea1fe5ba171caae3f801ee2f3aea91"
+  },
+  "inputs": {
+    "references": {
+      "directory": "data/raw/uob/UOB_mol_ref",
+      "files": 5740,
+      "sha256": "b9ebed94461a134f1e761752d95844d05fe788418658438526fce668063a2aa8",
+      "unreadable": {}
+    }
+  },
+  "scoring": {
+    "molscout_version": "0.1.0",
+    "rdkit_version": "2026.03.2",
+    "numpy_version": "2.5.3",
+    "python_version": "3.12.14",
+    "match": "exact RDKit canonical SMILES, stereo-aware and stereo-stripped",
+    "ci95_proportions": {
+      "method": "wilson",
+      "z": 1.959963984540054
+    },
+    "ci95_macro": {
+      "method": "percentile bootstrap over papers",
+      "resamples": 10000,
+      "seed": 6630
+    }
+  },
+  "scores": {
+    "kind": "crop",
+    "items_scored": 5740,
+    "items_excluded": [],
+    "items_without_prediction": 0,
+    "accuracy": {
+      "value": 0.8588850174216028,
+      "ci95": [
+        0.8496385137810091,
+        0.8676514792554465
+      ],
+      "successes": 4930,
+      "trials": 5740
+    },
+    "accuracy_stereo_stripped": {
+      "value": 0.8658536585365854,
+      "ci95": [
+        0.8567918758553641,
+        0.8744260782109254
+      ],
+      "successes": 4970,
+      "trials": 5740
+    },
+    "valid_output_rate": {
+      "value": 0.998780487804878,
+      "ci95": [
+        0.9974846748100724,
+        0.9994091359003024
+      ],
+      "successes": 5733,
+      "trials": 5740
+    },
+    "seconds_per_item": {
+      "mean": 0.1481814032904025,
+      "median": 0.1318961251527071,
+      "items": 5740,
+      "total": 850.5612548869103
+    }
+  }
+}

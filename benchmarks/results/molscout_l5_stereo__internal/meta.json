@@ -1,0 +1,214 @@
+{
+  "run": "molscout_l5_stereo__internal",
+  "tool": {
+    "tool": "molscout_l5_stereo",
+    "name": "MolScout (l5_stereo)",
+    "version": "0.1.0",
+    "checkpoints": [
+      {
+        "path": "$MOLSCOUT_STORE/models/molglyph/molglyph_large.pt",
+        "sha256": "15a0fab1aeb75d35e1aeaf8a49da4d39c15131892e64fd5c415a66bbddbc3d51"
+      },
+      {
+        "path": "$MOLSCOUT_STORE/models/molscribe/swin_base_char_aux_1m680k.pth",
+        "sha256": "32821fa4ba8d17f9a92e374601438c5e757947dbf1141e9ad0ef51cccfa1c501"
+      },
+      {
+        "path": "$MOLSCOUT_STORE/models/molnextr/molnextr_best.pth",
+        "sha256": "5990bc19aaafa5cf44e9d04e06fb8e2b5aea50c66e1e925f662bdff7d2a6422c"
+      },
+      {
+        "path": "$MOLSCOUT_STORE/models/decimer_ai/mask_rcnn_molecule.h5",
+        "sha256": "d42382a22585f98d8d7c8b480d2e0fcab58a9fa503133199fac839cb0f5fd4f9"
+      }
+    ]
+  },
+  "dataset": "internal",
+  "items": 3,
+  "tool_errors": 0,
+  "inputs": {
+    "pdfs": "data/internal",
+    "pdfs_sha256": "bb3595ce5feb1a626ea11eeb339e06a56ee509af84b4c5efe43bcfbd5a403527",
+    "papers": "data/manifests/internal_split.csv",
+    "papers_sha256": "64c313cdef2cb9ebcaeaf213185245fb7c71b0bd1276ea8ddc7f0cdb26204d54"
+  },
+  "git": {
+    "commit": "4668c7ad0cd1824a26ce743f0e6907283d3f648a",
+    "dirty": false,
+    "dirty_paths": [],
+    "code_fingerprint": "65c12bcfa0902ed9531fa4031d240a6e51a899a6f95e899c661e728208426ce7"
+  },
+  "sources": [],
+  "environment": {
+    "python": "$MOLSCOUT_STORE/envs/molscout/bin/python",
+    "freeze_command": [
+      "~/.local/bin/uv",
+      "pip",
+      "freeze",
+      "--python",
+      "$MOLSCOUT_STORE/envs/molscout/bin/python"
+    ],
+    "python_version": "3.12.14",
+    "packages": [
+      "coverage==7.16.2",
+      "iniconfig==2.3.0",
+      "-e file://.",
+      "numpy==2.5.3",
+      "packaging==26.3",
+      "pillow==12.3.0",
+      "pluggy==1.6.0",
+      "pyarrow==25.0.1",
+      "pygments==2.21.0",
+      "pypdfium2==5.15.2",
+      "pytest==9.1.1",
+      "pytest-cov==7.1.0",
+      "pyyaml==6.0.3",
+      "rdkit==2026.3.2"
+    ],
+    "conda_meta": null,
+    "lock_commands": [
+      {
+        "command": [
+          "~/.local/bin/uv",
+          "pip",
+          "freeze",
+          "--python",
+          "$MOLSCOUT_STORE/envs/mineru/bin/python"
+        ],
+        "output": "Using Python 3.12.11 environment at: $MOLSCOUT_STORE/envs/mineru\naccelerate==1.16.0\nagent-detector==2.0.0\naiofiles==25.1.0\naiohappyeyeballs==2.7.1\naiohttp==3.14.5\naiosignal==1.4.0\naiosqlite==0.22.1\nannotated-doc==0.0.7\nannotated-types==0.8.0\nanthropic==2.14.0\nanyio==4.16.0\napache-tvm-ffi==0.1.11\nastor==0.8.1\nattrs==26.1.0\nbeautifulsoup4==4.15.0\nblake3==1.0.11\nbrotli==1.2.1\ncachetools==8.0.2\ncbor2==6.3.0\ncertifi==2026.11.20\ncffi==2.1.1\ncharset-normalizer==3.5.3\nclick==8.5.1\ncloudpickle==3.1.3\ncobble==0.1.4\ncompressed-tensors==0.15.0.1\ncryptography==50.0.2\ncuda-bindings==12.9.4\ncuda-pathfinder==1.9.1\ncuda-python==12.9.4\ndepyf==0.20.0\ndetect-installer==0.2.1\ndill==0.4.1\ndiskcache==5.6.3\ndistro==1.9.0\ndnspython==2.9.2\ndocstring-parser==0.18.0\ndocvortex==0.6.26\neinops==0.8.2\nemail-validator==2.4.0\net-xmlfile==2.0.0\nfastapi==0.136.3\nfastapi-cli==0.0.34\nfastapi-cloud-cli==0.28.0\nfastapi-offline==1.7.7\nfastar==0.12.0\nfilelock==4.3.1\nflashinfer-cubin==0.6.6\nflashinfer-python==0.6.6\nflatbuffers==25.12.19\nfonttools==4.69.1\nfrozenlist==1.8.0\nfsspec==2026.9.0\nftfy==6.3.1\ngguf==0.19.0\ngoogleapis-common-protos==1.76.0\ngradio==6.32.0\ngradio-client==2.7.2\ngroovy==0.1.2\ngrpcio==1.85.4\nh11==0.16.0\nhf-gradio==0.4.1\nhf-xet==1.8.0\nhttpcore==1.0.9\nhttpcore2==2.16.2\nhttptools==0.9.0\nhttpx==0.28.1\nhttpx-retries==0.6.0\nhttpx2==2.16.2\nhuggingface-hub==2.4.0\nidna==3.20\nijson==3.6.0\ninteregular==0.3.3\njieba==0.42.1\njinja2==3.1.6\njiter==0.19.0\njmespath==1.1.0\njson-repair==0.64.9\njsonschema==4.26.0\njsonschema-specifications==2025.9.1\nlark==1.2.2\nlatex2mathml==3.81.1\nllguidance==1.3.0\nllvmlite==0.44.0\nlm-format-enforcer==0.11.3\nloguru==0.8.0\nlxml==6.1.3\nmammoth==1.13.0\nmarkdown-it-py==4.3.0\nmarkupsafe==3.0.4\nmathml2omml==0.0.2\nmcp==2.3.0\nmcp-types==2.3.0\nmdurl==0.1.2\nmetafile-render==0.4.2\nmineru==4.2.3\nmineru-llama-cpp==0.2.3\nmineru-magika==1.0.3\nmineru-vl-utils==2.0.9\nmistral-common==1.13.1\nml-dtypes==0.7.0\nmodel-hosting-container-standards==0.1.16\nmodelscope==1.40.3\nmodelscope-hub==0.7.2\nmpmath==1.3.0\nmsgspec==0.22.0\nmultidict==7.2.1\nnetworkx==3.7\nnh3==0.3.8\nninja==1.13.2\nnumba==0.61.2\nnumpy==2.2.6\nnvidia-cublas-cu12==12.8.4.1\nnvidia-cuda-cupti-cu12==12.8.90\nnvidia-cuda-nvdisasm==13.5.37\nnvidia-cuda-nvrtc-cu12==12.8.93\nnvidia-cuda-runtime-cu12==12.8.90\nnvidia-cudnn-cu12==9.10.2.21\nnvidia-cudnn-frontend==1.18.0\nnvidia-cufft-cu12==11.3.3.83\nnvidia-cufile-cu12==1.13.1.3\nnvidia-curand-cu12==10.3.9.90\nnvidia-cusolver-cu12==11.7.3.90\nnvidia-cusparse-cu12==12.5.8.93\nnvidia-cusparselt-cu12==0.7.1\nnvidia-cutlass-dsl==4.7.1\nnvidia-cutlass-dsl-libs-base==4.7.1\nnvidia-cutlass-dsl-libs-core==4.7.1\nnvidia-cutlass-dsl-libs-cu12==4.7.1\nnvidia-ml-py==13.615.71\nnvidia-nccl-cu12==2.27.5\nnvidia-nvjitlink-cu12==12.8.93\nnvidia-nvshmem-cu12==3.4.5\nnvidia-nvtx-cu12==12.8.90\nolefile==0.47\nonnx==1.23.2\nonnxruntime==1.32.0\nonnxruntime-ep-webgpu==0.6.0\nopenai==2.54.0\nopenai-harmony==0.0.8\nopencv-python-headless==5.1.0.95\nopenpyxl==3.1.5\nopentelemetry-api==1.45.2\nopentelemetry-exporter-http-transport==0.66b2\nopentelemetry-exporter-otlp==1.45.2\nopentelemetry-exporter-otlp-common==0.66b2\nopentelemetry-exporter-otlp-proto-common==1.45.2\nopentelemetry-exporter-otlp-proto-grpc==1.45.2\nopentelemetry-exporter-otlp-proto-http==1.45.2\nopentelemetry-proto==1.45.2\nopentelemetry-sdk==1.45.2\nopentelemetry-semantic-conventions==0.66b2\nopentelemetry-semantic-conventions-ai==0.5.1\norjson==3.13.0\noutlines-core==0.2.11\npackaging==26.4\npandas==3.1.1\npartial-json-parser==0.2.1.1.post7\npillow==13.0.0\nprometheus-client==0.26.0\nprometheus-fastapi-instrumentator==8.1.0\npropcache==0.5.4\nprotobuf==7.36.2\npsutil==7.2.2\npy-cpuinfo==9.0.0\npybase64==1.5.2\npyclipper==1.4.0\npycountry==26.2.16\npycparser==3.12\npydantic==2.14.4\npydantic-core==2.50.5\npydantic-extra-types==2.11.1\npydantic-settings==2.16.3\npydub==0.25.1\npygments==2.21.0\npyjwt==2.15.1\npylatexenc==2.11\npypdf==7.1.1\npypdfium2==5.15.2\npypptx-with-oxml==1.0.3\npython-dateutil==4.0.0\npython-docx==1.2.0\npython-dotenv==1.2.4\npython-json-logger==4.2.0\npython-multipart==0.0.34\npytz==2026.6\npyyaml==6.0.4\npyzmq==27.3.0\nquack-kernels==0.6.5\nreferencing==0.37.0\nregex==2026.11.24\nreportlab==5.1.2\nrequests==2.34.2\nresvg-py==0.5.0\nrich==15.0.0\nrich-toolkit==0.20.6\nrignore==0.8.1\nrl-accel==0.9.3\nrpds-py==2026.9.1\nsafehttpx==0.1.7\nsafetensors==0.8.0\nsemantic-version==2.10.0\nsentencepiece==0.2.3\nsentry-sdk==3.0.1\nsetproctitle==1.3.8\nsetuptools==80.10.2\nshapely==2.2.0\nshellingham==1.5.4\nsix==1.17.0\nsniffio==1.3.1\nsoupsieve==4.1.3\nsse-starlette==3.7.1\nstarlette==1.10.0\nsupervisor==4.3.0\nsympy==1.14.0\ntabulate==0.10.0\ntiktoken==0.14.0\ntinycss2==1.5.1\ntokenizers==0.23.3\ntomlkit==0.14.0\ntorch==2.10.0\ntorch-c-dlpack-ext==0.1.5\ntorchaudio==2.10.0\ntorchvision==0.25.0\ntqdm==4.70.1\ntransformers==5.22.2\ntriton==3.6.0\ntruststore==0.10.5\ntyper==0.29.2\ntyping-extensions==4.16.0\ntyping-inspection==0.4.5\ntzdata==2026.6\nurllib3==2.8.0\nuvicorn==0.54.0\nuvloop==0.23.0\nvllm==0.19.1\nwatchfiles==1.3.0\nwcwidth==0.9.5\nwebencodings==0.6.1\nwebsockets==17.4\nxgrammar==0.2.9\nxlsxwriter==3.3.4\nyarl==1.25.1\nziafont==0.11\nziamath==0.13\n"
+      },
+      {
+        "command": [
+          "~/.local/bin/uv",
+          "pip",
+          "freeze",
+          "--python",
+          "$MOLSCOUT_STORE/envs/decimer_ai/bin/python"
+        ],
+        "output": "Using Python 3.9.18 environment at: $MOLSCOUT_STORE/envs/decimer_ai\nabsl-py==2.3.1\nasttokens==3.0.2\nastunparse==1.6.3\nbackcall==0.2.0\ncertifi==2026.7.22\ncffi==2.0.0\ncharset-normalizer==3.5.2\nclick==8.1.8\ncryptography==50.0.2\ncycler==0.12.1\ndecimer @ git+https://github.com/Kohulan/DECIMER-Image_Transformer@3db69546ed706af2be474e774de888bd3a067c6e\ndecimer-image-classifier @ git+https://github.com/Iagea/DECIMER-Image-Classifier@146b00be2fe6f8fa6670a4255969d4747502b7f2\ndecimer-segmentation @ git+https://github.com/Kohulan/DECIMER-Image-Segmentation@2e0b78fc6d117a0efa816c280082b3462eed0865\ndecorator==5.3.1\nefficientnet==1.1.1\nexecuting==2.2.1\nflatbuffers==2.0.7\ngast==0.4.0\ngoogle-auth==2.50.0\ngoogle-auth-oauthlib==0.4.6\ngoogle-pasta==0.2.0\ngrpcio==1.80.0\nh5py==3.14.0\nidna==3.20\nimageio==2.37.2\nimportlib-metadata==8.7.1\nipython==8.10.0\njedi==0.19.2\nkeras==2.3.0\nkeras-applications==1.0.8\nkeras-preprocessing==1.1.2\nkiwisolver==1.4.7\nlibclang==18.1.1\nmarkdown==3.9\nmarkupsafe==3.0.4\nmatplotlib==3.4.3\nmatplotlib-inline==0.2.2\nnetworkx==3.2.1\nnumpy==1.21.6\nnvidia-cublas-cu11==11.11.3.6\nnvidia-cuda-nvrtc-cu11==11.8.89\nnvidia-cuda-runtime-cu11==11.8.89\nnvidia-cudnn-cu11==8.9.6.50\nnvidia-cufft-cu11==10.9.0.58\nnvidia-curand-cu11==10.3.0.86\nnvidia-cusolver-cu11==11.4.1.48\nnvidia-cusparse-cu11==11.7.5.86\noauthlib==4.0.0\nopencv-python-headless==4.7.0.68\nopt-einsum==3.4.0\npackaging==26.3\nparso==0.8.7\npdf2image==1.16.2\npexpect==4.9.0\npickleshare==0.7.5\npillow==9.4.0\npillow-heif==0.11.1\nprompt-toolkit==3.0.52\nprotobuf==3.19.0\nptyprocess==0.7.0\npure-eval==0.2.4\npyasn1==0.6.4\npyasn1-modules==0.4.2\npycparser==2.23\npygments==2.21.0\npyparsing==3.3.3\npystow==0.4.9\npython-dateutil==2.9.0.post0\npywavelets==1.4.1\npyyaml==6.0.3\nrequests==2.32.5\nrequests-oauthlib==2.0.0\nscikit-image==0.19.3\nscipy==1.9.3\nselfies==2.1.0\nsetuptools==82.0.1\nsix==1.17.0\nstack-data==0.6.3\ntensorboard==2.11.2\ntensorboard-data-server==0.6.1\ntensorboard-plugin-wit==1.8.1\ntensorflow==2.7.0\ntensorflow-estimator==2.7.0\ntensorflow-io-gcs-filesystem==0.37.1\ntermcolor==3.1.0\ntifffile==2024.8.30\ntqdm==4.70.1\ntraitlets==5.15.1\ntyping-extensions==4.16.0\nunicodedata2==15.0.0\nurllib3==2.6.3\nwcwidth==0.9.2\nwerkzeug==3.1.9\nwheel==0.48.0\nwrapt==2.5.0\nzipp==3.23.1\n"
+      },
+      {
+        "command": [
+          "~/.local/bin/uv",
+          "pip",
+          "freeze",
+          "--python",
+          "$MOLSCOUT_STORE/envs/molglyph/bin/python"
+        ],
+        "output": "Using Python 3.10.21 environment at: $MOLSCOUT_STORE/envs/molglyph\nabsl-py==2.5.0\nalbucore==0.0.23\nalbumentations==2.0.5\nannotated-types==0.8.0\nanyio==4.15.1\nbeautifulsoup4==4.15.0\nblinker==1.9.0\ncertifi==2022.12.7\ncharset-normalizer==2.1.1\nclick==8.5.0\nconfigargparse==1.8.0\ncontourpy==1.3.2\ncycler==0.12.1\nexceptiongroup==1.3.1\nfastcore==2.2.32\nfastprogress==1.1.6\nfilelock==3.32.3\nflask==3.1.3\nfonttools==4.65.0\nfsspec==2026.7.0\ngensim==4.4.0\ngrpcio==1.84.0\nh11==0.16.0\nhttpcore2==2.3.0\nhttptools==0.8.0\nhttpx2==2.3.0\nhuggingface-hub==0.30.2\nidna==3.4\nitsdangerous==2.2.0\njinja2==3.1.6\nkiwisolver==1.5.1\nmarkdown==3.10.3\nmarkupsafe==3.0.3\nmatplotlib==3.10.1\nmolscribe @ file:///tmp/tmp.kLscAbm61H/BioMiner/MolScribe\nmpmath==1.3.0\nnetworkx==3.4.2\nnumpy==1.26.4\nnvidia-cublas-cu12==12.4.5.8\nnvidia-cuda-cupti-cu12==12.4.127\nnvidia-cuda-nvrtc-cu12==12.4.127\nnvidia-cuda-runtime-cu12==12.4.127\nnvidia-cudnn-cu12==9.1.0.70\nnvidia-cufft-cu12==11.2.1.3\nnvidia-curand-cu12==10.3.5.147\nnvidia-cusolver-cu12==11.6.1.9\nnvidia-cusparse-cu12==12.3.1.170\nnvidia-cusparselt-cu12==0.6.2\nnvidia-nccl-cu12==2.21.5\nnvidia-nvjitlink-cu12==12.4.127\nnvidia-nvtx-cu12==12.4.127\noauthlib==4.0.0\nopencv-python-headless==4.11.0.86\nopennmt-py==2.2.0\npackaging==24.1\npandas==2.2.3\npillow==12.3.0\nprotobuf==7.36.2\npydantic==2.13.5\npydantic-core==2.46.5\npyonmttok==1.38.1\npyparsing==3.3.3\npython-dateutil==2.9.0.post0\npython-dotenv==1.2.4\npython-fasthtml==0.14.13\npython-multipart==0.0.32\npytz==2026.5\npyyaml==6.0.3\nrdkit==2022.9.5\nrequests==2.28.1\nsafetensors==0.8.0\nscipy==1.15.3\nsentencepiece==0.2.2\nsetuptools==78.1.0\nsimsimd==6.5.16\nsix==1.17.0\nsmart-open==8.0.2\nsmilespe==0.0.3\nsoupsieve==2.10\nstarlette==1.7.0\nstringzilla==5.2.0\nsympy==1.13.1\ntensorboard==2.21.0\ntensorboard-data-server==0.7.2\ntimm==1.0.13\ntorch==2.6.0+cu124\ntorchtext==0.5.0\ntorchvision==0.21.0+cu124\ntqdm==4.66.5\ntriton==3.2.0\ntruststore==0.10.4\ntyping-extensions==4.16.0\ntyping-inspection==0.4.4\ntzdata==2026.5\nurllib3==1.26.13\nuvicorn==0.54.0\nuvloop==0.23.0\nwaitress==3.0.2\nwatchfiles==1.3.0\nwebsockets==16.1.1\nwerkzeug==3.1.9\nwrapt==2.5.0\n"
+      },
+      {
+        "command": [
+          "~/.local/bin/uv",
+          "pip",
+          "freeze",
+          "--python",
+          "$MOLSCOUT_STORE/envs/molscribe/bin/python"
+        ],
+        "output": "Using Python 3.10.21 environment at: $MOLSCOUT_STORE/envs/molscribe\nabsl-py==2.5.0\nalbumentations==1.1.0\nanyio==4.15.1\nbeautifulsoup4==4.15.0\nblinker==1.9.0\ncertifi==2022.12.7\ncharset-normalizer==2.1.1\nclick==8.5.0\ncloudpickle==3.1.2\nconfigargparse==1.8.0\ncontourpy==1.3.2\ncycler==0.12.1\nexceptiongroup==1.3.1\nfastcore==2.2.32\nfastprogress==1.1.6\nfilelock==3.32.3\nflask==3.1.3\nfonttools==4.65.0\nfsspec==2026.7.0\ngensim==4.4.0\ngrpcio==1.84.0\nh11==0.16.0\nhttpcore2==2.3.0\nhttptools==0.8.0\nhttpx2==2.3.0\nhuggingface-hub==0.26.2\nidna==3.4\nimageio==2.38.0\nitsdangerous==2.2.0\njinja2==3.1.6\njoblib==1.6.0\nkiwisolver==1.5.1\nlazy-loader==0.6\nmarkdown==3.10.3\nmarkupsafe==3.0.3\nmatplotlib==3.9.2\nmolscribe @ git+https://github.com/thomas0809/MolScribe.git@7296a30413eb55436702011efdff78131f66d162\nmpmath==1.3.0\nnetworkx==3.4.2\nnumpy==1.26.4\nnvidia-cublas-cu12==12.1.3.1\nnvidia-cuda-cupti-cu12==12.1.105\nnvidia-cuda-nvrtc-cu12==12.1.105\nnvidia-cuda-runtime-cu12==12.1.105\nnvidia-cudnn-cu12==9.1.0.70\nnvidia-cufft-cu12==11.0.2.54\nnvidia-curand-cu12==10.3.2.106\nnvidia-cusolver-cu12==11.4.5.107\nnvidia-cusparse-cu12==12.1.0.106\nnvidia-nccl-cu12==2.21.5\nnvidia-nvjitlink-cu12==12.9.86\nnvidia-nvtx-cu12==12.1.105\noauthlib==4.0.0\nopencv-python-headless==4.10.0.84\nopennmt-py==2.2.0\npackaging==24.1\npandas==2.2.3\npillow==12.3.0\nprotobuf==7.36.2\npyonmttok==1.38.1\npyparsing==3.3.3\npython-dateutil==2.9.0.post0\npython-dotenv==1.2.4\npython-fasthtml==0.14.13\npython-multipart==0.0.32\npytz==2026.5\npyyaml==6.0.3\nqudida==0.0.4\nrdkit==2024.3.6\nrequests==2.28.1\nscikit-image==0.25.2\nscikit-learn==1.7.2\nscipy==1.15.3\nsentencepiece==0.2.2\nsetuptools==78.1.0\nsix==1.17.0\nsmart-open==8.0.2\nsmilespe==0.0.3\nsoupsieve==2.10\nstarlette==1.7.0\nsympy==1.13.1\ntensorboard==2.21.0\ntensorboard-data-server==0.7.2\nthreadpoolctl==3.7.0\ntifffile==2025.5.10\ntimm==0.4.12\ntorch==2.5.1+cu121\ntorchtext==0.5.0\ntorchvision==0.20.1+cu121\ntqdm==4.66.5\ntriton==3.1.0\ntruststore==0.10.4\ntyping-extensions==4.16.0\ntzdata==2026.5\nurllib3==1.26.13\nuvicorn==0.54.0\nuvloop==0.23.0\nwaitress==3.0.2\nwatchfiles==1.3.0\nwebsockets==16.1.1\nwerkzeug==3.1.9\nwrapt==2.5.0\n"
+      },
+      {
+        "command": [
+          "~/.local/bin/uv",
+          "pip",
+          "freeze",
+          "--python",
+          "$MOLSCOUT_STORE/envs/molnextr/bin/python"
+        ],
+        "output": "Using Python 3.10.21 environment at: $MOLSCOUT_STORE/envs/molnextr\nabsl-py==2.5.0\naiohappyeyeballs==2.7.1\naiohttp==3.14.3\naiosignal==1.4.0\nalbumentations==1.1.0\nanyio==4.15.1\nasync-timeout==5.0.1\nattrs==26.1.0\nbeautifulsoup4==4.15.0\nblinker==1.9.0\ncertifi==2022.12.7\ncharset-normalizer==2.1.1\nclick==8.5.0\ncloudpickle==3.1.2\nconfigargparse==1.8.0\ncontourpy==1.3.2\ncycler==0.12.1\nexceptiongroup==1.3.1\nfastcore==2.2.32\nfastprogress==1.1.6\nfilelock==3.32.3\nflask==3.1.3\nfonttools==4.65.0\nfrozenlist==1.8.0\nfsspec==2026.7.0\ngensim==4.4.0\ngrpcio==1.84.0\nh11==0.16.0\nhttpcore2==2.3.0\nhttptools==0.8.0\nhttpx2==2.3.0\nhuggingface-hub==0.26.2\nidna==3.4\nimageio==2.38.0\nitsdangerous==2.2.0\njinja2==3.1.6\njoblib==1.6.0\nkiwisolver==1.5.1\nlazy-loader==0.6\nlightning-utilities==0.11.8\nmarkdown==3.10.3\nmarkupsafe==3.0.3\nmatplotlib==3.9.2\nmolnextr @ git+https://github.com/CYF2000127/MolNexTR.git@6f6502b4ed9733dba8b1ee45d2da474576683194\nmpmath==1.3.0\nmultidict==6.9.1\nnetworkx==3.4.2\nnumpy==1.26.4\nnvidia-cublas-cu12==12.1.3.1\nnvidia-cuda-cupti-cu12==12.1.105\nnvidia-cuda-nvrtc-cu12==12.1.105\nnvidia-cuda-runtime-cu12==12.1.105\nnvidia-cudnn-cu12==9.1.0.70\nnvidia-cufft-cu12==11.0.2.54\nnvidia-curand-cu12==10.3.2.106\nnvidia-cusolver-cu12==11.4.5.107\nnvidia-cusparse-cu12==12.1.0.106\nnvidia-nccl-cu12==2.21.5\nnvidia-nvjitlink-cu12==12.9.86\nnvidia-nvtx-cu12==12.1.105\noauthlib==4.0.0\nopencv-python-headless==4.10.0.84\nopennmt-py==2.2.0\npackaging==24.1\npandas==2.2.3\npillow==11.1.0\npropcache==0.5.4\nprotobuf==7.36.2\npyonmttok==1.37.1\npyparsing==3.2.1\npystow==0.7.11\npython-dateutil==2.9.0.post0\npython-dotenv==1.2.4\npython-fasthtml==0.14.13\npython-multipart==0.0.32\npytorch-lightning==2.5.0.post0\npytz==2026.5\npyyaml==6.0.3\nqudida==0.0.4\nrdkit==2024.3.6\nrequests==2.28.1\nscikit-image==0.25.2\nscikit-learn==1.7.2\nscipy==1.15.3\nsentencepiece==0.2.2\nsetuptools==78.1.0\nsix==1.17.0\nsmart-open==8.0.2\nsmilespe==0.0.3\nsoupsieve==2.10\nstarlette==1.7.0\nsympy==1.13.1\ntensorboard==2.21.0\ntensorboard-data-server==0.7.2\nthreadpoolctl==3.7.0\ntifffile==2025.5.10\ntimm==0.4.12\ntorch==2.5.1+cu121\ntorchmetrics==1.0.3\ntorchtext==0.5.0\ntorchvision==0.20.1+cu121\ntqdm==4.66.5\ntriton==3.1.0\ntruststore==0.10.4\ntyping-extensions==4.16.0\ntzdata==2026.5\nurllib3==1.26.13\nuvicorn==0.54.0\nuvloop==0.23.0\nwaitress==3.0.2\nwatchfiles==1.3.0\nwebsockets==16.1.1\nwerkzeug==3.1.9\nwrapt==2.5.0\nyarl==1.25.1\n"
+      },
+      {
+        "command": [
+          "~/.local/bin/uv",
+          "pip",
+          "freeze",
+          "--python",
+          "$MOLSCOUT_STORE/envs/biominer/bin/python"
+        ],
+        "output": "Using Python 3.10.14 environment at: $MOLSCOUT_STORE/envs/biominer\nabsl-py==2.2.2\naiofiles==23.2.1\nalbucore==0.0.23\nalbumentations==2.0.5\nannotated-types==0.7.0\nantlr4-python3-runtime==4.9.3\nanyio==4.9.0\nastor==0.8.1\nbeautifulsoup4==4.13.3\nbio==1.7.1\nbiopython==1.85\nbiothings-client==0.4.1\nblessed==1.20.0\nblinker==1.9.0\nboto3==1.37.32\nbotocore==1.37.32\nbottleneck==1.4.2\nbrotli==1.1.0\ncachetools==5.5.2\ncertifi==2025.8.3\ncffi==1.17.1\ncharset-normalizer==3.3.2\nclick==8.1.8\ncolorama==0.4.6\ncoloredlogs==15.0.1\ncolorlog==6.9.0\nconfigargparse==1.7\ncontourpy==1.3.1\ncryptography==44.0.2\ncycler==0.12.1\ndill==0.3.9\ndistro==1.9.0\ndoclayout-yolo==0.0.2b1\neasydict==1.13\neasyocr==1.7.2\neval-type-backport==0.2.2\nexceptiongroup==1.2.2\nfast-langdetect==0.2.5\nfastapi==0.115.12\nfastprogress==1.0.3\nfasttext-predict==0.9.2.4\nffmpy==0.6.4\nfilelock==3.18.0\nfiletype==1.2.0\nflask==3.1.0\nflatbuffers==25.2.10\nfonttools==4.57.0\nfsspec==2025.3.2\nftfy==6.3.1\ngensim==4.3.3\ngoogle-ai-generativelanguage==0.6.15\ngoogle-api-core==2.24.2\ngoogle-api-python-client==2.166.0\ngoogle-auth==2.38.0\ngoogle-auth-httplib2==0.2.0\ngoogle-genai==1.54.0\ngoogle-generativeai==0.8.4\ngoogleapis-common-protos==1.69.2\ngprofiler-official==1.0.0\ngpustat==1.1.1\ngraphql-core==3.3.0\ngrpcio==1.84.0\ngrpcio-status==1.71.2\nh11==0.16.0\nhttpcore==1.0.9\nhttplib2==0.32.0\nhttptools==0.8.0\nhttpx==0.28.1\nhuggingface-hub==0.30.2\nhumanfriendly==10.0\nidna==3.7\nimageio==2.37.0\nimportlib-metadata==8.7.0\nimportlib-resources==6.5.2\nitsdangerous==2.2.0\njinja2==3.1.6\njiter==0.9.0\njmespath==1.0.1\njoblib==1.4.2\njpype1==1.5.2\nkiwisolver==1.4.8\nlazy-loader==0.4\nlitserve==0.2.7\nlmdb==1.6.2\nloguru==0.7.3\nmagic-pdf==1.3.1\nmarkdown==3.8\nmarkdown-it-py==4.0.0\nmarkupsafe==2.1.5\nmatplotlib==3.10.1\nmdurl==0.1.2\nmodelscope==1.25.0\nmpmath==1.3.0\nmsgpack==1.1.0\nmygene==3.2.2\nnest-asyncio==1.6.0\nnetworkx==3.4.2\nninja==1.11.1.4\nnumexpr==2.10.1\nnumpy==1.26.4\nnvidia-cublas-cu12==12.4.5.8\nnvidia-cuda-cupti-cu12==12.4.127\nnvidia-cuda-nvrtc-cu12==12.4.127\nnvidia-cuda-runtime-cu12==12.4.127\nnvidia-cudnn-cu12==9.1.0.70\nnvidia-cufft-cu12==11.2.1.3\nnvidia-curand-cu12==10.3.5.147\nnvidia-cusolver-cu12==11.6.1.9\nnvidia-cusparse-cu12==12.3.1.170\nnvidia-cusparselt-cu12==0.6.2\nnvidia-ml-py==12.570.86\nnvidia-nccl-cu12==2.21.5\nnvidia-nvjitlink-cu12==12.4.127\nnvidia-nvtx-cu12==12.4.127\nomegaconf==2.3.0\nonnxruntime==1.23.2\nopenai==1.72.0\nopencv-python==4.11.0.86\nopencv-python-headless==4.11.0.86\nopennmt-py==2.2.0\nopt-einsum==3.3.0\npackaging==24.2\npandas==2.2.3\npdf2image==1.17.0\npdfminer-six==20231228\npillow==10.4.0\npip @ file:///home/conda/feedstock_root/build_artifacts/pip_1785914405025/work\nplatformdirs==4.3.7\npooch==1.8.2\nprody==2.3.1\nproto-plus==1.26.1\nprotobuf==5.29.4\npsutil==7.0.0\npubchempy==1.0.4\npy-cpuinfo==9.0.0\npy2opsin==1.1.0\npyasn1==0.6.1\npyasn1-modules==0.4.2\npyclipper==1.3.0.post6\npycocotools==2.0.8\npycparser==2.22\npydantic==2.10.6\npydantic-core==2.27.2\npydub==0.25.1\npygments==2.19.2\npymupdf==1.24.14\npyonmttok==1.37.1\npyparsing==3.2.3\npypdf2==3.0.1\npython-bidi==0.6.6\npython-dateutil==2.9.0.post0\npython-dotenv==1.1.0\npython-multipart==0.0.20\npytz==2024.1\npyyaml==6.0.2\npyzmq==26.4.0\nqudida==0.0.4\nrapid-table==1.0.5\nrcsb-api==1.5.0\nrcsbsearchapi==2.0.1\nrdkit-pypi==2022.9.5\nregex==2024.11.6\nrequests==2.32.3\nresvg-python==0.1.0\nrich==14.2.0\nrobust-downloader==0.0.2\nrsa==4.9\nruff==0.14.4\nrustworkx==0.17.1\ns3transfer==0.11.4\nsafetensors==0.5.3\nscikit-image==0.25.2\nscikit-learn==1.6.1\nscipy==1.13.1\nseaborn==0.13.2\nsemantic-version==2.10.0\nsentencepiece==0.2.0\nsetuptools==75.8.0\nshapely==2.1.0\nshellingham==1.5.4\nsimsimd==6.2.1\nsix==1.16.0\nsmart-open==7.1.0\nsmilespe==0.0.3\nsniffio==1.3.1\nsoupsieve==2.6\nstarlette==0.45.3\nstringzilla==3.12.3\nsympy==1.13.1\ntenacity==9.1.2\ntensorboard==2.19.0\ntensorboard-data-server==0.7.2\ntensorboardx==2.6.2.2\nthop==0.1.1.post2209072238\nthreadpoolctl==3.6.0\ntifffile==2025.3.30\ntimm==1.0.13\ntokenizers==0.21.1\ntomlkit==0.12.0\ntorch==2.6.0\ntorchtext==0.5.0\ntorchvision==0.21.0\ntqdm==4.67.1\ntraitlets==5.14.3\ntransformers==4.51.2\ntriton==3.2.0\ntyper==0.20.0\ntyping-extensions==4.12.2\ntyping-inspection==0.4.0\ntzdata==2023.3\nultralytics==8.3.107\nultralytics-thop==2.0.14\nuritemplate==4.1.1\nurllib3==2.3.0\nuvicorn==0.34.0\nuvloop==0.21.0\nwaitress==3.0.2\nwatchfiles==1.0.5\nwcwidth==0.2.13\nwebsockets==15.0.1\nwerkzeug==3.1.3\nwheel==0.48.0\nwrapt==1.17.2\nzipp==3.23.0\n"
+      }
+    ],
+    "sha256": "dd6f658dda47fbf33c0ba9bbe89c72e3a4212a809d92fe40a0f06bf8d535e0e5",
+    "variables": {
+      "CUDA_VISIBLE_DEVICES": null,
+      "OMP_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null,
+      "HF_HOME": "/scratch/$USER/hf_cache",
+      "HF_HUB_OFFLINE": "1",
+      "TRANSFORMERS_OFFLINE": "1",
+      "PYSTOW_HOME": null,
+      "MOLSCOUT_STORE": "$MOLSCOUT_STORE",
+      "SLURM_CPUS_PER_TASK": "8",
+      "SLURM_JOB_PARTITION": "sharing",
+      "MINERU_TELEMETRY_DISABLED": "1",
+      "NO_ALBUMENTATIONS_UPDATE": "1",
+      "PYTHONDONTWRITEBYTECODE": "1"
+    }
+  },
+  "hardware": {
+    "platform": "Linux-5.14.0-362.13.1.el9_3.x86_64-x86_64-with-glibc2.34",
+    "cluster": "explorer",
+    "cpu_model": "Intel(R) Xeon(R) CPU E5-2680 v4 @ 2.40GHz",
+    "cpus_available": 8,
+    "slurm_mem_per_node_mb": 49152,
+    "slurm_mem_per_cpu_mb": null,
+    "gpus": []
+  },
+  "slurm": {
+    "partition": "sharing"
+  },
+  "timing": {
+    "started_utc": "2026-11-26T20:11:42.680Z",
+    "finished_utc": "2026-11-26T20:11:58.086Z",
+    "wall_seconds": 15.406,
+    "tool_seconds": 1.482,
+    "scoring_seconds": 0.381,
+    "item_seconds_total": 1724.054203145206
+  },
+  "resources": {
+    "tool_peak_rss_mib": 109.3,
+    "tool_cpu_seconds": 0.291,
+    "gpu": null
+  },
+  "segments": [
+    {
+      "slurm": {
+        "partition": "sharing"
+      },
+      "gpus": [],
+      "started_utc": "2026-11-26T20:11:56.152Z",
+      "finished_utc": "2026-11-26T20:11:57.634Z",
+      "rows": 0,
+      "tool_seconds": 1.482,
+      "resources": {
+        "tool_peak_rss_mib": 109.3,
+        "tool_cpu_seconds": 0.291,
+        "gpu": null
+      }
+    }
+  ],
+  "command": [
+    "$MOLSCOUT_STORE/envs/molscout/bin/python",
+    "run.py",
+    "--papers",
+    "benchmarks/results/.staging-molscout_l5_stereo__internal-3355870/papers.csv",
+    "--dataset",
+    "internal",
+    "--tool",
+    "MolScout (l5_stereo) 0.1.0",
+    "--output",
+    "benchmarks/results/.staging-molscout_l5_stereo__internal-3355870/predictions.csv",
+    "--resume",
+    "benchmarks/results/.checkpoints/molscout_l5_stereo__internal/predictions.csv",
+    "--pipeline-config",
+    "pipeline.yaml",
+    "--work",
+    "$MOLSCOUT_STORE/pipeline/work/molscout_l5_stereo__internal",
+    "--shared",
+    "$MOLSCOUT_STORE/pipeline/shared/internal",
+    "--joiner",
+    "rules",
+    "--fixes-only",
+    "labels,relevance,tables,core_check,vote,stereo"
+  ]
+}

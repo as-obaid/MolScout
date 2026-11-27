@@ -1,0 +1,7 @@
+{
+  "images": 5740,
+  "failed": 1,
+  "errors": {
+    "maybridge-0524-25874319": "RuntimeError: MolVec: gov.nih.ncats.molvec.internal.algo.StructureImageExtractor$ImageTooSmallException"
+  }
+}

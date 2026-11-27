@@ -1,0 +1,2 @@
+FULL stand-in for BioMiner's full-structure prompt (the real one is read from the BioMiner clone).
+The box indices are: <index></index>

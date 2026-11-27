@@ -1,0 +1,4190 @@
+{
+  "molscout_version": "0.1.0",
+  "config_sha256": "ac27c2c0501e83f25efe5efda348dbd918d3c188850b37d5bb3a1a9fe469b739",
+  "config": {
+    "readers": [
+      "molglyph",
+      "molscribe",
+      "molnextr"
+    ],
+    "primary_reader": "molglyph",
+    "joiner": "rules",
+    "opsin_jar": "opsin",
+    "java": "${MOLSCOUT_STORE}/models/molvec/jdk/bin/java",
+    "dpi": 300,
+    "fixes": {
+      "labels": false,
+      "relevance": false,
+      "tables": false,
+      "core_check": false,
+      "vote": false,
+      "stereo": false,
+      "junk": false,
+      "names": false,
+      "formulas": false,
+      "attachments": false,
+      "slot_labels": false,
+      "legends": false,
+      "partial_stereo": false
+    },
+    "thresholds": {
+      "structure_score": 0.5
+    },
+    "export": "accepted",
+    "allow_empty": [],
+    "device": "gpu",
+    "workers": {
+      "cells": {
+        "env": "decimer_ai",
+        "worker": "cells.py",
+        "args": [
+          "--device",
+          "{device}"
+        ],
+        "output": "cells.jsonl",
+        "variables": []
+      },
+      "ocr_labels": {
+        "env": "mineru",
+        "worker": "ocr_labels.py",
+        "args": [
+          "--device",
+          "cpu"
+        ],
+        "output": "ocr.jsonl",
+        "variables": [
+          "MINERU_HOME",
+          "MINERU_TELEMETRY_DISABLED"
+        ]
+      },
+      "parse": {
+        "env": "mineru",
+        "worker": "mineru_parse.py",
+        "args": [
+          "--tier",
+          "standard",
+          "--backend",
+          "vllm",
+          "--small-backend",
+          "torch"
+        ],
+        "output": "layout.jsonl",
+        "variables": [
+          "MINERU_HOME",
+          "MINERU_TELEMETRY_DISABLED"
+        ]
+      },
+      "read_molglyph": {
+        "env": "molglyph",
+        "worker": "read_molglyph.py",
+        "args": [
+          "--checkpoint",
+          "molglyph_large.pt",
+          "--abbrevs",
+          "abbrevs.csv",
+          "--device",
+          "{torch_device}"
+        ],
+        "output": "reads.jsonl",
+        "variables": []
+      },
+      "read_molnextr": {
+        "env": "molnextr",
+        "worker": "read_molnextr.py",
+        "args": [
+          "--checkpoint",
+          "molnextr_best.pth",
+          "--pad-to-square",
+          "--device",
+          "{torch_device}"
+        ],
+        "output": "reads.jsonl",
+        "variables": []
+      },
+      "read_molscribe": {
+        "env": "molscribe",
+        "worker": "read_molscribe.py",
+        "args": [
+          "--checkpoint",
+          "swin_base_char_aux_1m680k.pth",
+          "--device",
+          "{torch_device}"
+        ],
+        "output": "reads.jsonl",
+        "variables": []
+      },
+      "segment": {
+        "env": "decimer_ai",
+        "worker": "segment.py",
+        "args": [
+          "--device",
+          "{device}"
+        ],
+        "output": "regions.jsonl",
+        "variables": []
+      }
+    }
+  },
+  "papers": 20,
+  "failed": [],
+  "stages": {
+    "render": {
+      "records_in": 20,
+      "records_out": 475,
+      "seconds": 167.97794423811138,
+      "peak_gpu_mb": null,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 20,
+      "resumed": 20
+    },
+    "parse": {
+      "records_in": 475,
+      "records_out": 5076,
+      "seconds": 467.8390444740653,
+      "peak_gpu_mb": 8942.0,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 20,
+      "resumed": 20
+    },
+    "segment": {
+      "records_in": 475,
+      "records_out": 607,
+      "seconds": 1251.8233419544995,
+      "peak_gpu_mb": 5577.0,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 20,
+      "resumed": 20
+    },
+    "ocr_labels": {
+      "records_in": 582,
+      "records_out": 8737,
+      "seconds": 125.17373666353524,
+      "peak_gpu_mb": 6.0,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 20,
+      "resumed": 20
+    },
+    "cells": {
+      "records_in": 134,
+      "records_out": 154,
+      "seconds": 250.24362913891673,
+      "peak_gpu_mb": 5577.0,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 20,
+      "resumed": 20
+    },
+    "read_molglyph": {
+      "records_in": 695,
+      "records_out": 693,
+      "seconds": 196.64798658527434,
+      "peak_gpu_mb": 1225.0,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 20,
+      "resumed": 20
+    },
+    "read_molscribe": {
+      "records_in": 695,
+      "records_out": 688,
+      "seconds": 217.48061718791723,
+      "peak_gpu_mb": 1085.0,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 20,
+      "resumed": 20
+    },
+    "read_molnextr": {
+      "records_in": 695,
+      "records_out": 695,
+      "seconds": 218.0451242569834,
+      "peak_gpu_mb": 1047.0,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 20,
+      "resumed": 20
+    },
+    "vote": {
+      "records_in": 695,
+      "records_out": 680,
+      "seconds": 1.870201263576746,
+      "peak_gpu_mb": null,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 20,
+      "resumed": 20
+    },
+    "link": {
+      "records_in": 751,
+      "records_out": 541,
+      "seconds": 0.5653165578842163,
+      "peak_gpu_mb": null,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 20,
+      "resumed": 20
+    },
+    "finalize": {
+      "records_in": 541,
+      "records_out": 216,
+      "seconds": 0.5060044564306736,
+      "peak_gpu_mb": null,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 20,
+      "resumed": 20
+    },
+    "export": {
+      "records_in": 479,
+      "records_out": 216,
+      "seconds": 0.14711293764412403,
+      "peak_gpu_mb": null,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 20,
+      "resumed": 20
+    }
+  },
+  "funnel": {
+    "pages": 475,
+    "layout_blocks": 5076,
+    "tables": 56,
+    "regions": 761,
+    "structures": 695,
+    "cells": 154,
+    "reads_molglyph": 693,
+    "reads_molscribe": 688,
+    "reads_molnextr": 695,
+    "voted": 680,
+    "vote_failed": 15,
+    "voted_agree_0": 0,
+    "voted_agree_1": 680,
+    "voted_agree_2": 0,
+    "voted_agree_3": 0,
+    "ocr_lines": 8737,
+    "molecules": 479,
+    "drawn_labelled": 0,
+    "source_drawn": 479,
+    "source_table": 0,
+    "source_name": 0,
+    "source_32b": 0,
+    "status_accepted": 216,
+    "status_review": 0,
+    "status_abstained": 263,
+    "exported": 216
+  },
+  "per_paper": {
+    "26_6st3": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 69.98278067300794,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 4,
+          "seconds": 2.2214042022824287,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 4,
+          "records_out": 53,
+          "seconds": 3.9396972166237076,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 4,
+          "records_out": 25,
+          "seconds": 10.54167024803789,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 11,
+          "records_out": 237,
+          "seconds": 2.365826637970597,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 11,
+            "out": 11,
+            "dropped_no_text": 0,
+            "dropped_failed": 0,
+            "lines": 237,
+            "lines_duplicate": 20
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 9,
+          "records_out": 12,
+          "seconds": 16.807407927240675,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 9,
+            "out": 9,
+            "dropped_failed_table": 0,
+            "matched": 9,
+            "upscaled": 0,
+            "split": 1,
+            "segmented": 2,
+            "drawings": 12
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 37,
+          "records_out": 37,
+          "seconds": 10.469029501662087,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 37,
+          "records_out": 37,
+          "seconds": 11.578104799932284,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 37,
+          "records_out": 37,
+          "seconds": 11.60815769425667,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 37,
+          "records_out": 37,
+          "seconds": 0.3268759660422802,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 37,
+            "out": 37,
+            "cores": 13,
+            "cells": 12,
+            "cell_fragments": 10,
+            "cell_molecules": 2
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 38,
+          "records_out": 25,
+          "seconds": 0.07411275058984756,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 25,
+            "out": 12,
+            "dropped_drawn": 13,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 25,
+          "records_out": 11,
+          "seconds": 0.04014799930155277,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 25,
+            "dropped_duplicate": 1,
+            "out": 24,
+            "accepted": 11,
+            "review": 0,
+            "abstained": 13
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 24,
+          "records_out": 11,
+          "seconds": 0.010345729067921638,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 4,
+        "layout_blocks": 53,
+        "tables": 1,
+        "regions": 37,
+        "structures": 37,
+        "cells": 12,
+        "reads_molglyph": 37,
+        "reads_molscribe": 37,
+        "reads_molnextr": 37,
+        "voted": 37,
+        "vote_failed": 0,
+        "voted_agree_0": 0,
+        "voted_agree_1": 37,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 237,
+        "molecules": 24,
+        "drawn_labelled": 0,
+        "source_drawn": 24,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 11,
+        "status_review": 0,
+        "status_abstained": 13,
+        "exported": 11
+      }
+    },
+    "41_6s88": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 437.28306887796646,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 58,
+          "seconds": 17.534239700064063,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 58,
+          "records_out": 233,
+          "seconds": 57.12560964104376,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 58,
+          "records_out": 101,
+          "seconds": 152.8542185965494,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 61,
+          "records_out": 631,
+          "seconds": 13.119584083291494,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 61,
+            "out": 60,
+            "dropped_no_text": 1,
+            "dropped_failed": 0,
+            "lines": 631,
+            "lines_duplicate": 43
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 35,
+          "records_out": 48,
+          "seconds": 65.36214193926929,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 35,
+            "out": 35,
+            "dropped_failed_table": 0,
+            "matched": 35,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 13,
+            "drawings": 48
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 144,
+          "records_out": 144,
+          "seconds": 40.74433103349569,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 144,
+          "records_out": 144,
+          "seconds": 45.06073219433105,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 144,
+          "records_out": 144,
+          "seconds": 45.17769481008001,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 144,
+          "records_out": 142,
+          "seconds": 0.23234198242425919,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 149,
+            "out": 142,
+            "cores": 49,
+            "dropped_not_structure": 5,
+            "dropped_cell_no_attachment": 2,
+            "cells": 48,
+            "cell_fragments": 38,
+            "cell_molecules": 8
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 149,
+          "records_out": 96,
+          "seconds": 0.025912754237651825,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 96,
+            "out": 47,
+            "dropped_drawn": 49,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 96,
+          "records_out": 30,
+          "seconds": 0.03755935840308666,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 96,
+            "dropped_duplicate": 17,
+            "out": 79,
+            "accepted": 30,
+            "review": 0,
+            "abstained": 49
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 79,
+          "records_out": 30,
+          "seconds": 0.008702784776687622,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 58,
+        "layout_blocks": 233,
+        "tables": 5,
+        "regions": 149,
+        "structures": 144,
+        "cells": 48,
+        "reads_molglyph": 144,
+        "reads_molscribe": 144,
+        "reads_molnextr": 144,
+        "voted": 142,
+        "vote_failed": 2,
+        "voted_agree_0": 0,
+        "voted_agree_1": 142,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 631,
+        "molecules": 79,
+        "drawn_labelled": 0,
+        "source_drawn": 79,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 30,
+        "status_review": 0,
+        "status_abstained": 49,
+        "exported": 30
+      }
+    },
+    "109_6qgk": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 83.16584097939949,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 15,
+          "seconds": 6.782218310981989,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 15,
+          "records_out": 210,
+          "seconds": 14.773864562338904,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 15,
+          "records_out": 25,
+          "seconds": 39.53126343014209,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 9,
+          "records_out": 240,
+          "seconds": 1.9356763401577615,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 9,
+            "out": 9,
+            "dropped_no_text": 0,
+            "dropped_failed": 0,
+            "lines": 240,
+            "lines_duplicate": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 0,
+          "records_out": 0,
+          "seconds": 0.0,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 0,
+            "out": 0,
+            "dropped_failed_table": 0,
+            "matched": 0,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 0,
+            "drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 22,
+          "records_out": 22,
+          "seconds": 6.224828352339619,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 22,
+          "records_out": 22,
+          "seconds": 6.884278529689467,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 22,
+          "records_out": 22,
+          "seconds": 6.902147818206669,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 22,
+          "records_out": 22,
+          "seconds": 0.06960666552186012,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 25,
+            "out": 22,
+            "cores": 2,
+            "dropped_not_structure": 3
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 23,
+          "records_out": 22,
+          "seconds": 0.02019067294895649,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 22,
+            "out": 20,
+            "dropped_drawn": 2,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 22,
+          "records_out": 20,
+          "seconds": 0.033707864582538605,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 22,
+            "dropped_duplicate": 0,
+            "out": 22,
+            "accepted": 20,
+            "review": 0,
+            "abstained": 2
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 22,
+          "records_out": 20,
+          "seconds": 0.00805843248963356,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 15,
+        "layout_blocks": 210,
+        "tables": 1,
+        "regions": 25,
+        "structures": 22,
+        "cells": 0,
+        "reads_molglyph": 22,
+        "reads_molscribe": 22,
+        "reads_molnextr": 22,
+        "voted": 22,
+        "vote_failed": 0,
+        "voted_agree_0": 0,
+        "voted_agree_1": 22,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 240,
+        "molecules": 22,
+        "drawn_labelled": 0,
+        "source_drawn": 22,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 20,
+        "status_review": 0,
+        "status_abstained": 2,
+        "exported": 20
+      }
+    },
+    "121_6q9t": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 39.659226266508355,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 7,
+          "seconds": 2.884764228016138,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 7,
+          "records_out": 93,
+          "seconds": 6.894470129091489,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 7,
+          "records_out": 12,
+          "seconds": 18.44792293406631,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 19,
+          "records_out": 178,
+          "seconds": 4.086427829221941,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 19,
+            "out": 19,
+            "dropped_no_text": 0,
+            "dropped_failed": 0,
+            "lines": 178,
+            "lines_duplicate": 7
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 0,
+          "records_out": 0,
+          "seconds": 0.0,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 0,
+            "out": 0,
+            "dropped_failed_table": 0,
+            "matched": 0,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 0,
+            "drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 8,
+          "records_out": 8,
+          "seconds": 2.2635739463053164,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 8,
+          "records_out": 8,
+          "seconds": 2.5033740107961697,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 8,
+          "records_out": 8,
+          "seconds": 2.509871933893334,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 8,
+          "records_out": 8,
+          "seconds": 0.026823638007044792,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 12,
+            "out": 8,
+            "cores": 6,
+            "dropped_not_structure": 4
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 8,
+          "records_out": 8,
+          "seconds": 0.016290299594402313,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 8,
+            "out": 2,
+            "dropped_drawn": 6,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 8,
+          "records_out": 2,
+          "seconds": 0.018725410103797913,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 8,
+            "dropped_duplicate": 0,
+            "out": 8,
+            "accepted": 2,
+            "review": 0,
+            "abstained": 6
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 8,
+          "records_out": 2,
+          "seconds": 0.006981907412409782,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 7,
+        "layout_blocks": 93,
+        "tables": 0,
+        "regions": 12,
+        "structures": 8,
+        "cells": 0,
+        "reads_molglyph": 8,
+        "reads_molscribe": 8,
+        "reads_molnextr": 8,
+        "voted": 8,
+        "vote_failed": 0,
+        "voted_agree_0": 0,
+        "voted_agree_1": 8,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 178,
+        "molecules": 8,
+        "drawn_labelled": 0,
+        "source_drawn": 8,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 2,
+        "status_review": 0,
+        "status_abstained": 6,
+        "exported": 2
+      }
+    },
+    "129_6q4q": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 41.04428404029998,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 8,
+          "seconds": 3.3906692918390036,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 8,
+          "records_out": 142,
+          "seconds": 7.879394433247415,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 8,
+          "records_out": 12,
+          "seconds": 21.08334049607578,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 19,
+          "records_out": 425,
+          "seconds": 4.086427829221941,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 19,
+            "out": 19,
+            "dropped_no_text": 0,
+            "dropped_failed": 0,
+            "lines": 425,
+            "lines_duplicate": 21
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 0,
+          "records_out": 0,
+          "seconds": 0.0,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 0,
+            "out": 0,
+            "dropped_failed_table": 0,
+            "matched": 0,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 0,
+            "drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 5,
+          "records_out": 5,
+          "seconds": 1.4147337164408227,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 5,
+          "records_out": 5,
+          "seconds": 1.5646087567476061,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 5,
+          "records_out": 5,
+          "seconds": 1.568669958683334,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 5,
+          "records_out": 5,
+          "seconds": 0.017483806237578392,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 12,
+            "out": 5,
+            "cores": 5,
+            "dropped_not_structure": 7
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 5,
+          "records_out": 5,
+          "seconds": 0.02177082747220993,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 5,
+            "out": 0,
+            "dropped_drawn": 5,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 5,
+          "records_out": 0,
+          "seconds": 0.011802047491073608,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 5,
+            "dropped_duplicate": 0,
+            "out": 5,
+            "accepted": 0,
+            "review": 0,
+            "abstained": 5
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 5,
+          "records_out": 0,
+          "seconds": 0.005382876843214035,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 8,
+        "layout_blocks": 142,
+        "tables": 0,
+        "regions": 12,
+        "structures": 5,
+        "cells": 0,
+        "reads_molglyph": 5,
+        "reads_molscribe": 5,
+        "reads_molnextr": 5,
+        "voted": 5,
+        "vote_failed": 0,
+        "voted_agree_0": 0,
+        "voted_agree_1": 5,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 425,
+        "molecules": 5,
+        "drawn_labelled": 0,
+        "source_drawn": 5,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 0,
+        "status_review": 0,
+        "status_abstained": 5,
+        "exported": 0
+      }
+    },
+    "156_6pka": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 184.0803186311752,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 28,
+          "seconds": 9.448208570480347,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 28,
+          "records_out": 186,
+          "seconds": 27.577880516365955,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 28,
+          "records_out": 25,
+          "seconds": 73.79169173626524,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 36,
+          "records_out": 311,
+          "seconds": 7.742705360631046,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 36,
+            "out": 31,
+            "dropped_no_text": 5,
+            "dropped_failed": 0,
+            "lines": 311,
+            "lines_duplicate": 35
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 17,
+          "records_out": 17,
+          "seconds": 31.747326084787943,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 17,
+            "out": 17,
+            "dropped_failed_table": 0,
+            "matched": 17,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 0,
+            "drawings": 17
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 37,
+          "records_out": 35,
+          "seconds": 10.469029501662087,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 37,
+          "records_out": 37,
+          "seconds": 11.578104799932284,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 37,
+          "records_out": 37,
+          "seconds": 11.60815769425667,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 37,
+          "records_out": 35,
+          "seconds": 0.06114432215690613,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 42,
+            "out": 35,
+            "cores": 18,
+            "dropped_not_structure": 5,
+            "dropped_no_usable_read": 2,
+            "cells": 17,
+            "cell_fragments": 17,
+            "cell_molecules": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 41,
+          "records_out": 20,
+          "seconds": 0.03354819305241108,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 20,
+            "out": 0,
+            "dropped_drawn": 20,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 20,
+          "records_out": 0,
+          "seconds": 0.01713159866631031,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 20,
+            "dropped_duplicate": 0,
+            "out": 20,
+            "accepted": 0,
+            "review": 0,
+            "abstained": 20
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 20,
+          "records_out": 0,
+          "seconds": 0.00539025291800499,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 28,
+        "layout_blocks": 186,
+        "tables": 4,
+        "regions": 42,
+        "structures": 37,
+        "cells": 17,
+        "reads_molglyph": 35,
+        "reads_molscribe": 37,
+        "reads_molnextr": 37,
+        "voted": 35,
+        "vote_failed": 2,
+        "voted_agree_0": 0,
+        "voted_agree_1": 35,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 311,
+        "molecules": 20,
+        "drawn_labelled": 0,
+        "source_drawn": 20,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 0,
+        "status_review": 0,
+        "status_abstained": 20,
+        "exported": 0
+      }
+    },
+    "185_6oy2": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 151.53046563441515,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 18,
+          "seconds": 8.25766745582223,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 18,
+          "records_out": 226,
+          "seconds": 17.728637474806686,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 18,
+          "records_out": 36,
+          "seconds": 47.43751611617051,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 33,
+          "records_out": 569,
+          "seconds": 7.0974799139117914,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 33,
+            "out": 33,
+            "dropped_no_text": 0,
+            "dropped_failed": 0,
+            "lines": 569,
+            "lines_duplicate": 165
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 14,
+          "records_out": 14,
+          "seconds": 26.144856775707716,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 14,
+            "out": 14,
+            "dropped_failed_table": 0,
+            "matched": 14,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 0,
+            "drawings": 14
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 49,
+          "records_out": 49,
+          "seconds": 13.86439042112006,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 49,
+          "records_out": 49,
+          "seconds": 15.333165816126538,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 49,
+          "records_out": 49,
+          "seconds": 15.372965595096671,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 49,
+          "records_out": 49,
+          "seconds": 0.226819209754467,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 50,
+            "out": 49,
+            "cores": 14,
+            "dropped_not_structure": 1,
+            "cells": 14,
+            "cell_fragments": 0,
+            "cell_molecules": 14
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 51,
+          "records_out": 35,
+          "seconds": 0.024171527475118637,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 35,
+            "out": 21,
+            "dropped_drawn": 14,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 35,
+          "records_out": 13,
+          "seconds": 0.03734767436981201,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 35,
+            "dropped_duplicate": 8,
+            "out": 27,
+            "accepted": 13,
+            "review": 0,
+            "abstained": 14
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 27,
+          "records_out": 13,
+          "seconds": 0.00544765405356884,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 18,
+        "layout_blocks": 226,
+        "tables": 2,
+        "regions": 50,
+        "structures": 49,
+        "cells": 14,
+        "reads_molglyph": 49,
+        "reads_molscribe": 49,
+        "reads_molnextr": 49,
+        "voted": 49,
+        "vote_failed": 0,
+        "voted_agree_0": 0,
+        "voted_agree_1": 49,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 569,
+        "molecules": 27,
+        "drawn_labelled": 0,
+        "source_drawn": 27,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 13,
+        "status_review": 0,
+        "status_abstained": 14,
+        "exported": 13
+      }
+    },
+    "221_6oac": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 193.91758928238735,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 21,
+          "seconds": 9.019782369956374,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 21,
+          "records_out": 343,
+          "seconds": 20.683410387274463,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 21,
+          "records_out": 97,
+          "seconds": 55.34376880219892,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 90,
+          "records_out": 773,
+          "seconds": 19.356763401577616,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 90,
+            "out": 90,
+            "dropped_no_text": 0,
+            "dropped_failed": 0,
+            "lines": 773,
+            "lines_duplicate": 58
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 1,
+          "records_out": 1,
+          "seconds": 1.8674897696934083,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 1,
+            "out": 1,
+            "dropped_failed_table": 0,
+            "matched": 1,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 0,
+            "drawings": 1
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 96,
+          "records_out": 96,
+          "seconds": 27.16288735566379,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 96,
+          "records_out": 90,
+          "seconds": 30.040488129554035,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 96,
+          "records_out": 96,
+          "seconds": 30.11846320672001,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 96,
+          "records_out": 95,
+          "seconds": 0.20856668427586555,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 98,
+            "out": 95,
+            "cores": 21,
+            "dropped_not_structure": 2,
+            "dropped_cell_no_attachment": 1,
+            "cells": 1,
+            "cell_fragments": 0,
+            "cell_molecules": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 101,
+          "records_out": 95,
+          "seconds": 0.031694063916802406,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 95,
+            "out": 74,
+            "dropped_drawn": 21,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 95,
+          "records_out": 51,
+          "seconds": 0.07334736548364162,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 95,
+            "dropped_duplicate": 23,
+            "out": 72,
+            "accepted": 51,
+            "review": 0,
+            "abstained": 21
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 72,
+          "records_out": 51,
+          "seconds": 0.010927746072411537,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 21,
+        "layout_blocks": 343,
+        "tables": 5,
+        "regions": 98,
+        "structures": 96,
+        "cells": 1,
+        "reads_molglyph": 96,
+        "reads_molscribe": 90,
+        "reads_molnextr": 96,
+        "voted": 95,
+        "vote_failed": 1,
+        "voted_agree_0": 0,
+        "voted_agree_1": 95,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 773,
+        "molecules": 72,
+        "drawn_labelled": 0,
+        "source_drawn": 72,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 51,
+        "status_review": 0,
+        "status_abstained": 21,
+        "exported": 51
+      }
+    },
+    "228_6o5x": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 55.137006683626794,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 13,
+          "seconds": 5.81080536916852,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 13,
+          "records_out": 158,
+          "seconds": 12.80401595402705,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 13,
+          "records_out": 1,
+          "seconds": 34.260428306123146,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 6,
+          "records_out": 244,
+          "seconds": 1.2904508934385075,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 6,
+            "out": 6,
+            "dropped_no_text": 0,
+            "dropped_failed": 0,
+            "lines": 244,
+            "lines_duplicate": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 0,
+          "records_out": 0,
+          "seconds": 0.0,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 0,
+            "out": 0,
+            "dropped_failed_table": 0,
+            "matched": 0,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 0,
+            "drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 1,
+          "records_out": 1,
+          "seconds": 0.28294674328816455,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 1,
+          "records_out": 1,
+          "seconds": 0.3129217513495212,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 1,
+          "records_out": 1,
+          "seconds": 0.3137339917366668,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 1,
+          "records_out": 1,
+          "seconds": 0.015058748424053192,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 1,
+            "out": 1,
+            "cores": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 3,
+          "records_out": 1,
+          "seconds": 0.024410592392086983,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 1,
+            "out": 1,
+            "dropped_drawn": 0,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 1,
+          "records_out": 1,
+          "seconds": 0.01620222069323063,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 1,
+            "dropped_duplicate": 0,
+            "out": 1,
+            "accepted": 1,
+            "review": 0,
+            "abstained": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 1,
+          "records_out": 1,
+          "seconds": 0.0060321129858493805,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 13,
+        "layout_blocks": 158,
+        "tables": 2,
+        "regions": 1,
+        "structures": 1,
+        "cells": 0,
+        "reads_molglyph": 1,
+        "reads_molscribe": 1,
+        "reads_molnextr": 1,
+        "voted": 1,
+        "vote_failed": 0,
+        "voted_agree_0": 0,
+        "voted_agree_1": 1,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 244,
+        "molecules": 1,
+        "drawn_labelled": 0,
+        "source_drawn": 1,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 1,
+        "status_review": 0,
+        "status_abstained": 0,
+        "exported": 1
+      }
+    },
+    "246_6nyh": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 76.07556125929729,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 15,
+          "seconds": 8.106923032552004,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 15,
+          "records_out": 256,
+          "seconds": 14.773864562338904,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 15,
+          "records_out": 3,
+          "seconds": 39.53126343014209,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 59,
+          "records_out": 948,
+          "seconds": 12.689433785478657,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 59,
+            "out": 59,
+            "dropped_no_text": 0,
+            "dropped_failed": 0,
+            "lines": 948,
+            "lines_duplicate": 39
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 0,
+          "records_out": 0,
+          "seconds": 0.0,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 0,
+            "out": 0,
+            "dropped_failed_table": 0,
+            "matched": 0,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 0,
+            "drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 1,
+          "records_out": 1,
+          "seconds": 0.28294674328816455,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 1,
+          "records_out": 1,
+          "seconds": 0.3129217513495212,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 1,
+          "records_out": 1,
+          "seconds": 0.3137339917366668,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 1,
+          "records_out": 1,
+          "seconds": 0.014953196048736572,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 3,
+            "out": 1,
+            "cores": 0,
+            "dropped_not_structure": 2
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 1,
+          "records_out": 1,
+          "seconds": 0.028438663110136986,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 1,
+            "out": 1,
+            "dropped_drawn": 0,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 1,
+          "records_out": 1,
+          "seconds": 0.011423677206039429,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 1,
+            "dropped_duplicate": 0,
+            "out": 1,
+            "accepted": 1,
+            "review": 0,
+            "abstained": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 1,
+          "records_out": 1,
+          "seconds": 0.00965842604637146,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 15,
+        "layout_blocks": 256,
+        "tables": 0,
+        "regions": 3,
+        "structures": 1,
+        "cells": 0,
+        "reads_molglyph": 1,
+        "reads_molscribe": 1,
+        "reads_molnextr": 1,
+        "voted": 1,
+        "vote_failed": 0,
+        "voted_agree_0": 0,
+        "voted_agree_1": 1,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 948,
+        "molecules": 1,
+        "drawn_labelled": 0,
+        "source_drawn": 1,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 1,
+        "status_review": 0,
+        "status_abstained": 0,
+        "exported": 1
+      }
+    },
+    "263_6npf": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 61.38572244246551,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 14,
+          "seconds": 5.3826902490109205,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 14,
+          "records_out": 155,
+          "seconds": 13.788940258182977,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 14,
+          "records_out": 3,
+          "seconds": 36.89584586813262,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 16,
+          "records_out": 612,
+          "seconds": 3.441202382502687,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 16,
+            "out": 16,
+            "dropped_no_text": 0,
+            "dropped_failed": 0,
+            "lines": 612,
+            "lines_duplicate": 1
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 0,
+          "records_out": 0,
+          "seconds": 0.0,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 0,
+            "out": 0,
+            "dropped_failed_table": 0,
+            "matched": 0,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 0,
+            "drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 2,
+          "records_out": 2,
+          "seconds": 0.5658934865763291,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 2,
+          "records_out": 2,
+          "seconds": 0.6258435026990424,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 2,
+          "records_out": 2,
+          "seconds": 0.6274679834733335,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 2,
+          "records_out": 2,
+          "seconds": 0.013478148728609085,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 3,
+            "out": 2,
+            "cores": 0,
+            "dropped_not_structure": 1
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 6,
+          "records_out": 2,
+          "seconds": 0.02096882089972496,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 2,
+            "out": 2,
+            "dropped_drawn": 0,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 2,
+          "records_out": 2,
+          "seconds": 0.013500535860657692,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 2,
+            "dropped_duplicate": 0,
+            "out": 2,
+            "accepted": 2,
+            "review": 0,
+            "abstained": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 2,
+          "records_out": 2,
+          "seconds": 0.0098912063986063,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 14,
+        "layout_blocks": 155,
+        "tables": 4,
+        "regions": 3,
+        "structures": 2,
+        "cells": 0,
+        "reads_molglyph": 2,
+        "reads_molscribe": 2,
+        "reads_molnextr": 2,
+        "voted": 2,
+        "vote_failed": 0,
+        "voted_agree_0": 0,
+        "voted_agree_1": 2,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 612,
+        "molecules": 2,
+        "drawn_labelled": 0,
+        "source_drawn": 2,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 2,
+        "status_review": 0,
+        "status_abstained": 0,
+        "exported": 2
+      }
+    },
+    "317_6mq3": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 135.3398775741265,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 28,
+          "seconds": 9.691745813935995,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 28,
+          "records_out": 224,
+          "seconds": 27.577880516365955,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 28,
+          "records_out": 31,
+          "seconds": 73.79169173626524,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 32,
+          "records_out": 594,
+          "seconds": 6.882404765005374,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 32,
+            "out": 32,
+            "dropped_no_text": 0,
+            "dropped_failed": 0,
+            "lines": 594,
+            "lines_duplicate": 22
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 0,
+          "records_out": 0,
+          "seconds": 0.0,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 0,
+            "out": 0,
+            "dropped_failed_table": 0,
+            "matched": 0,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 0,
+            "drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 19,
+          "records_out": 19,
+          "seconds": 5.375988122475126,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 19,
+          "records_out": 19,
+          "seconds": 5.945513275640902,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 19,
+          "records_out": 19,
+          "seconds": 5.960945842996668,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 19,
+          "records_out": 19,
+          "seconds": 0.05818250589072704,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 31,
+            "out": 19,
+            "cores": 15,
+            "dropped_not_structure": 12
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 21,
+          "records_out": 19,
+          "seconds": 0.03024160861968994,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 19,
+            "out": 4,
+            "dropped_drawn": 15,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 19,
+          "records_out": 4,
+          "seconds": 0.017894690856337547,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 19,
+            "dropped_duplicate": 0,
+            "out": 19,
+            "accepted": 4,
+            "review": 0,
+            "abstained": 15
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 19,
+          "records_out": 4,
+          "seconds": 0.007388696074485779,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 28,
+        "layout_blocks": 224,
+        "tables": 2,
+        "regions": 31,
+        "structures": 19,
+        "cells": 0,
+        "reads_molglyph": 19,
+        "reads_molscribe": 19,
+        "reads_molnextr": 19,
+        "voted": 19,
+        "vote_failed": 0,
+        "voted_agree_0": 0,
+        "voted_agree_1": 19,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 594,
+        "molecules": 19,
+        "drawn_labelled": 0,
+        "source_drawn": 19,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 4,
+        "status_review": 0,
+        "status_abstained": 15,
+        "exported": 4
+      }
+    },
+    "339_6mdb": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 225.83223939176517,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 35,
+          "seconds": 10.778133913874626,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 35,
+          "records_out": 175,
+          "seconds": 34.47235064545744,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 35,
+          "records_out": 37,
+          "seconds": 92.23961467033153,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 34,
+          "records_out": 433,
+          "seconds": 7.31255506281821,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 34,
+            "out": 34,
+            "dropped_no_text": 0,
+            "dropped_failed": 0,
+            "lines": 433,
+            "lines_duplicate": 58
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 17,
+          "records_out": 17,
+          "seconds": 31.747326084787943,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 17,
+            "out": 17,
+            "dropped_failed_table": 0,
+            "matched": 17,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 0,
+            "drawings": 17
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 54,
+          "records_out": 54,
+          "seconds": 15.279124137560883,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 54,
+          "records_out": 54,
+          "seconds": 16.897774572874145,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 54,
+          "records_out": 54,
+          "seconds": 16.941635553780003,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 54,
+          "records_out": 48,
+          "seconds": 0.10327176749706268,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 54,
+            "out": 48,
+            "cores": 23,
+            "dropped_cell_no_attachment": 6,
+            "cells": 17,
+            "cell_fragments": 10,
+            "cell_molecules": 1
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 57,
+          "records_out": 37,
+          "seconds": 0.03503384627401829,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 37,
+            "out": 14,
+            "dropped_drawn": 23,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 37,
+          "records_out": 13,
+          "seconds": 0.01971922628581524,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 37,
+            "dropped_duplicate": 1,
+            "out": 36,
+            "accepted": 13,
+            "review": 0,
+            "abstained": 23
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 36,
+          "records_out": 13,
+          "seconds": 0.005699910223484039,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 35,
+        "layout_blocks": 175,
+        "tables": 3,
+        "regions": 54,
+        "structures": 54,
+        "cells": 17,
+        "reads_molglyph": 54,
+        "reads_molscribe": 54,
+        "reads_molnextr": 54,
+        "voted": 48,
+        "vote_failed": 6,
+        "voted_agree_0": 0,
+        "voted_agree_1": 48,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 433,
+        "molecules": 36,
+        "drawn_labelled": 0,
+        "source_drawn": 36,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 13,
+        "status_review": 0,
+        "status_abstained": 23,
+        "exported": 13
+      }
+    },
+    "343_6mbp": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 501.73920557016106,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 116,
+          "seconds": 35.13802663050592,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 116,
+          "records_out": 1677,
+          "seconds": 114.25121928208752,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 116,
+          "records_out": 54,
+          "seconds": 305.7084371930988,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 34,
+          "records_out": 749,
+          "seconds": 7.31255506281821,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 34,
+            "out": 34,
+            "dropped_no_text": 0,
+            "dropped_failed": 0,
+            "lines": 749,
+            "lines_duplicate": 11
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 0,
+          "records_out": 0,
+          "seconds": 0.0,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 0,
+            "out": 0,
+            "dropped_failed_table": 0,
+            "matched": 0,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 0,
+            "drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 43,
+          "records_out": 43,
+          "seconds": 12.166709961391074,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 43,
+          "records_out": 43,
+          "seconds": 13.45563530802941,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 43,
+          "records_out": 43,
+          "seconds": 13.49056164467667,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 43,
+          "records_out": 43,
+          "seconds": 0.12959138490259647,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 54,
+            "out": 43,
+            "cores": 21,
+            "dropped_not_structure": 11
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 51,
+          "records_out": 43,
+          "seconds": 0.036315470933914185,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 43,
+            "out": 22,
+            "dropped_drawn": 21,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 43,
+          "records_out": 16,
+          "seconds": 0.04302307590842247,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 43,
+            "dropped_duplicate": 6,
+            "out": 37,
+            "accepted": 16,
+            "review": 0,
+            "abstained": 21
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 37,
+          "records_out": 16,
+          "seconds": 0.007130555808544159,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 116,
+        "layout_blocks": 1677,
+        "tables": 8,
+        "regions": 54,
+        "structures": 43,
+        "cells": 0,
+        "reads_molglyph": 43,
+        "reads_molscribe": 43,
+        "reads_molnextr": 43,
+        "voted": 43,
+        "vote_failed": 0,
+        "voted_agree_0": 0,
+        "voted_agree_1": 43,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 749,
+        "molecules": 37,
+        "drawn_labelled": 0,
+        "source_drawn": 37,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 16,
+        "status_review": 0,
+        "status_abstained": 21,
+        "exported": 16
+      }
+    },
+    "367_6k1s": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 47.967987253669904,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 6,
+          "seconds": 2.4200808703899384,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 6,
+          "records_out": 111,
+          "seconds": 5.909545824935561,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 6,
+          "records_out": 24,
+          "seconds": 15.812505372056835,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 13,
+          "records_out": 355,
+          "seconds": 2.795976935783433,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 13,
+            "out": 13,
+            "dropped_no_text": 0,
+            "dropped_failed": 0,
+            "lines": 355,
+            "lines_duplicate": 5
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 0,
+          "records_out": 0,
+          "seconds": 0.0,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 0,
+            "out": 0,
+            "dropped_failed_table": 0,
+            "matched": 0,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 0,
+            "drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 23,
+          "records_out": 23,
+          "seconds": 6.507775095627784,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 23,
+          "records_out": 23,
+          "seconds": 7.197200281038987,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 23,
+          "records_out": 23,
+          "seconds": 7.215881809943335,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 23,
+          "records_out": 21,
+          "seconds": 0.06123260408639908,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 24,
+            "out": 21,
+            "cores": 9,
+            "dropped_not_structure": 1,
+            "dropped_no_usable_read": 2
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 24,
+          "records_out": 23,
+          "seconds": 0.023446720093488693,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 23,
+            "out": 12,
+            "dropped_drawn": 11,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 23,
+          "records_out": 12,
+          "seconds": 0.01729048788547516,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 23,
+            "dropped_duplicate": 0,
+            "out": 23,
+            "accepted": 12,
+            "review": 0,
+            "abstained": 11
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 23,
+          "records_out": 12,
+          "seconds": 0.007051251828670502,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 6,
+        "layout_blocks": 111,
+        "tables": 1,
+        "regions": 24,
+        "structures": 23,
+        "cells": 0,
+        "reads_molglyph": 23,
+        "reads_molscribe": 23,
+        "reads_molnextr": 23,
+        "voted": 21,
+        "vote_failed": 2,
+        "voted_agree_0": 0,
+        "voted_agree_1": 21,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 355,
+        "molecules": 23,
+        "drawn_labelled": 0,
+        "source_drawn": 23,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 12,
+        "status_review": 0,
+        "status_abstained": 11,
+        "exported": 12
+      }
+    },
+    "417_6ilz": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 89.95271274390356,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 6,
+          "seconds": 2.4276644978672266,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 6,
+          "records_out": 88,
+          "seconds": 5.909545824935561,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 6,
+          "records_out": 25,
+          "seconds": 15.812505372056835,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 19,
+          "records_out": 215,
+          "seconds": 4.086427829221941,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 19,
+            "out": 18,
+            "dropped_no_text": 1,
+            "dropped_failed": 0,
+            "lines": 215,
+            "lines_duplicate": 22
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 14,
+          "records_out": 16,
+          "seconds": 26.144856775707716,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 14,
+            "out": 14,
+            "dropped_failed_table": 0,
+            "matched": 14,
+            "upscaled": 0,
+            "split": 1,
+            "segmented": 1,
+            "drawings": 16
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 39,
+          "records_out": 39,
+          "seconds": 11.034922988238415,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 39,
+          "records_out": 39,
+          "seconds": 12.203948302631327,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 39,
+          "records_out": 39,
+          "seconds": 12.235625677730003,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 39,
+          "records_out": 38,
+          "seconds": 0.05616328492760658,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 41,
+            "out": 38,
+            "cores": 21,
+            "dropped_not_structure": 2,
+            "dropped_cell_no_attachment": 1,
+            "cells": 16,
+            "cell_fragments": 15,
+            "cell_molecules": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 41,
+          "records_out": 23,
+          "seconds": 0.01953505165874958,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 23,
+            "out": 2,
+            "dropped_drawn": 21,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 23,
+          "records_out": 2,
+          "seconds": 0.015733804553747177,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 23,
+            "dropped_duplicate": 0,
+            "out": 23,
+            "accepted": 2,
+            "review": 0,
+            "abstained": 21
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 23,
+          "records_out": 2,
+          "seconds": 0.005783334374427795,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 6,
+        "layout_blocks": 88,
+        "tables": 2,
+        "regions": 41,
+        "structures": 39,
+        "cells": 16,
+        "reads_molglyph": 39,
+        "reads_molscribe": 39,
+        "reads_molnextr": 39,
+        "voted": 38,
+        "vote_failed": 1,
+        "voted_agree_0": 0,
+        "voted_agree_1": 38,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 215,
+        "molecules": 23,
+        "drawn_labelled": 0,
+        "source_drawn": 23,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 2,
+        "status_review": 0,
+        "status_abstained": 21,
+        "exported": 2
+      }
+    },
+    "434_6iam": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 69.50693789507875,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 13,
+          "seconds": 5.520662028342485,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 13,
+          "records_out": 175,
+          "seconds": 12.80401595402705,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 13,
+          "records_out": 16,
+          "seconds": 34.260428306123146,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 19,
+          "records_out": 336,
+          "seconds": 4.086427829221941,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 19,
+            "out": 17,
+            "dropped_no_text": 2,
+            "dropped_failed": 0,
+            "lines": 336,
+            "lines_duplicate": 10
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 0,
+          "records_out": 0,
+          "seconds": 0.0,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 0,
+            "out": 0,
+            "dropped_failed_table": 0,
+            "matched": 0,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 0,
+            "drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 14,
+          "records_out": 14,
+          "seconds": 3.961254406034303,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 14,
+          "records_out": 14,
+          "seconds": 4.3809045188932965,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 14,
+          "records_out": 14,
+          "seconds": 4.392275884313334,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 14,
+          "records_out": 14,
+          "seconds": 0.051097212359309196,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 16,
+            "out": 14,
+            "cores": 2,
+            "dropped_not_structure": 2
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 18,
+          "records_out": 14,
+          "seconds": 0.02026381902396679,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 14,
+            "out": 12,
+            "dropped_drawn": 2,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 14,
+          "records_out": 9,
+          "seconds": 0.023745153099298477,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 14,
+            "dropped_duplicate": 3,
+            "out": 11,
+            "accepted": 9,
+            "review": 0,
+            "abstained": 2
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 11,
+          "records_out": 9,
+          "seconds": 0.005862783640623093,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 13,
+        "layout_blocks": 175,
+        "tables": 4,
+        "regions": 16,
+        "structures": 14,
+        "cells": 0,
+        "reads_molglyph": 14,
+        "reads_molscribe": 14,
+        "reads_molnextr": 14,
+        "voted": 14,
+        "vote_failed": 0,
+        "voted_agree_0": 0,
+        "voted_agree_1": 14,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 336,
+        "molecules": 11,
+        "drawn_labelled": 0,
+        "source_drawn": 11,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 9,
+        "status_review": 0,
+        "status_abstained": 2,
+        "exported": 9
+      }
+    },
+    "479_6hky": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 173.866614178972,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 43,
+          "seconds": 12.598860351368785,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 43,
+          "records_out": 193,
+          "seconds": 42.35174507870486,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 43,
+          "records_out": 4,
+          "seconds": 113.32295516640733,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 13,
+          "records_out": 279,
+          "seconds": 2.795976935783433,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 13,
+            "out": 13,
+            "dropped_no_text": 0,
+            "dropped_failed": 0,
+            "lines": 279,
+            "lines_duplicate": 74
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 0,
+          "records_out": 0,
+          "seconds": 0.0,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 0,
+            "out": 0,
+            "dropped_failed_table": 0,
+            "matched": 0,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 0,
+            "drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 3,
+          "records_out": 3,
+          "seconds": 0.8488402298644935,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 3,
+          "records_out": 3,
+          "seconds": 0.9387652540485636,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 3,
+          "records_out": 3,
+          "seconds": 0.9412019752100003,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 3,
+          "records_out": 3,
+          "seconds": 0.018277479335665703,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 4,
+            "out": 3,
+            "cores": 0,
+            "dropped_not_structure": 1
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 6,
+          "records_out": 3,
+          "seconds": 0.0293266624212265,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 3,
+            "out": 3,
+            "dropped_drawn": 0,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 3,
+          "records_out": 2,
+          "seconds": 0.014803705736994743,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 3,
+            "dropped_duplicate": 1,
+            "out": 2,
+            "accepted": 2,
+            "review": 0,
+            "abstained": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 2,
+          "records_out": 2,
+          "seconds": 0.005861340090632439,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 43,
+        "layout_blocks": 193,
+        "tables": 3,
+        "regions": 4,
+        "structures": 3,
+        "cells": 0,
+        "reads_molglyph": 3,
+        "reads_molscribe": 3,
+        "reads_molnextr": 3,
+        "voted": 3,
+        "vote_failed": 0,
+        "voted_agree_0": 0,
+        "voted_agree_1": 3,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 279,
+        "molecules": 2,
+        "drawn_labelled": 0,
+        "source_drawn": 2,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 2,
+        "status_review": 0,
+        "status_abstained": 0,
+        "exported": 2
+      }
+    },
+    "486_6hgx": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 31.270438169036026,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 5,
+          "seconds": 2.059512611478567,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 5,
+          "records_out": 90,
+          "seconds": 4.924621520779635,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 5,
+          "records_out": 13,
+          "seconds": 13.177087810047363,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 9,
+          "records_out": 164,
+          "seconds": 1.9356763401577615,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 9,
+            "out": 9,
+            "dropped_no_text": 0,
+            "dropped_failed": 0,
+            "lines": 164,
+            "lines_duplicate": 3
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 0,
+          "records_out": 0,
+          "seconds": 0.0,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 0,
+            "out": 0,
+            "dropped_failed_table": 0,
+            "matched": 0,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 0,
+            "drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 10,
+          "records_out": 10,
+          "seconds": 2.8294674328816454,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 10,
+          "records_out": 10,
+          "seconds": 3.1292175134952123,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 10,
+          "records_out": 10,
+          "seconds": 3.137339917366668,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 10,
+          "records_out": 10,
+          "seconds": 0.029470596462488174,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 13,
+            "out": 10,
+            "cores": 0,
+            "dropped_not_structure": 3
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 11,
+          "records_out": 10,
+          "seconds": 0.025377271696925163,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 10,
+            "out": 10,
+            "dropped_drawn": 0,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 10,
+          "records_out": 8,
+          "seconds": 0.014894988387823105,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 10,
+            "dropped_duplicate": 2,
+            "out": 8,
+            "accepted": 8,
+            "review": 0,
+            "abstained": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 8,
+          "records_out": 8,
+          "seconds": 0.007772166281938553,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 5,
+        "layout_blocks": 90,
+        "tables": 1,
+        "regions": 13,
+        "structures": 10,
+        "cells": 0,
+        "reads_molglyph": 10,
+        "reads_molscribe": 10,
+        "reads_molnextr": 10,
+        "voted": 10,
+        "vote_failed": 0,
+        "voted_agree_0": 0,
+        "voted_agree_1": 10,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 164,
+        "molecules": 8,
+        "drawn_labelled": 0,
+        "source_drawn": 8,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 8,
+        "status_review": 0,
+        "status_abstained": 0,
+        "exported": 8
+      }
+    },
+    "498_6h52": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 229.58218216757632,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 22,
+          "seconds": 8.503884740173817,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 22,
+          "records_out": 288,
+          "seconds": 21.668334691430395,
+          "peak_gpu_mb": 8942.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 22,
+          "records_out": 63,
+          "seconds": 57.9791863642084,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 50,
+          "records_out": 444,
+          "seconds": 10.753757445320897,
+          "peak_gpu_mb": 6.0,
+          "errors": [],
+          "counts": {
+            "in": 50,
+            "out": 46,
+            "dropped_no_text": 4,
+            "dropped_failed": 0,
+            "lines": 444,
+            "lines_duplicate": 23
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 27,
+          "records_out": 29,
+          "seconds": 50.422223781722025,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 27,
+            "out": 27,
+            "dropped_failed_table": 0,
+            "matched": 27,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 2,
+            "drawings": 29
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 88,
+          "records_out": 88,
+          "seconds": 24.899313409358477,
+          "peak_gpu_mb": 1225.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 88,
+          "records_out": 87,
+          "seconds": 27.537114118757867,
+          "peak_gpu_mb": 1085.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 88,
+          "records_out": 88,
+          "seconds": 27.608591272826676,
+          "peak_gpu_mb": 1047.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 88,
+          "records_out": 87,
+          "seconds": 0.14976206049323082,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 92,
+            "out": 87,
+            "cores": 39,
+            "dropped_not_structure": 4,
+            "dropped_no_usable_read": 1,
+            "cells": 29,
+            "cell_fragments": 29,
+            "cell_molecules": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 96,
+          "records_out": 59,
+          "seconds": 0.024266941472887993,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 59,
+            "out": 19,
+            "dropped_drawn": 40,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 59,
+          "records_out": 19,
+          "seconds": 0.028003571555018425,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 59,
+            "dropped_duplicate": 0,
+            "out": 59,
+            "accepted": 19,
+            "review": 0,
+            "abstained": 40
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 59,
+          "records_out": 19,
+          "seconds": 0.007743770256638527,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 22,
+        "layout_blocks": 288,
+        "tables": 8,
+        "regions": 92,
+        "structures": 88,
+        "cells": 29,
+        "reads_molglyph": 88,
+        "reads_molscribe": 87,
+        "reads_molnextr": 88,
+        "voted": 87,
+        "vote_failed": 1,
+        "voted_agree_0": 0,
+        "voted_agree_1": 87,
+        "voted_agree_2": 0,
+        "voted_agree_3": 0,
+        "ocr_lines": 444,
+        "molecules": 59,
+        "drawn_labelled": 0,
+        "source_drawn": 59,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 19,
+        "status_review": 0,
+        "status_abstained": 40,
+        "exported": 19
+      }
+    }
+  }
+}

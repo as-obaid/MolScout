@@ -1,0 +1,71 @@
+{
+  "dataset": "uob",
+  "tool": "OCSRGlyph 0.1.0 (git 0bf782f, model.pth @ da0d049)",
+  "predictions": {
+    "path": "benchmarks/results/ocsrglyph__uob/predictions.csv",
+    "sha256": "479757158cfc22e104d47c5121a006a4a3493deae75084bf9bf9dd841f6abb65"
+  },
+  "inputs": {
+    "references": {
+      "directory": "data/raw/uob/UOB_mol_ref",
+      "files": 5740,
+      "sha256": "b9ebed94461a134f1e761752d95844d05fe788418658438526fce668063a2aa8",
+      "unreadable": {}
+    }
+  },
+  "scoring": {
+    "molscout_version": "0.1.0",
+    "rdkit_version": "2026.03.2",
+    "numpy_version": "2.5.3",
+    "python_version": "3.12.14",
+    "match": "exact RDKit canonical SMILES, stereo-aware and stereo-stripped",
+    "ci95_proportions": {
+      "method": "wilson",
+      "z": 1.959963984540054
+    },
+    "ci95_macro": {
+      "method": "percentile bootstrap over papers",
+      "resamples": 10000,
+      "seed": 6630
+    }
+  },
+  "scores": {
+    "kind": "crop",
+    "items_scored": 5740,
+    "items_excluded": [],
+    "items_without_prediction": 0,
+    "accuracy": {
+      "value": 0.8679442508710802,
+      "ci95": [
+        0.8589394054197561,
+        0.8764569369554838
+      ],
+      "successes": 4982,
+      "trials": 5740
+    },
+    "accuracy_stereo_stripped": {
+      "value": 0.8745644599303136,
+      "ci95": [
+        0.8657447831072909,
+        0.8828831222462914
+      ],
+      "successes": 5020,
+      "trials": 5740
+    },
+    "valid_output_rate": {
+      "value": 0.9958188153310105,
+      "ci95": [
+        0.993785853114442,
+        0.9971885741582532
+      ],
+      "successes": 5716,
+      "trials": 5740
+    },
+    "seconds_per_item": {
+      "mean": 0.05690974327200173,
+      "median": 0.055578126572072506,
+      "items": 5740,
+      "total": 326.66192638128996
+    }
+  }
+}

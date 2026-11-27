@@ -1,0 +1,5 @@
+{"region_id": "p1-r1", "smiles": "COc1ccc(C(=O)Nc2ccccc2)cc1", "inchikey": "", "agree": 3, "stereo_kept": true, "confidence": 0.95, "readers": ["molglyph", "molscribe", "molnextr"], "slots": {}, "reason": null}
+{"region_id": "p1-r2", "smiles": "Cc1ccc(C(=O)Nc2ccccc2)cc1", "inchikey": "", "agree": 2, "stereo_kept": true, "confidence": 0.8, "readers": ["molglyph", "molscribe"], "slots": {}, "reason": null}
+{"region_id": "p1-r3", "smiles": "CC(=O)Nc1ccc(O)cc1", "inchikey": "", "agree": 3, "stereo_kept": true, "confidence": 0.9, "readers": ["molglyph", "molscribe", "molnextr"], "slots": {}, "reason": null}
+{"region_id": "p1-r4", "smiles": null, "inchikey": null, "agree": 0, "stereo_kept": false, "confidence": 0.0, "readers": [], "slots": {}, "reason": "not a structure"}
+{"region_id": "p2-r1", "smiles": "[*:1]c1ccc(C(=O)N[*:2])cc1", "inchikey": null, "agree": 3, "stereo_kept": true, "confidence": 0.9, "readers": ["molglyph", "molscribe", "molnextr"], "slots": {"1": "R1", "2": "R2"}, "reason": null}

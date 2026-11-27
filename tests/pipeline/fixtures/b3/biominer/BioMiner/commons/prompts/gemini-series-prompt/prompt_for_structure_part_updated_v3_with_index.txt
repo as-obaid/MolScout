@@ -1,0 +1,2 @@
+PART stand-in for BioMiner's R-group prompt (the real one is read from the BioMiner clone).
+The scaffold and R-group indices are: <index></index>

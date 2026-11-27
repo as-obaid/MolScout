@@ -1,0 +1,7 @@
+{"page": 1, "index": 0, "type": "title", "bbox": [72.0, 60.0, 540.0, 80.0], "text": "A synthetic test paper", "html": null, "parent": null, "image": null}
+{"page": 1, "index": 1, "type": "text", "bbox": [72.0, 85.0, 540.0, 100.0], "text": "Compounds 1 and 2 were tested.", "html": null, "parent": null, "image": null}
+{"page": 1, "index": 2, "type": "image", "bbox": [72.0, 110.0, 540.0, 300.0], "text": "", "html": null, "parent": null, "image": "images/p1-b2.png"}
+{"page": 1, "index": 3, "type": "caption", "bbox": [72.0, 305.0, 540.0, 320.0], "text": "Figure 1. Compounds 1 and 2.", "html": null, "parent": 2, "image": null}
+{"page": 1, "index": 4, "type": "caption", "bbox": [72.0, 420.0, 540.0, 435.0], "text": "Table 1. Analogues 3a-3c.", "html": null, "parent": 5, "image": null}
+{"page": 1, "index": 5, "type": "table", "bbox": [72.0, 440.0, 540.0, 700.0], "text": "", "html": "<table><tr><td>Compd</td><td>R1</td><td>R2</td></tr><tr><td>3a</td><td>Cl</td><td>H</td></tr><tr><td>3b</td><td></td><td>OMe</td></tr><tr><td>3c</td><td>1.5</td><td>H</td></tr></table>", "parent": null, "image": null}
+{"page": 1, "index": 6, "type": "image", "bbox": [300.0, 460.0, 360.0, 500.0], "text": "", "html": null, "parent": null, "image": "images/p1-b6.png"}

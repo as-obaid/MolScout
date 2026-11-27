@@ -1,0 +1,51 @@
+# Data: paper PDFs, dataset images and private files stay local
+data/raw/*
+!data/raw/.gitkeep
+
+# Internal sponsor dataset: six benchmark PDFs and ground-truth SMILES, never committed
+data/internal/
+
+# Benchmark runs: SLURM logs, harness staging folders, checkpoints of unfinished runs and worker claims
+benchmarks/slurm/logs/*
+!benchmarks/slurm/logs/.gitkeep
+benchmarks/results/.staging-*
+benchmarks/results/.old-*
+benchmarks/results/.checkpoints/
+benchmarks/results/.claims/
+# Internal results: only these files, which hold no SMILES, are committed
+benchmarks/results/*__internal/*
+!benchmarks/results/*__internal/scores.json
+!benchmarks/results/*__internal/meta.json
+!benchmarks/results/*__internal/config.yaml
+!benchmarks/results/*__internal/timing.json
+!benchmarks/results/*__internal/errors.json
+!benchmarks/results/*__internal/stages.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+
+# OS
+.DS_Store
+
+# W&B local run files, and the report specs scripts/report/raw_spec.py saves as backups
+wandb/
+scripts/report/backups/
+
+# Docs: only the public write-up is tracked; anything else in docs/ stays local
+docs/*
+!docs/pipeline.md
+!docs/benchmarks.md
+!docs/results.md
+!docs/reproduce.md
+!docs/figures/
+
+# Private working notes, plans and agent logs: never published
+notes/
+.superpowers/

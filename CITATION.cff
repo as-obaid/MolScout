@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use MolScout, please cite it as below."
+type: software
+title: "MolScout: Molecules from Chemistry Papers as Canonical SMILES"
+abstract: >-
+  MolScout turns a chemistry paper's PDF into a table of its molecules, with canonical SMILES,
+  compound label, page, box and status for each one, and benchmarks the result against structure
+  readers and complete extraction systems on public and private paper sets.
+authors:
+  - family-names: Obaidullah
+    given-names: Muhammad
+version: 0.1.0
+license: MIT
+repository-code: "https://github.com/as-obaid/MolScout"
+keywords:
+  - optical chemical structure recognition
+  - cheminformatics
+  - document parsing
+  - SMILES
+  - benchmark

@@ -1,0 +1,14 @@
+tool: ocsrglyph
+name: OCSRGlyph
+version: 0.1.0 (git 0bf782f, model.pth @ da0d049)
+python: ${MOLSCOUT_STORE}/src/glyph/.venv/bin/python
+args:
+- --checkpoint
+- ${MOLSCOUT_STORE}/models/ocsrglyph/model.pth
+- --device
+- cuda
+- --precision
+- fp32
+checkpoints:
+- path: ${MOLSCOUT_STORE}/models/ocsrglyph/model.pth
+  sha256: 6f966e0ea5bf2c5cf1ccd046c1523cb166acc76c556ad0745964f536735fb6be

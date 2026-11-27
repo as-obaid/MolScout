@@ -1,0 +1,7 @@
+dataset,item_id,smiles,page,bbox,confidence,tool,seconds
+uspto,c1,OCC,,,,HandMade 1.0,0.5
+uspto,c2,C[C@@H](N)C(=O)O,,,,HandMade 1.0,0.5
+uspto,c3,C1=CC=CC=C1,,,,HandMade 1.0,0.5
+uspto,c4,*c1ccccc1,,,,HandMade 1.0,0.5
+uspto,c5,CCC,,,,HandMade 1.0,0.5
+uspto,c7,C1CC,,,,HandMade 1.0,0.5

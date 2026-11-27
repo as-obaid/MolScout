@@ -1,0 +1,25 @@
+{
+  "dataset": "uob",
+  "description": "5,740 crops (PNG), one molfile each; published with MolRec (University of Birmingham).",
+  "source": "https://github.com/Kohulan/OCSR_Review",
+  "revision": "165b46ce5594f971c3f2d95d9e62f79333fdfdce",
+  "citation": "Rajan, K., Brinkhaus, H. O., Zielesny, A., & Steinbeck, C. (2020). A review of optical chemical structure recognition tools. Journal of Cheminformatics, 12. https://doi.org/10.1186/s13321-020-00465-0",
+  "license": "MIT (OCSR_Review repository)",
+  "items": 5740,
+  "files": [
+    {
+      "url": "https://raw.githubusercontent.com/Kohulan/OCSR_Review/165b46ce5594f971c3f2d95d9e62f79333fdfdce/assets/images/UOB.tar.gz",
+      "path": "UOB.tar.gz",
+      "sha256": "85a13ac48feae1d4a8f264cfdc17279caa09f73280bfb72d66bd18c419ab49a3",
+      "size_bytes": 18676295,
+      "extract": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Kohulan/OCSR_Review/165b46ce5594f971c3f2d95d9e62f79333fdfdce/assets/reference/UOB_mol_ref.tar.gz",
+      "path": "UOB_mol_ref.tar.gz",
+      "sha256": "2be660a4a899544176d5547d54ff69f34de3c3ea62f7c6e3b099f483a467ae26",
+      "size_bytes": 787949,
+      "extract": true
+    }
+  ]
+}

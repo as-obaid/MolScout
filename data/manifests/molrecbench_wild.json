@@ -1,0 +1,39 @@
+{
+  "dataset": "molrecbench_wild",
+  "description": "5,024 journal crops from 818 articles with CARBON molecular-graph labels; images embedded in Parquet. Release 2026-08-19.",
+  "source": "https://huggingface.co/datasets/opendatalab/MolRecBench-Wild",
+  "revision": "e8999662272ee5a9fd565e5dabf28feb12962dee",
+  "citation": "Yang, H., et al. (2026). MolRecBench-Wild: A real-world benchmark for optical chemical structure recognition. CVPR 2026. https://doi.org/10.48550/arXiv.2605.05832",
+  "license": "Not declared on the dataset card",
+  "items": 5024,
+  "files": [
+    {
+      "url": "https://huggingface.co/datasets/opendatalab/MolRecBench-Wild/resolve/e8999662272ee5a9fd565e5dabf28feb12962dee/data/test-00000-of-00004.parquet",
+      "path": "data/test-00000-of-00004.parquet",
+      "sha256": "94ce9705fc330fca6512ab5fa3aff6ba9eceedacfd0cce607254cb6a5ea9332a",
+      "size_bytes": 21383248,
+      "extract": false
+    },
+    {
+      "url": "https://huggingface.co/datasets/opendatalab/MolRecBench-Wild/resolve/e8999662272ee5a9fd565e5dabf28feb12962dee/data/test-00001-of-00004.parquet",
+      "path": "data/test-00001-of-00004.parquet",
+      "sha256": "74d177f6470d63b87a5f729ba0b0c59ff997bfcd5fedb033ab6f3b14e4b4a433",
+      "size_bytes": 22626400,
+      "extract": false
+    },
+    {
+      "url": "https://huggingface.co/datasets/opendatalab/MolRecBench-Wild/resolve/e8999662272ee5a9fd565e5dabf28feb12962dee/data/test-00002-of-00004.parquet",
+      "path": "data/test-00002-of-00004.parquet",
+      "sha256": "9858f4bab5fe35d691ea50b2170530e7be8507220f04df422dcad1d2735125b3",
+      "size_bytes": 23655556,
+      "extract": false
+    },
+    {
+      "url": "https://huggingface.co/datasets/opendatalab/MolRecBench-Wild/resolve/e8999662272ee5a9fd565e5dabf28feb12962dee/data/test-00003-of-00004.parquet",
+      "path": "data/test-00003-of-00004.parquet",
+      "sha256": "78131a479bfc62006d5ba252081227d30c59d830b708b61595968a9791c82788",
+      "size_bytes": 20795731,
+      "extract": false
+    }
+  ]
+}

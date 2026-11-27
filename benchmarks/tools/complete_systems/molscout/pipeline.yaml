@@ -1,0 +1,70 @@
+# The pipeline settings of MolScout's benchmark runs on Explorer. tool.yaml's variants change the joiner, the
+# fixes and the export on top of these. ${MOLSCOUT_STORE} holds the environments and weights.
+
+readers: [molglyph, molscribe, molnextr]
+primary_reader: molglyph
+joiner: rules
+vllm_url: null
+check_endpoint: true
+opsin_jar: ${MOLSCOUT_STORE}/models/opsin      # scripts/fetch_opsin.py --dest fills it
+java: ${MOLSCOUT_STORE}/models/molvec/jdk/bin/java     # MolVec's Temurin 17 JDK
+device: gpu                   # gpu, or cpu: MinerU's basic tier, segment and readers on the CPU
+dpi: 300
+export: accepted
+fixes:
+  labels: true
+  relevance: true
+  tables: true
+  core_check: true
+  vote: true
+  stereo: true
+  junk: true
+  names: true
+  formulas: true
+  attachments: true
+  slot_labels: true
+  legends: false              # off: on the development papers no code reached a drawing, so it changed nothing
+  partial_stereo: false       # off: on the development papers it lost 3 molecules and gained none
+thresholds:
+  structure_score: 0.5
+allow_empty: []
+
+workers:
+  parse:
+    python: ${MOLSCOUT_STORE}/envs/mineru/bin/python
+    worker: mineru_parse.py
+    env: {MINERU_HOME: "${MOLSCOUT_STORE}/models/mineru", MINERU_TELEMETRY_DISABLED: "1"}
+    device_args:
+      gpu: [--tier, standard, --backend, vllm, --small-backend, torch]
+      cpu: [--tier, basic]
+  segment:
+    python: ${MOLSCOUT_STORE}/envs/decimer_ai/bin/python
+    worker: segment.py
+    args: [--device, "{device}"]
+  ocr_labels:
+    python: ${MOLSCOUT_STORE}/envs/mineru/bin/python
+    worker: ocr_labels.py
+    env: {MINERU_HOME: "${MOLSCOUT_STORE}/models/mineru", MINERU_TELEMETRY_DISABLED: "1"}
+    args: [--device, cpu]     # MinerU's PP-OCRv6 on figure crops; the CPU is fast enough on every node
+  cells:                      # drawn R groups cut from table cells for the readers; remove to skip
+    python: ${MOLSCOUT_STORE}/envs/decimer_ai/bin/python
+    worker: cells.py
+    args: [--device, "{device}"]
+  read_molglyph:
+    python: ${MOLSCOUT_STORE}/envs/molglyph/bin/python
+    worker: read_molglyph.py
+    args: [--checkpoint, "${MOLSCOUT_STORE}/models/molglyph/molglyph_large.pt",
+           --abbrevs, "${MOLSCOUT_STORE}/src/BioMiner/BioMiner/commons/abbrevs.csv", --device, "{torch_device}"]
+  read_molscribe:
+    python: ${MOLSCOUT_STORE}/envs/molscribe/bin/python
+    worker: read_molscribe.py
+    args: [--checkpoint, "${MOLSCOUT_STORE}/models/molscribe/swin_base_char_aux_1m680k.pth", --device, "{torch_device}"]
+  read_molnextr:
+    python: ${MOLSCOUT_STORE}/envs/molnextr/bin/python
+    worker: read_molnextr.py
+    args: [--checkpoint, "${MOLSCOUT_STORE}/models/molnextr/molnextr_best.pth", --pad-to-square,
+           --device, "{torch_device}"]
+  join_32b:
+    python: ${MOLSCOUT_STORE}/envs/biominer/bin/python
+    worker: join_32b.py
+    args: [--url, "{vllm_url}", --wait, "60"]

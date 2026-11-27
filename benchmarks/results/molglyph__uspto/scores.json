@@ -1,0 +1,103 @@
+{
+  "dataset": "uspto",
+  "tool": "MolGlyph 1.1.1 (BioMiner git 17c6161, molglyph_large)",
+  "predictions": {
+    "path": "benchmarks/results/molglyph__uspto/predictions.csv",
+    "sha256": "15786bee7b0efc5c62f92822f8852f52e720a2be408536fe359769ee0d58bd3b"
+  },
+  "inputs": {
+    "references": {
+      "directory": "data/raw/uspto/USPTO_mol_ref",
+      "files": 5719,
+      "sha256": "27d6b66feb6479b20bdc05194f61e3036015033e71d4e4ad7fd7b87074a730e8",
+      "unreadable": {
+        "US07314654-20080101-C00014": "RDKit cannot parse the file",
+        "US07314939-20080101-C00075": "Explicit valence for atom # 12 B, 5, is greater than permitted",
+        "US07314952-20080101-C00003": "RDKit cannot parse the file",
+        "US07314952-20080101-C00012": "RDKit cannot parse the file",
+        "US07316472-20080108-C00136": "RDKit cannot parse the file",
+        "US07316472-20080108-C00226": "Can't kekulize mol.  Unkekulized atoms: 0 1 2 3 5",
+        "US07316739-20080108-C00281": "Can't kekulize mol.  Unkekulized atoms: 0 1 2 3 5",
+        "US07316830-20080108-C00085": "Can't kekulize mol.  Unkekulized atoms: 8 9 10 12 13",
+        "US07317111-20080108-C00002": "Explicit valence for atom # 14 N, 3, is greater than permitted",
+        "US07317111-20080108-C00003": "Explicit valence for atom # 18 N, 3, is greater than permitted",
+        "US07321045-20080122-C00069": "RDKit cannot parse the file",
+        "US07321045-20080122-C00072": "RDKit cannot parse the file",
+        "US07321045-20080122-C00076": "RDKit cannot parse the file",
+        "US07321045-20080122-C00111": "RDKit cannot parse the file",
+        "US07321045-20080122-C00112": "RDKit cannot parse the file"
+      }
+    }
+  },
+  "scoring": {
+    "molscout_version": "0.1.0",
+    "rdkit_version": "2026.03.2",
+    "numpy_version": "2.5.3",
+    "python_version": "3.12.14",
+    "match": "exact RDKit canonical SMILES, stereo-aware and stereo-stripped",
+    "ci95_proportions": {
+      "method": "wilson",
+      "z": 1.959963984540054
+    },
+    "ci95_macro": {
+      "method": "percentile bootstrap over papers",
+      "resamples": 10000,
+      "seed": 6630
+    }
+  },
+  "scores": {
+    "kind": "crop",
+    "items_scored": 5704,
+    "items_excluded": [
+      "US07314654-20080101-C00014",
+      "US07314939-20080101-C00075",
+      "US07314952-20080101-C00003",
+      "US07314952-20080101-C00012",
+      "US07316472-20080108-C00136",
+      "US07316472-20080108-C00226",
+      "US07316739-20080108-C00281",
+      "US07316830-20080108-C00085",
+      "US07317111-20080108-C00002",
+      "US07317111-20080108-C00003",
+      "US07321045-20080122-C00069",
+      "US07321045-20080122-C00072",
+      "US07321045-20080122-C00076",
+      "US07321045-20080122-C00111",
+      "US07321045-20080122-C00112"
+    ],
+    "items_without_prediction": 0,
+    "accuracy": {
+      "value": 0.7252805049088359,
+      "ci95": [
+        0.7135478601289886,
+        0.7367099156942019
+      ],
+      "successes": 4137,
+      "trials": 5704
+    },
+    "accuracy_stereo_stripped": {
+      "value": 0.8110098176718092,
+      "ci95": [
+        0.8006418295655002,
+        0.8209591776799003
+      ],
+      "successes": 4626,
+      "trials": 5704
+    },
+    "valid_output_rate": {
+      "value": 0.9801893408134642,
+      "ci95": [
+        0.9762366809584505,
+        0.9834956520996961
+      ],
+      "successes": 5591,
+      "trials": 5704
+    },
+    "seconds_per_item": {
+      "mean": 0.3190144699524152,
+      "median": 0.30025338008999825,
+      "items": 5719,
+      "total": 1824.4437536578625
+    }
+  }
+}

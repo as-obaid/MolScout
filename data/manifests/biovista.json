@@ -1,0 +1,53 @@
+{
+  "dataset": "biovista",
+  "description": "BioVista labels for 500 PDBbind papers named <index>_<PDB ID> (450 test, 50 valid): per-paper ground-truth structures as SMILES (8,735 rows) and bioactivity triplets, 11,212 depiction boxes with molfiles (388 papers) and 8,861 OCSR crops with SMILES (335 papers). Labels only: scripts/fetch_data.py biovista fetches open-access PDFs into pdfs/ and records each paper in data/manifests/biovista_papers.csv.",
+  "source": "https://github.com/jiaxianyan/BioMiner#statistics-and-access-of-biovista",
+  "revision": "17c6161b40e34e2c377b2871f760baab3fdeea06",
+  "citation": "Yan, J., Zhu, J., Yang, Y., Liu, Q., Zhang, K., Zhang, Z., Liu, X., Zhang, B., Gao, K., Xiao, J., & Chen, E. (2026). BioMiner: A multi-modal system for automated mining of protein-ligand bioactivity data from literature. arXiv. https://doi.org/10.48550/arXiv.2604.21508",
+  "license": "MIT (BioMiner repository and BioVista dataset card); the papers themselves are not redistributed",
+  "items": 500,
+  "files": [
+    {
+      "url": "https://raw.githubusercontent.com/jiaxianyan/BioMiner/17c6161b40e34e2c377b2871f760baab3fdeea06/BioVista/file_names.txt",
+      "path": "bioactivity_extraction/data/file_names.txt",
+      "sha256": "6aca26bd3728b2d25a722d72508208c6115d567a0186788b0ee72ea204a390d0",
+      "size_bytes": 4391,
+      "extract": false
+    },
+    {
+      "url": "https://raw.githubusercontent.com/jiaxianyan/BioMiner/17c6161b40e34e2c377b2871f760baab3fdeea06/BioVista/test_set_names.txt",
+      "path": "test_set_names.txt",
+      "sha256": "23efa404767f3b657241b94c7a073e71531a6d1ee5456f4aa6128f4c4de05119",
+      "size_bytes": 3951,
+      "extract": false
+    },
+    {
+      "url": "https://raw.githubusercontent.com/jiaxianyan/BioMiner/17c6161b40e34e2c377b2871f760baab3fdeea06/BioVista/valid_set_names.txt",
+      "path": "valid_set_names.txt",
+      "sha256": "d652c19472b8422b1c02a1609aa02040c5bbce81487b8627c3dc022a480604cd",
+      "size_bytes": 439,
+      "extract": false
+    },
+    {
+      "url": "https://drive.usercontent.google.com/download?id=14icAlg_jEy3uE7FOcDD-EYn3UIKQxC__&export=download&confirm=t",
+      "path": "bioactivity_extraction/bioactivity_extraction_normalization.tar.gz",
+      "sha256": "254ed18d494e3b4470a1bf77db89dc2328df5b7d93b30da2d746185e8072ec58",
+      "size_bytes": 1073256,
+      "extract": true
+    },
+    {
+      "url": "https://drive.usercontent.google.com/download?id=1SvsdgrizDqg5V-MGXEPGMmu4JmmhiFae&export=download&confirm=t",
+      "path": "molecule_detection.tar.gz",
+      "sha256": "8bcb1848cc06e40fb6c2f09fdb113a67813229878c0e1b099fefa65494691b80",
+      "size_bytes": 2776616,
+      "extract": true
+    },
+    {
+      "url": "https://drive.usercontent.google.com/download?id=11iCH0j7U9iFgwXahjkWZouNyqATfEPoL&export=download&confirm=t",
+      "path": "ocsr.tar.gz",
+      "sha256": "b1b7377f7df92c26ee9a7380311258887662849b80cf2f058c63d0345d7cd0df",
+      "size_bytes": 64140338,
+      "extract": true
+    }
+  ]
+}

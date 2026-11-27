@@ -1,0 +1,3 @@
+# Benchmark results stay byte for byte: scores.json pins each predictions.csv by sha256, and
+# Python's csv module ends rows with CRLF, which core.autocrlf would rewrite.
+benchmarks/results/** -text

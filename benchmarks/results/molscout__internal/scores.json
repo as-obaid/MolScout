@@ -1,0 +1,495 @@
+{
+  "dataset": "internal",
+  "tool": "MolScout 0.1.0",
+  "predictions": {
+    "path": "benchmarks/results/molscout__internal/predictions.csv",
+    "sha256": "daf56a11233747d3e0efd074c46235b07ab9f7c699664acc07221325f2bbfddb"
+  },
+  "inputs": {
+    "ground_truth_sha256": "c899d084313dbbff6de211efb9b389f292555ebd191ede3f139acc883403606d",
+    "split_sha256": "64c313cdef2cb9ebcaeaf213185245fb7c71b0bd1276ea8ddc7f0cdb26204d54"
+  },
+  "scoring": {
+    "molscout_version": "0.1.0",
+    "rdkit_version": "2026.03.2",
+    "numpy_version": "2.4.6",
+    "python_version": "3.11.16",
+    "match": "exact RDKit canonical SMILES, stereo-aware and stereo-stripped",
+    "ci95_proportions": {
+      "micro_precision_recall_f1": {
+        "method": "paper bootstrap",
+        "resamples": 10000,
+        "seed": 6630
+      },
+      "valid_output_rate": {
+        "method": "wilson",
+        "z": 1.959963984540054
+      }
+    },
+    "ci95_macro": {
+      "method": "percentile bootstrap over papers",
+      "resamples": 10000,
+      "seed": 6630
+    }
+  },
+  "scores": {
+    "kind": "paper",
+    "papers": {
+      "1": {
+        "molecules": 17,
+        "tp": 17,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "stereo_stripped": {
+          "tp": 17,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "valid_outputs": 17,
+        "invalid_outputs": 0,
+        "rows": 17,
+        "invalid_rows": 0
+      },
+      "2": {
+        "molecules": 34,
+        "tp": 11,
+        "fp": 4,
+        "fn": 23,
+        "precision": 0.7333333333333333,
+        "recall": 0.3235294117647059,
+        "stereo_stripped": {
+          "tp": 11,
+          "fp": 4,
+          "fn": 23,
+          "precision": 0.7333333333333333,
+          "recall": 0.3235294117647059
+        },
+        "valid_outputs": 15,
+        "invalid_outputs": 0,
+        "rows": 15,
+        "invalid_rows": 0
+      },
+      "4": {
+        "molecules": 60,
+        "tp": 19,
+        "fp": 11,
+        "fn": 41,
+        "precision": 0.6333333333333333,
+        "recall": 0.31666666666666665,
+        "stereo_stripped": {
+          "tp": 19,
+          "fp": 11,
+          "fn": 41,
+          "precision": 0.6333333333333333,
+          "recall": 0.31666666666666665
+        },
+        "valid_outputs": 30,
+        "invalid_outputs": 0,
+        "rows": 30,
+        "invalid_rows": 0
+      },
+      "6": {
+        "molecules": 1,
+        "tp": 0,
+        "fp": 1,
+        "fn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 1,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 1,
+        "invalid_outputs": 0,
+        "rows": 1,
+        "invalid_rows": 0
+      },
+      "16": {
+        "molecules": 4,
+        "tp": 0,
+        "fp": 0,
+        "fn": 4,
+        "precision": 0.0,
+        "recall": 0.0,
+        "stereo_stripped": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 4,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "valid_outputs": 0,
+        "invalid_outputs": 0,
+        "rows": 0,
+        "invalid_rows": 0
+      },
+      "19": {
+        "molecules": 104,
+        "tp": 38,
+        "fp": 1,
+        "fn": 66,
+        "precision": 0.9743589743589743,
+        "recall": 0.36538461538461536,
+        "stereo_stripped": {
+          "tp": 38,
+          "fp": 1,
+          "fn": 66,
+          "precision": 0.9743589743589743,
+          "recall": 0.36538461538461536
+        },
+        "valid_outputs": 39,
+        "invalid_outputs": 0,
+        "rows": 41,
+        "invalid_rows": 0
+      }
+    },
+    "groups": {
+      "dev": {
+        "papers": [
+          "1",
+          "16",
+          "19"
+        ],
+        "molecules": 125,
+        "counts": {
+          "tp": 55,
+          "fp": 1,
+          "fn": 70
+        },
+        "micro": {
+          "precision": {
+            "value": 0.9821428571428571,
+            "ci95": [
+              0.0,
+              1.0
+            ],
+            "successes": 55,
+            "trials": 56,
+            "ci_method": "paper bootstrap"
+          },
+          "recall": {
+            "value": 0.44,
+            "ci95": [
+              0.0,
+              1.0
+            ],
+            "successes": 55,
+            "trials": 125,
+            "ci_method": "paper bootstrap"
+          },
+          "f1": {
+            "value": 0.6077348066298343,
+            "ci95": [
+              0.0,
+              1.0
+            ],
+            "successes": 55,
+            "trials": 90.5,
+            "ci_method": "paper bootstrap"
+          }
+        },
+        "macro": {
+          "precision": {
+            "value": 0.6581196581196581,
+            "ci95": [
+              0.0,
+              1.0
+            ],
+            "papers": 3
+          },
+          "recall": {
+            "value": 0.4551282051282051,
+            "ci95": [
+              0.0,
+              1.0
+            ],
+            "papers": 3
+          }
+        },
+        "stereo_stripped": {
+          "counts": {
+            "tp": 55,
+            "fp": 1,
+            "fn": 70
+          },
+          "precision": {
+            "value": 0.9821428571428571,
+            "ci95": [
+              0.0,
+              1.0
+            ],
+            "successes": 55,
+            "trials": 56,
+            "ci_method": "paper bootstrap"
+          },
+          "recall": {
+            "value": 0.44,
+            "ci95": [
+              0.0,
+              1.0
+            ],
+            "successes": 55,
+            "trials": 125,
+            "ci_method": "paper bootstrap"
+          },
+          "f1": {
+            "value": 0.6077348066298343,
+            "ci95": [
+              0.0,
+              1.0
+            ],
+            "successes": 55,
+            "trials": 90.5,
+            "ci_method": "paper bootstrap"
+          }
+        },
+        "valid_output_rate": {
+          "value": 1.0,
+          "ci95": [
+            0.9378821442127971,
+            1.0
+          ],
+          "successes": 58,
+          "trials": 58
+        },
+        "papers_without_output": 1
+      },
+      "test": {
+        "papers": [
+          "2",
+          "4",
+          "6"
+        ],
+        "molecules": 95,
+        "counts": {
+          "tp": 30,
+          "fp": 16,
+          "fn": 65
+        },
+        "micro": {
+          "precision": {
+            "value": 0.6521739130434783,
+            "ci95": [
+              0.0,
+              0.7333333333333333
+            ],
+            "successes": 30,
+            "trials": 46,
+            "ci_method": "paper bootstrap"
+          },
+          "recall": {
+            "value": 0.3157894736842105,
+            "ci95": [
+              0.0,
+              0.3235294117647059
+            ],
+            "successes": 30,
+            "trials": 95,
+            "ci_method": "paper bootstrap"
+          },
+          "f1": {
+            "value": 0.425531914893617,
+            "ci95": [
+              0.0,
+              0.4489795918367347
+            ],
+            "successes": 30,
+            "trials": 70.5,
+            "ci_method": "paper bootstrap"
+          }
+        },
+        "macro": {
+          "precision": {
+            "value": 0.45555555555555555,
+            "ci95": [
+              0.0,
+              0.7333333333333333
+            ],
+            "papers": 3
+          },
+          "recall": {
+            "value": 0.2133986928104575,
+            "ci95": [
+              0.0,
+              0.3235294117647059
+            ],
+            "papers": 3
+          }
+        },
+        "stereo_stripped": {
+          "counts": {
+            "tp": 30,
+            "fp": 16,
+            "fn": 65
+          },
+          "precision": {
+            "value": 0.6521739130434783,
+            "ci95": [
+              0.0,
+              0.7333333333333333
+            ],
+            "successes": 30,
+            "trials": 46,
+            "ci_method": "paper bootstrap"
+          },
+          "recall": {
+            "value": 0.3157894736842105,
+            "ci95": [
+              0.0,
+              0.3235294117647059
+            ],
+            "successes": 30,
+            "trials": 95,
+            "ci_method": "paper bootstrap"
+          },
+          "f1": {
+            "value": 0.425531914893617,
+            "ci95": [
+              0.0,
+              0.4489795918367347
+            ],
+            "successes": 30,
+            "trials": 70.5,
+            "ci_method": "paper bootstrap"
+          }
+        },
+        "valid_output_rate": {
+          "value": 1.0,
+          "ci95": [
+            0.9229264369144198,
+            1.0
+          ],
+          "successes": 46,
+          "trials": 46
+        },
+        "papers_without_output": 0
+      },
+      "all": {
+        "papers": [
+          "1",
+          "2",
+          "4",
+          "6",
+          "16",
+          "19"
+        ],
+        "molecules": 220,
+        "counts": {
+          "tp": 85,
+          "fp": 17,
+          "fn": 135
+        },
+        "micro": {
+          "precision": {
+            "value": 0.8333333333333334,
+            "ci95": [
+              0.6382978723404256,
+              0.9734513274336283
+            ],
+            "successes": 85,
+            "trials": 102,
+            "ci_method": "paper bootstrap"
+          },
+          "recall": {
+            "value": 0.38636363636363635,
+            "ci95": [
+              0.29518072289156627,
+              0.6081081081081081
+            ],
+            "successes": 85,
+            "trials": 220,
+            "ci_method": "paper bootstrap"
+          },
+          "f1": {
+            "value": 0.5279503105590062,
+            "ci95": [
+              0.40268456375838924,
+              0.72
+            ],
+            "successes": 85,
+            "trials": 161.0,
+            "ci_method": "paper bootstrap"
+          }
+        },
+        "macro": {
+          "precision": {
+            "value": 0.5568376068376069,
+            "ci95": [
+              0.22777777777777777,
+              0.8692307692307693
+            ],
+            "papers": 6
+          },
+          "recall": {
+            "value": 0.3342634489693313,
+            "ci95": [
+              0.10669934640522875,
+              0.6148190045248869
+            ],
+            "papers": 6
+          }
+        },
+        "stereo_stripped": {
+          "counts": {
+            "tp": 85,
+            "fp": 17,
+            "fn": 135
+          },
+          "precision": {
+            "value": 0.8333333333333334,
+            "ci95": [
+              0.6382978723404256,
+              0.9734513274336283
+            ],
+            "successes": 85,
+            "trials": 102,
+            "ci_method": "paper bootstrap"
+          },
+          "recall": {
+            "value": 0.38636363636363635,
+            "ci95": [
+              0.29518072289156627,
+              0.6081081081081081
+            ],
+            "successes": 85,
+            "trials": 220,
+            "ci_method": "paper bootstrap"
+          },
+          "f1": {
+            "value": 0.5279503105590062,
+            "ci95": [
+              0.40268456375838924,
+              0.72
+            ],
+            "successes": 85,
+            "trials": 161.0,
+            "ci_method": "paper bootstrap"
+          }
+        },
+        "valid_output_rate": {
+          "value": 1.0,
+          "ci95": [
+            0.9643786456275479,
+            0.9999999999999999
+          ],
+          "successes": 104,
+          "trials": 104
+        },
+        "papers_without_output": 1
+      }
+    },
+    "seconds_per_item": {
+      "mean": 497.7838948663945,
+      "median": 422.38254565338593,
+      "items": 6,
+      "total": 2986.703369198367
+    }
+  }
+}

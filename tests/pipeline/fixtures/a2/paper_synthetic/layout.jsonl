@@ -1,0 +1,13 @@
+{"page": 1, "index": 0, "type": "title", "bbox": [72, 60, 540, 90], "text": "Synthetic benzamide inhibitors of a model kinase", "html": null, "parent": null, "image": null}
+{"page": 1, "index": 1, "type": "image", "bbox": [72, 100, 540, 330], "text": "", "html": null, "parent": null, "image": "images/f1.jpg"}
+{"page": 1, "index": 2, "type": "text", "bbox": [165, 232, 185, 244], "text": "1", "html": null, "parent": null, "image": null}
+{"page": 1, "index": 3, "type": "text", "bbox": [415, 232, 435, 244], "text": "2", "html": null, "parent": null, "image": null}
+{"page": 1, "index": 4, "type": "caption", "bbox": [72, 335, 540, 350], "text": "Figure 1. Lead compounds 1 and 2.", "html": null, "parent": 1, "image": null}
+{"page": 1, "index": 5, "type": "text", "bbox": [72, 380, 540, 440], "text": "Compound 1 inhibited the kinase with an IC50 of 12 nM, while 2 was inactive.", "html": null, "parent": null, "image": null}
+{"page": 2, "index": 0, "type": "image", "bbox": [200, 70, 400, 190], "text": "", "html": null, "parent": null, "image": "images/s1.jpg"}
+{"page": 2, "index": 1, "type": "caption", "bbox": [72, 195, 540, 210], "text": "Table 1. Activity of benzamides 3a–d.", "html": null, "parent": 2, "image": null}
+{"page": 2, "index": 2, "type": "table", "bbox": [72, 215, 540, 400], "text": "", "html": "<table><tr><th>Compd</th><th>R<sup>1</sup></th><th>R<sup>2</sup></th><th>IC<sub>50</sub> (nM)<sup>a</sup></th></tr><tr><td>3a</td><td>H</td><td>Me</td><td>14</td></tr><tr><td>3b</td><td>F</td><td>Et</td><td>25</td></tr><tr><td>3c</td><td>OMe</td><td>Q</td><td>30</td></tr><tr><td>3d</td><td>Cl</td><td>Me</td><td>NT</td></tr></table>", "parent": null, "image": null}
+{"page": 2, "index": 3, "type": "footnote", "bbox": [72, 405, 540, 420], "text": "a Mean of three experiments.", "html": null, "parent": 2, "image": null}
+{"page": 3, "index": 0, "type": "title", "bbox": [72, 60, 540, 80], "text": "Experimental section", "html": null, "parent": null, "image": null}
+{"page": 3, "index": 1, "type": "text", "bbox": [72, 90, 540, 130], "text": "N-Phenylbenzamide (4). To a solution of benzoyl chloride (1.0 mmol) in DCM was added aniline.", "html": null, "parent": null, "image": null}
+{"page": 3, "index": 2, "type": "text", "bbox": [72, 140, 540, 170], "text": "4-Methoxy-N-phenylbenzamide (1). Prepared as for 4.", "html": null, "parent": null, "image": null}

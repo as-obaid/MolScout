@@ -1,0 +1,5 @@
+{"region_id": "p1-r1", "smiles": "CC(=O)Oc1ccccc1C(=O)O", "inchikey": "BSYNRYMUTXBXSQ-UHFFFAOYSA-N", "agree": 3, "stereo_kept": true, "confidence": 0.9, "readers": ["molglyph", "molscribe", "molnextr"], "slots": {}}
+{"region_id": "p1-r2", "smiles": "c1ccc2ccccc2c1", "inchikey": "UFWIBTONFRDIAS-UHFFFAOYSA-N", "agree": 2, "stereo_kept": true, "confidence": 0.7, "readers": ["molglyph", "molscribe"], "slots": {}}
+{"region_id": "p1-r3", "smiles": "[*:1]c1ccc([*:2])cc1", "inchikey": null, "agree": 2, "stereo_kept": true, "confidence": 0.6, "readers": ["molglyph", "molnextr"], "slots": {"1": "R1", "2": "R2"}}
+{"region_id": "p1-r4", "smiles": "[*:1]C1CC1", "inchikey": null, "agree": 2, "stereo_kept": true, "confidence": 0.5, "readers": ["molglyph", "molscribe"], "slots": {"1": "*"}}
+{"region_id": "p1-r5", "smiles": "CCO", "inchikey": "LFQSCWFLJHTTHZ-UHFFFAOYSA-N", "agree": 3, "stereo_kept": true, "confidence": 0.9, "readers": ["molglyph", "molscribe", "molnextr"], "slots": {}}

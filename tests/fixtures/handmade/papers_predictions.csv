@@ -1,0 +1,15 @@
+dataset,item_id,smiles,page,bbox,confidence,tool,seconds
+internal,1,OCC,1,"10,20,110,120",0.9,HandMade 1.0,30
+internal,1,C1=CC=CC=C1,1,,,HandMade 1.0,30
+internal,1,C[C@@H](N)C(=O)O,2,,,HandMade 1.0,30
+internal,1,c1ccccc1*,2,,,HandMade 1.0,30
+internal,1,c1ccccc1,3,,,HandMade 1.0,30
+internal,1,C1CC,3,,,HandMade 1.0,30
+internal,1,Cl,3,,,HandMade 1.0,30
+internal,2,CC(O)=O,1,,,HandMade 1.0,12
+internal,2,CC(=O)O,4,,,HandMade 1.0,12
+internal,2,,4,,,HandMade 1.0,12
+internal,2,not_a_smiles,5,,,HandMade 1.0,12
+internal,2,not_a_smiles,6,,,HandMade 1.0,12
+internal,2,CCO,6,,,HandMade 1.0,12
+internal,3,C/C=C\C,1,,,HandMade 1.0,8

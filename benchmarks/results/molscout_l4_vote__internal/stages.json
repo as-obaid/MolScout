@@ -1,0 +1,874 @@
+{
+  "molscout_version": "0.1.0",
+  "config_sha256": "603c39c2deb318f6d368b49f3869bb1e29795c8c7465bf8d22e894681fd44ee5",
+  "config": {
+    "readers": [
+      "molglyph",
+      "molscribe",
+      "molnextr"
+    ],
+    "primary_reader": "molglyph",
+    "joiner": "rules",
+    "opsin_jar": "opsin",
+    "java": "${MOLSCOUT_STORE}/models/molvec/jdk/bin/java",
+    "dpi": 300,
+    "fixes": {
+      "labels": true,
+      "relevance": true,
+      "tables": true,
+      "core_check": true,
+      "vote": true,
+      "stereo": false,
+      "junk": false,
+      "names": false,
+      "formulas": false,
+      "attachments": false,
+      "slot_labels": false,
+      "legends": false,
+      "partial_stereo": false
+    },
+    "thresholds": {
+      "structure_score": 0.5
+    },
+    "export": "accepted",
+    "allow_empty": [],
+    "device": "gpu",
+    "workers": {
+      "cells": {
+        "env": "decimer_ai",
+        "worker": "cells.py",
+        "args": [
+          "--device",
+          "{device}"
+        ],
+        "output": "cells.jsonl",
+        "variables": []
+      },
+      "ocr_labels": {
+        "env": "mineru",
+        "worker": "ocr_labels.py",
+        "args": [
+          "--device",
+          "cpu"
+        ],
+        "output": "ocr.jsonl",
+        "variables": [
+          "MINERU_HOME",
+          "MINERU_TELEMETRY_DISABLED"
+        ]
+      },
+      "parse": {
+        "env": "mineru",
+        "worker": "mineru_parse.py",
+        "args": [
+          "--tier",
+          "standard",
+          "--backend",
+          "vllm",
+          "--small-backend",
+          "torch"
+        ],
+        "output": "layout.jsonl",
+        "variables": [
+          "MINERU_HOME",
+          "MINERU_TELEMETRY_DISABLED"
+        ]
+      },
+      "read_molglyph": {
+        "env": "molglyph",
+        "worker": "read_molglyph.py",
+        "args": [
+          "--checkpoint",
+          "molglyph_large.pt",
+          "--abbrevs",
+          "abbrevs.csv",
+          "--device",
+          "{torch_device}"
+        ],
+        "output": "reads.jsonl",
+        "variables": []
+      },
+      "read_molnextr": {
+        "env": "molnextr",
+        "worker": "read_molnextr.py",
+        "args": [
+          "--checkpoint",
+          "molnextr_best.pth",
+          "--pad-to-square",
+          "--device",
+          "{torch_device}"
+        ],
+        "output": "reads.jsonl",
+        "variables": []
+      },
+      "read_molscribe": {
+        "env": "molscribe",
+        "worker": "read_molscribe.py",
+        "args": [
+          "--checkpoint",
+          "swin_base_char_aux_1m680k.pth",
+          "--device",
+          "{torch_device}"
+        ],
+        "output": "reads.jsonl",
+        "variables": []
+      },
+      "segment": {
+        "env": "decimer_ai",
+        "worker": "segment.py",
+        "args": [
+          "--device",
+          "{device}"
+        ],
+        "output": "regions.jsonl",
+        "variables": []
+      }
+    }
+  },
+  "papers": 3,
+  "failed": [],
+  "stages": {
+    "render": {
+      "records_in": 3,
+      "records_out": 44,
+      "seconds": 16.69817165285349,
+      "peak_gpu_mb": null,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 3,
+      "resumed": 3
+    },
+    "parse": {
+      "records_in": 44,
+      "records_out": 738,
+      "seconds": 727.0749736372381,
+      "peak_gpu_mb": 8676.0,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 3,
+      "resumed": 3
+    },
+    "segment": {
+      "records_in": 44,
+      "records_out": 82,
+      "seconds": 363.5538175199181,
+      "peak_gpu_mb": 5577.0,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 3,
+      "resumed": 3
+    },
+    "ocr_labels": {
+      "records_in": 93,
+      "records_out": 1719,
+      "seconds": 39.68106619268656,
+      "peak_gpu_mb": 4.0,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 3,
+      "resumed": 3
+    },
+    "cells": {
+      "records_in": 13,
+      "records_out": 13,
+      "seconds": 60.50230638310313,
+      "peak_gpu_mb": 5577.0,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 3,
+      "resumed": 3
+    },
+    "read_molglyph": {
+      "records_in": 84,
+      "records_out": 82,
+      "seconds": 155.96499259769917,
+      "peak_gpu_mb": 1209.0,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 3,
+      "resumed": 3
+    },
+    "read_molscribe": {
+      "records_in": 84,
+      "records_out": 84,
+      "seconds": 198.41858311370015,
+      "peak_gpu_mb": 1023.0,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 3,
+      "resumed": 3
+    },
+    "read_molnextr": {
+      "records_in": 84,
+      "records_out": 84,
+      "seconds": 159.67459091171622,
+      "peak_gpu_mb": 1021.0,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 3,
+      "resumed": 3
+    },
+    "vote": {
+      "records_in": 84,
+      "records_out": 62,
+      "seconds": 0.9528422206640244,
+      "peak_gpu_mb": null,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 3,
+      "resumed": 3
+    },
+    "link": {
+      "records_in": 104,
+      "records_out": 164,
+      "seconds": 1.6577742155641317,
+      "peak_gpu_mb": null,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 3,
+      "resumed": 3
+    },
+    "finalize": {
+      "records_in": 164,
+      "records_out": 58,
+      "seconds": 0.2795721981674433,
+      "peak_gpu_mb": null,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 3,
+      "resumed": 3
+    },
+    "export": {
+      "records_in": 164,
+      "records_out": 45,
+      "seconds": 0.03615345060825348,
+      "peak_gpu_mb": null,
+      "errors": 0,
+      "diagnostics": {},
+      "papers": 3,
+      "resumed": 3
+    }
+  },
+  "funnel": {
+    "pages": 44,
+    "layout_blocks": 738,
+    "tables": 20,
+    "regions": 95,
+    "structures": 84,
+    "cells": 13,
+    "reads_molglyph": 82,
+    "reads_molscribe": 84,
+    "reads_molnextr": 84,
+    "voted": 62,
+    "vote_failed": 22,
+    "voted_agree_0": 0,
+    "voted_agree_1": 3,
+    "voted_agree_2": 12,
+    "voted_agree_3": 47,
+    "ocr_lines": 1719,
+    "molecules": 164,
+    "drawn_labelled": 8,
+    "source_drawn": 71,
+    "source_table": 93,
+    "source_name": 0,
+    "source_32b": 0,
+    "status_accepted": 45,
+    "status_review": 13,
+    "status_abstained": 106,
+    "exported": 45
+  },
+  "per_paper": {
+    "1": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 451.77265131415186,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 13,
+          "seconds": 6.180480644106865,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 13,
+          "records_out": 228,
+          "seconds": 214.81760584736583,
+          "peak_gpu_mb": 8676.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 13,
+          "records_out": 19,
+          "seconds": 107.41362790361217,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 29,
+          "records_out": 747,
+          "seconds": 12.37366580202054,
+          "peak_gpu_mb": 4.0,
+          "errors": [],
+          "counts": {
+            "in": 29,
+            "out": 29,
+            "dropped_no_text": 0,
+            "dropped_failed": 0,
+            "lines": 747,
+            "lines_duplicate": 26
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 0,
+          "records_out": 0,
+          "seconds": 0.0,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 0,
+            "out": 0,
+            "dropped_failed_table": 0,
+            "matched": 0,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 0,
+            "drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 18,
+          "records_out": 18,
+          "seconds": 33.421069842364105,
+          "peak_gpu_mb": 1209.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 18,
+          "records_out": 18,
+          "seconds": 42.518267810078605,
+          "peak_gpu_mb": 1023.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 18,
+          "records_out": 18,
+          "seconds": 34.215983766796334,
+          "peak_gpu_mb": 1021.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 18,
+          "records_out": 18,
+          "seconds": 0.591328639537096,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 19,
+            "out": 18,
+            "cores": 0,
+            "dropped_not_structure": 1
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 23,
+          "records_out": 18,
+          "seconds": 0.13901764526963234,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 18,
+            "out": 18,
+            "dropped_drawn": 0,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 18,
+          "records_out": 18,
+          "seconds": 0.09041324071586132,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 18,
+            "unlabelled_kept": 12,
+            "dropped_duplicate": 0,
+            "out": 18,
+            "accepted": 18,
+            "review": 0,
+            "abstained": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 18,
+          "records_out": 18,
+          "seconds": 0.011190172284841537,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 13,
+        "layout_blocks": 228,
+        "tables": 5,
+        "regions": 19,
+        "structures": 18,
+        "cells": 0,
+        "reads_molglyph": 18,
+        "reads_molscribe": 18,
+        "reads_molnextr": 18,
+        "voted": 18,
+        "vote_failed": 0,
+        "voted_agree_0": 0,
+        "voted_agree_1": 0,
+        "voted_agree_2": 1,
+        "voted_agree_3": 17,
+        "ocr_lines": 747,
+        "molecules": 18,
+        "drawn_labelled": 6,
+        "source_drawn": 18,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 18,
+        "status_review": 0,
+        "status_abstained": 0,
+        "exported": 18
+      }
+    },
+    "16": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 374.93295982281495,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 13,
+          "seconds": 4.294686548411846,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 13,
+          "records_out": 258,
+          "seconds": 214.81760584736583,
+          "peak_gpu_mb": 8676.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 13,
+          "records_out": 10,
+          "seconds": 107.41362790361217,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 27,
+          "records_out": 414,
+          "seconds": 11.520309539812228,
+          "peak_gpu_mb": 4.0,
+          "errors": [],
+          "counts": {
+            "in": 27,
+            "out": 26,
+            "dropped_no_text": 1,
+            "dropped_failed": 0,
+            "lines": 414,
+            "lines_duplicate": 26
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 0,
+          "records_out": 0,
+          "seconds": 0.0,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 0,
+            "out": 0,
+            "dropped_failed_table": 0,
+            "matched": 0,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 0,
+            "drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 6,
+          "records_out": 6,
+          "seconds": 11.140356614121368,
+          "peak_gpu_mb": 1209.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 6,
+          "records_out": 6,
+          "seconds": 14.172755936692868,
+          "peak_gpu_mb": 1023.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 6,
+          "records_out": 6,
+          "seconds": 11.405327922265444,
+          "peak_gpu_mb": 1021.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 6,
+          "records_out": 1,
+          "seconds": 0.05134746432304382,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 10,
+            "out": 1,
+            "cores": 0,
+            "dropped_not_structure": 4,
+            "dropped_tie": 5
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 8,
+          "records_out": 6,
+          "seconds": 0.050005365163087845,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 6,
+            "out": 1,
+            "dropped_drawn": 5,
+            "dropped_table": 0,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 6,
+          "records_out": 1,
+          "seconds": 0.055925002321600914,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 6,
+            "not_relevant": 1,
+            "dropped_duplicate": 0,
+            "out": 6,
+            "accepted": 0,
+            "review": 1,
+            "abstained": 5
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 6,
+          "records_out": 0,
+          "seconds": 0.011011678725481033,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 13,
+        "layout_blocks": 258,
+        "tables": 2,
+        "regions": 10,
+        "structures": 6,
+        "cells": 0,
+        "reads_molglyph": 6,
+        "reads_molscribe": 6,
+        "reads_molnextr": 6,
+        "voted": 1,
+        "vote_failed": 5,
+        "voted_agree_0": 0,
+        "voted_agree_1": 0,
+        "voted_agree_2": 1,
+        "voted_agree_3": 0,
+        "ocr_lines": 414,
+        "molecules": 6,
+        "drawn_labelled": 0,
+        "source_drawn": 6,
+        "source_table": 0,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 0,
+        "status_review": 1,
+        "status_abstained": 5,
+        "exported": 0
+      }
+    },
+    "19": {
+      "status": "ok",
+      "stopped_at": null,
+      "seconds": 897.7892329569521,
+      "errors": [],
+      "stages": {
+        "render": {
+          "records_in": 1,
+          "records_out": 18,
+          "seconds": 6.223004460334778,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "parse": {
+          "records_in": 18,
+          "records_out": 252,
+          "seconds": 297.43976194250655,
+          "peak_gpu_mb": 8676.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "segment": {
+          "records_in": 18,
+          "records_out": 53,
+          "seconds": 148.72656171269378,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "ocr_labels": {
+          "records_in": 37,
+          "records_out": 558,
+          "seconds": 15.78709085085379,
+          "peak_gpu_mb": 4.0,
+          "errors": [],
+          "counts": {
+            "in": 37,
+            "out": 36,
+            "dropped_no_text": 1,
+            "dropped_failed": 0,
+            "lines": 558,
+            "lines_duplicate": 49
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "cells": {
+          "records_in": 13,
+          "records_out": 13,
+          "seconds": 60.50230638310313,
+          "peak_gpu_mb": 5577.0,
+          "errors": [],
+          "counts": {
+            "in": 13,
+            "out": 13,
+            "dropped_failed_table": 0,
+            "matched": 13,
+            "upscaled": 0,
+            "split": 0,
+            "segmented": 0,
+            "drawings": 13
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molglyph": {
+          "records_in": 60,
+          "records_out": 58,
+          "seconds": 111.40356614121369,
+          "peak_gpu_mb": 1209.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molscribe": {
+          "records_in": 60,
+          "records_out": 60,
+          "seconds": 141.7275593669287,
+          "peak_gpu_mb": 1023.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "read_molnextr": {
+          "records_in": 60,
+          "records_out": 60,
+          "seconds": 114.05327922265445,
+          "peak_gpu_mb": 1021.0,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        },
+        "vote": {
+          "records_in": 60,
+          "records_out": 43,
+          "seconds": 0.3101661168038845,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 66,
+            "out": 43,
+            "cores": 7,
+            "dropped_not_structure": 6,
+            "dropped_tie": 12,
+            "dropped_slot_labels_disagree": 5,
+            "cells": 13,
+            "cell_fragments": 13,
+            "cell_molecules": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "link": {
+          "records_in": 73,
+          "records_out": 140,
+          "seconds": 1.4687512051314116,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 140,
+            "out": 39,
+            "dropped_drawn": 24,
+            "dropped_table": 77,
+            "dropped_name": 0,
+            "whole_compound_rows": 0,
+            "whole_compound_molecules": 0,
+            "scheme_variants": 0,
+            "legend_drawings": 0
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "finalize": {
+          "records_in": 140,
+          "records_out": 39,
+          "seconds": 0.13323395512998104,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": {
+            "in": 140,
+            "unlabelled_kept": 9,
+            "not_relevant": 12,
+            "dropped_duplicate": 0,
+            "out": 140,
+            "accepted": 27,
+            "review": 12,
+            "abstained": 101
+          },
+          "diagnostics": {},
+          "resumed": true
+        },
+        "export": {
+          "records_in": 140,
+          "records_out": 27,
+          "seconds": 0.013951599597930908,
+          "peak_gpu_mb": null,
+          "errors": [],
+          "counts": null,
+          "diagnostics": {},
+          "resumed": true
+        }
+      },
+      "funnel": {
+        "pages": 18,
+        "layout_blocks": 252,
+        "tables": 13,
+        "regions": 66,
+        "structures": 60,
+        "cells": 13,
+        "reads_molglyph": 58,
+        "reads_molscribe": 60,
+        "reads_molnextr": 60,
+        "voted": 43,
+        "vote_failed": 17,
+        "voted_agree_0": 0,
+        "voted_agree_1": 3,
+        "voted_agree_2": 10,
+        "voted_agree_3": 30,
+        "ocr_lines": 558,
+        "molecules": 140,
+        "drawn_labelled": 2,
+        "source_drawn": 47,
+        "source_table": 93,
+        "source_name": 0,
+        "source_32b": 0,
+        "status_accepted": 27,
+        "status_review": 12,
+        "status_abstained": 101,
+        "exported": 27
+      }
+    }
+  }
+}

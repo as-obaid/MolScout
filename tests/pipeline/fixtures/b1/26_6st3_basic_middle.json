@@ -1,0 +1,1334 @@
+{
+ "metadata": {
+  "file_suffix": "pdf",
+  "producer": {
+   "name": "mineru",
+   "version": "4.2.3"
+  },
+  "document": {
+   "title": "Structure‐Activity Relationship and Crystallographic Studies on 4‐Hydroxypyrimidine HIF Prolyl Hydroxylase Domain Inhibitors",
+   "created_at": "2020-07-27T06:58:12+02:00",
+   "modified_at": "2020-07-27T07:01:17+02:00",
+   "creator_application": "ima-server®",
+   "producer_application": "PDFlib+PDI 9.0.7p3 (C++/Win64)",
+   "page_count": 4,
+   "page_count_kind": "physical"
+  }
+ },
+ "extensions": {
+  "mineru": {
+   "tier": "basic",
+   "parse_mode": "txt"
+  },
+  "docvortex_layout": {
+   "version": 1,
+   "pages": [
+    {
+     "page_idx": 0,
+     "width_pt": 595,
+     "height_pt": 842
+    },
+    {
+     "page_idx": 2,
+     "width_pt": 595,
+     "height_pt": 842
+    }
+   ]
+  }
+ },
+ "pages": [
+  {
+   "page_idx": 0,
+   "blocks": [
+    {
+     "type": "header",
+     "index": 0,
+     "bbox": [
+      0.076,
+      0.025,
+      0.229,
+      0.055
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "ChemPubSoc **"
+      }
+     ]
+    },
+    {
+     "type": "header",
+     "index": 1,
+     "bbox": [
+      0.345,
+      0.038,
+      0.639,
+      0.056
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "DOI: 10.1002/cmdc.201900557"
+      }
+     ]
+    },
+    {
+     "type": "header",
+     "index": 2,
+     "bbox": [
+      0.698,
+      0.018,
+      0.911,
+      0.056
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "CHEMMEDCHEM Communications"
+      }
+     ]
+    },
+    {
+     "type": "doc_title",
+     "index": 3,
+     "bbox": [
+      0.073,
+      0.098,
+      0.924,
+      0.168
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "Structure-Activity Relationship and Crystallographic Studies on 4-Hydroxypyrimidine HIF Prolyl Hydroxylase Domain Inhibitors"
+      }
+     ],
+     "level": 1
+    },
+    {
+     "type": "text",
+     "index": 4,
+     "bbox": [
+      0.072,
+      0.18,
+      0.915,
+      0.254
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "James P. Holt-Martyn,"
+      },
+      {
+       "type": "text",
+       "content": "[a]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " Rasheduzzaman Chowdhury,"
+      },
+      {
+       "type": "text",
+       "content": "[a]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " Anthony Tumber,"
+      },
+      {
+       "type": "text",
+       "content": "[a]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " Tzu-Lan Yeh,"
+      },
+      {
+       "type": "text",
+       "content": "[a]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " "
+      },
+      {
+       "type": "hyperlink",
+       "url": "http://orcid.org/0000-0003-2141-5988",
+       "content": [
+        {
+         "type": "text",
+         "content": "Martine I. Abboud"
+        }
+       ]
+      },
+      {
+       "type": "text",
+       "content": ","
+      },
+      {
+       "type": "text",
+       "content": "[a]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " Kerstin Lippl,"
+      },
+      {
+       "type": "text",
+       "content": "[a]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " Christopher T. Lohans,"
+      },
+      {
+       "type": "text",
+       "content": "[a]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " Gareth W. Langley,"
+      },
+      {
+       "type": "text",
+       "content": "[a]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " William Figg, Jr.,"
+      },
+      {
+       "type": "text",
+       "content": "[a]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " Michael A. McDonough,"
+      },
+      {
+       "type": "text",
+       "content": "[a]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " Christopher W. Pugh,"
+      },
+      {
+       "type": "text",
+       "content": "[b]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " Peter J. Ratcliffe,"
+      },
+      {
+       "type": "text",
+       "content": "[b,",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " c] and "
+      },
+      {
+       "type": "hyperlink",
+       "url": "http://orcid.org/0000-0002-0290-6565",
+       "content": [
+        {
+         "type": "text",
+         "content": "Christopher J. Schofield"
+        }
+       ]
+      },
+      {
+       "type": "text",
+       "content": "*"
+      },
+      {
+       "type": "text",
+       "content": "[a]",
+       "styles": [
+        "superscript"
+       ]
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "index": 5,
+     "bbox": [
+      0.071,
+      0.275,
+      0.494,
+      0.392
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "The 2-oxoglutarate-dependent hypoxia inducible factor prolyl hydroxylases (PHDs) are targets for treatment of a variety of diseases including anaemia. One PHD inhibitor is approved for use for the treatment of renal anaemia and others are in late stage clinical trials. The number of reported templates for PHD inhibition is limited. We report structure–activity relationship and crystallographic studies on a promising class of 4- hydroxypyrimidine-containing PHD inhibitors."
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "index": 6,
+     "bbox": [
+      0.072,
+      0.431,
+      0.493,
+      0.619
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "Inhibition of the hypoxia inducible factor (HIF) prolyl hydroxylases (human PHD 1–3), with consequent increases in HIF levels, is being pursued for treatment of anaemia (via increasing erythropoietin) and has potential for treatment of other ischemia-related diseases."
+      },
+      {
+       "type": "text",
+       "content": "[1]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " The PHDs are Fe(II)/2-oxoglutarate (2OG) oxygenases that catalyse hydroxylation of prolyl-residues in the oxygen degradation domains (ODDs) of HIFα (Figure 1A)."
+      },
+      {
+       "type": "text",
+       "content": "[2]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " The oxygen-dependent prolyl hydroxylation of HIFα isoforms signals for their degradation via the ubiquitinproteasome system. As oxygen levels decrease, HIF-α levels rise and HIFα dimerizes with HIFβ. The HIFα,β complex promotes the context-dependent transcription of specific gene sets."
+      },
+      {
+       "type": "text",
+       "content": "[1–2]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " PHD inhibitors are in clinical trials for anaemia treatment in"
+      }
+     ]
+    },
+    {
+     "type": "page_footnote",
+     "index": 7,
+     "bbox": [
+      0.074,
+      0.643,
+      0.449,
+      0.741
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "[a] Dr. J. P. Holt-Martyn, Dr. R. Chowdhury, Dr. A. Tumber, Dr. T.-L. Yeh, Dr. M. I. Abboud, Dr. K. Lippl, Dr. C. T. Lohans, Dr. G. W. Langley, W. Figg, Jr., Dr. M. A. McDonough, Prof. Dr. C. J. Schofield Department of Chemistry University of Oxford Chemistry Research Laboratory 12 Mansfield Road Oxford OX1 3TA (UK) E-mail: author@example.org"
+      }
+     ]
+    },
+    {
+     "type": "image",
+     "index": 9,
+     "bbox": [
+      0.521,
+      0.271,
+      0.914,
+      0.336
+     ],
+     "content": [
+      {
+       "type": "image_caption",
+       "index": 8,
+       "bbox": [
+        0.524,
+        0.334,
+        0.54,
+        0.347
+       ],
+       "content": [
+        {
+         "type": "text",
+         "content": "B"
+        }
+       ]
+      },
+      {
+       "type": "image_body",
+       "index": 9,
+       "bbox": [
+        0.521,
+        0.271,
+        0.914,
+        0.336
+       ],
+       "image_path": "images/page_0_image_9.jpg",
+       "content": ""
+      }
+     ]
+    },
+    {
+     "type": "image",
+     "index": 10,
+     "bbox": [
+      0.518,
+      0.345,
+      0.913,
+      0.509
+     ],
+     "content": [
+      {
+       "type": "image_body",
+       "index": 10,
+       "bbox": [
+        0.518,
+        0.345,
+        0.913,
+        0.509
+       ],
+       "image_path": "images/page_0_image_10.jpg",
+       "content": ""
+      },
+      {
+       "type": "image_caption",
+       "index": 11,
+       "bbox": [
+        0.505,
+        0.52,
+        0.918,
+        0.63
+       ],
+       "content": [
+        {
+         "type": "text",
+         "content": "Figure 1. HIF prolyl hydroxylases are therapeutic targets. A. Prolyl-4-hydroxylation of hypoxia inducible factor α (HIFα) subunits signals for their degradation via the ubiquitin proteasome system. 2OG, 2-oxoglutarate; Suc, succinate; PHD1-3, human prolyl hydroxylase enzymes 1–3; VHL\u0000 E3 ligase, the von Hippel-Lindau protein (VHL) is the targeting component of a ubiquitin E3 ligase system. B. Examples of PHD inhibitors. Roxadustat (FG-4592, 1), Daprodustat (GSK1278863, 2), Vadadustat (3), FG-2216 (4) and Molidustat (BAY 85-3924, 5). Representative 4-hydroxypyrimidine (8) and spiro[4.5]decanone (18) inhibitors are shown, the biaryl unit of the latter binds in a hydrophobic pocket close to the PHD active site."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "index": 12,
+     "bbox": [
+      0.505,
+      0.66,
+      0.926,
+      0.802
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "chronic kidney disease, with Roxadustat (1) being recently approved for use in dialysis patients in China (Figure 1B)."
+      },
+      {
+       "type": "text",
+       "content": "[2a–c,3]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " Most PHD inhibitors chelate to the active site Fe(II) and compete with 2OG (e. g., 3, Figure 2A) and, to differing extents, with HIFα."
+      },
+      {
+       "type": "text",
+       "content": "[2b,3a,4]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " It is likely none of the current ‘clinical’ PHD inhibitors are completely selective for the PHDs over other human 2OG oxygenases."
+      },
+      {
+       "type": "text",
+       "content": "[2b,5]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " Since many human 2OG oxygenases are involved in disease/biologically important processes,"
+      },
+      {
+       "type": "text",
+       "content": "[6]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " there is a need for new scaffolds for PHD, and other 2OG oxygenases, inhibition."
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "index": 13,
+     "bbox": [
+      0.505,
+      0.802,
+      0.927,
+      0.889
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "Recently, we reported SAR studies on spiro[4.5]decanone containing PHD inhibitors, leading to the identification of a hydrophobic pocket close to the Fe(II) binding site of the target enzymes."
+      },
+      {
+       "type": "text",
+       "content": "[7]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " The side chains of Trp-258, Trp-389 and Phe-391 in PHD2 are positioned to make hydrophobic and π-stacking interactions with the biphenyl substituent of spiro[4.5]decanone"
+      }
+     ]
+    },
+    {
+     "type": "page_footnote",
+     "index": 14,
+     "bbox": [
+      0.074,
+      0.741,
+      0.325,
+      0.785
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "[b] Prof. Dr. C. W. Pugh, Prof. Dr. P. J. Ratcliffe NDM Research Building University of Oxford, Oxford OX3 7FZ (UK)"
+      }
+     ]
+    },
+    {
+     "type": "page_footnote",
+     "index": 15,
+     "bbox": [
+      0.073,
+      0.784,
+      0.235,
+      0.817
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "[c] Prof. Dr. P. J. Ratcliffe The Francis Crick Institute London NW1 1AT (UK)"
+      }
+     ]
+    },
+    {
+     "type": "page_footnote",
+     "index": 16,
+     "bbox": [
+      0.068,
+      0.817,
+      0.491,
+      0.842
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "Supporting information for this article is available on the WWW under "
+      },
+      {
+       "type": "hyperlink",
+       "url": "https://doi.org/10.1002/cmdc.201900557",
+       "content": [
+        {
+         "type": "text",
+         "content": "https://doi.org/10.1002/cmdc.201900557"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "page_footnote",
+     "index": 17,
+     "bbox": [
+      0.069,
+      0.842,
+      0.492,
+      0.889
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "1 © 2019 The Authors. Published by Wiley-VCH Verlag GmbH & Co. KGaA. This is an open access article under the terms of the Creative Commons Attribution License, which permits use, distribution and reproduction in any medium, provided the original work is properly cited."
+      }
+     ]
+    },
+    {
+     "type": "footer",
+     "index": 18,
+     "bbox": [
+      0.073,
+      0.908,
+      0.403,
+      0.922
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "ChemMedChem 2020, 15, 270–273 Wiley Online Library"
+      }
+     ]
+    },
+    {
+     "type": "page_number",
+     "index": 19,
+     "bbox": [
+      0.492,
+      0.908,
+      0.521,
+      0.92
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "270"
+      }
+     ]
+    },
+    {
+     "type": "footer",
+     "index": 20,
+     "bbox": [
+      0.569,
+      0.909,
+      0.924,
+      0.921
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "© 2019 The Authors. Published by Wiley-VCH Verlag GmbH & Co. KGaA"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "page_idx": 2,
+   "blocks": [
+    {
+     "type": "header",
+     "index": 0,
+     "bbox": [
+      0.077,
+      0.026,
+      0.229,
+      0.054
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "ChemPubSoc"
+      }
+     ]
+    },
+    {
+     "type": "header",
+     "index": 1,
+     "bbox": [
+      0.7,
+      0.019,
+      0.91,
+      0.054
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "CHEMMEDCHEM Communications"
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "index": 2,
+     "bbox": [
+      0.073,
+      0.076,
+      0.492,
+      0.189
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "levels of inhibition to 8. Removal of the methylene linker as in "
+      },
+      {
+       "type": "text",
+       "content": "15",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " "
+      },
+      {
+       "type": "equation_inline",
+       "content": "( \\mathsf { I C } _ { 5 0 } 0 . 2 1 3 \\mu \\mathsf { M } )"
+      },
+      {
+       "type": "text",
+       "content": " manifested similar levels of potency to 9, suggesting a methylene link is not essential for potent inhibition. Addition of a hydroxymethylene group on the methylene linker "
+      },
+      {
+       "type": "equation_inline",
+       "content": "( \\mathsf { I C } _ { 5 0 } \\; \\mathsf { 1 6 } ,   0 . 0 9 3 \\; \\mu \\mathsf { M } ;   \\mathsf { I C } _ { 5 0 } \\; \\mathsf { 1 7 } ,   \\mathsf { 1 3 } . 2 \\; \\mu \\mathsf { M } )"
+      },
+      {
+       "type": "text",
+       "content": " reveals the impact of introducing chirality into the scaffold. Thus, (R)-"
+      },
+      {
+       "type": "text",
+       "content": "16",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " manifested improved (4-fold) PHD2 inhibition compared to "
+      },
+      {
+       "type": "text",
+       "content": "10",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": ", whereas (S)-"
+      },
+      {
+       "type": "text",
+       "content": "17",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " was much less active."
+      }
+     ],
+     "continues_prev": true
+    },
+    {
+     "type": "text",
+     "index": 3,
+     "bbox": [
+      0.072,
+      0.19,
+      0.493,
+      0.517
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "An X-ray crystal structure of a truncated domain of PHD2 (tPHD2) with "
+      },
+      {
+       "type": "equation_inline",
+       "content": "M n ^ { \\parallel }"
+      },
+      {
+       "type": "text",
+       "content": " (substituting for Fe"
+      },
+      {
+       "type": "text",
+       "content": "II",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": ") and complexed with 8 was obtained (Figure 2B, "
+      },
+      {
+       "type": "text",
+       "content": "S1",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": "–4). The overall fold is similar to previously reported PHD-inhibitor complex structures (backbone root mean square deviation with a structure of tPHD with "
+      },
+      {
+       "type": "text",
+       "content": "18",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": ": 0.7564) (Figure 2C, "
+      },
+      {
+       "type": "text",
+       "content": "S2",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": "-3)."
+      },
+      {
+       "type": "text",
+       "content": "[7]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " The structure reveals a binding mode for 8 involving chelation of the active site metal via nitrogen atoms of the pyrazolo and a pyrimidyl rings which adopt a coplanar conformation (Figure 2B, "
+      },
+      {
+       "type": "text",
+       "content": "S1",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": "–4). Octahedral metal ion coordination is completed by monodentate chelation by the conserved 2His-Asp metal binding triad of the PHDs and a water molecule ("
+      },
+      {
+       "type": "text",
+       "content": "Figure S1",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": "–4). The pyrazole ring of 8 occupies the entrance of the active site pocket that is occupied by the "
+      },
+      {
+       "type": "equation_inline",
+       "content": "\\mathrm{CH_{2}CO_{2}H}"
+      },
+      {
+       "type": "text",
+       "content": " group of 2OG during catalysis. The conformation of the side chain of Arg-383 which interacts with 2OG C-5 carboxylate/analogous carboxylate in many PHD inhibitors (e. g. 3, as in Figure 2A) is different in the complex with 8, likely reflecting the lack of a carboxylate/carboxylate equivalent in 8. Instead of interacting with an inhibitor carboxylate, the guanidino group of Arg-383 is positioned to interact with a formate ion, likely derived from the crystallization buffer. The hydroxyl group of the pyrimidine of 8 is positioned to H-bond with Arg-252 and Tyr-310 ("
+      },
+      {
+       "type": "text",
+       "content": "Figure S1",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": ")."
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "index": 4,
+     "bbox": [
+      0.072,
+      0.517,
+      0.493,
+      0.703
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "As proposed, the 4-phenoxy-phenyl substituent of 8 is located in the hydrophobic pocket, formed by residues including Trp-258, Trp-389 and Phe-391 ("
+      },
+      {
+       "type": "text",
+       "content": "Figure S4",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": "). The addition of an ether link between the phenyl rings of 8 apparently results in a different π-π interaction compared to the C-3 biphenyl substituent of "
+      },
+      {
+       "type": "text",
+       "content": "18",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " (Figure 2B "
+      },
+      {
+       "type": "text",
+       "content": "&",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " "
+      },
+      {
+       "type": "equation_inline",
+       "content": "2   \\mathsf { C } ) . ^ { [ 7 ] }"
+      },
+      {
+       "type": "text",
+       "content": " The terminal phenyl ring of 8 forms an edge-face π-stacking interaction with Phe-391 and interacts with the Arg-396 side chain (Figure 2B). The Arg-322 side chain is positioned to interact with 8 in an analogous manner to how it interacts with the spiro[4.5]decanone inhibitors, i. e. to form a cation-π interaction with the NCH -phenyl ring of 8 and to H-bond with its amide carbonyl oxygen (Figure 2B)."
+      },
+      {
+       "type": "text",
+       "content": "[7]",
+       "styles": [
+        "superscript"
+       ]
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "index": 5,
+     "bbox": [
+      0.072,
+      0.703,
+      0.492,
+      0.875
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "The extent of PHD2 inhibition was similar when using HIF-1α N-terminal ODD (NODD) and CODD substrates in terms of rank order of potency, though the "
+      },
+      {
+       "type": "equation_inline",
+       "content": "1 C _ { 5 0 }"
+      },
+      {
+       "type": "text",
+       "content": " values for NODD were generally lower (Table 1)."
+      },
+      {
+       "type": "text",
+       "content": "[2b,5]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " To further investigate their binding with different substrates, 8, "
+      },
+      {
+       "type": "text",
+       "content": "15",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": "–"
+      },
+      {
+       "type": "text",
+       "content": "17",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " and "
+      },
+      {
+       "type": "text",
+       "content": "18",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " (a spiro[4.5]decanone series representative) were tested for CODD and NODD substrate displacement from the appropriate PHD2.Zn(II).2OG substrate complex via reported 1D CLIP HSQC NMR analyses (with selective 13"
+      },
+      {
+       "type": "text",
+       "content": "C",
+       "styles": [
+        "subscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": "-"
+      },
+      {
+       "type": "text",
+       "content": "i",
+       "styles": [
+        "subscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": "nversion) ("
+      },
+      {
+       "type": "text",
+       "content": "Figure S5",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": ")."
+      },
+      {
+       "type": "text",
+       "content": "[9]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " Notably, all tested compounds displaced the HIF-1α NODD, but not the CODD fragment, consistent with the lower "
+      },
+      {
+       "type": "equation_inline",
+       "content": "1 C _ { 5 0 }"
+      },
+      {
+       "type": "text",
+       "content": " values for NODD compared to CODD. Note that binding of the inhibitors may"
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "index": 6,
+     "bbox": [
+      0.51,
+      0.08,
+      0.922,
+      0.136
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "Table 1.",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " Studies on 4-hydroxypyrimidine containing inhibitors. Compounds were screened against "
+      },
+      {
+       "type": "equation_inline",
+       "content": "\\mathsf { P H D 2 } _ { 1 8 1 - 4 2 6 }"
+      },
+      {
+       "type": "text",
+       "content": " using HIF-1α CODD and NODD substrates, FIH using HIF-1α CAD peptide D788–L822, KDM4A using H3(1–15) K9Me3. PHD2, FIH, and KDM4A assays employed a RapidFire MS machine. Standard errors of the mean are reported (n = 3)."
+      }
+     ],
+     "continues_prev": true
+    },
+    {
+     "type": "table",
+     "index": 7,
+     "bbox": [
+      0.511,
+      0.136,
+      0.922,
+      0.655
+     ],
+     "content": [
+      {
+       "type": "table_body",
+       "index": 7,
+       "bbox": [
+        0.511,
+        0.136,
+        0.922,
+        0.655
+       ],
+       "image_path": "images/page_2_table_7.jpg",
+       "content": "<table><tr><td rowspan=\"2\">R</td><td colspan=\"2\"><img src=\"images/page_2_table_image_7_1.jpg\"/> PHD2 with</td><td rowspan=\"2\">FIH <eq>\\mathsf { I C } _ { 5 0 } \\mu \\mathsf { M }</eq></td><td rowspan=\"2\">KDM4A <eq>\\mathsf { I C } _ { 5 0 }   \\mu \\mathsf { M }</eq></td></tr><tr><td>HIF-1α CODD IC50μM</td><td>PHD2 with HIF-1α NODD IC50μM</td></tr><tr><td>6 precursor</td><td>&gt;25</td><td>&gt;25</td><td>&gt;25</td><td>&gt;25</td></tr><tr><td><img src=\"images/page_2_table_image_7_2.jpg\"/> 8</td><td>0.256±0.088</td><td>0.094±0.042</td><td>&gt;25</td><td>&gt;25</td></tr><tr><td>9 <img src=\"images/page_2_table_image_7_3.jpg\"/></td><td>0.210±0.051</td><td>0.093±0.033</td><td>&gt;25</td><td>20</td></tr><tr><td>10</td><td><eq>0 . 3 9 6   \\pm   0 . 1 8 0</eq></td><td>0.122±0.065</td><td>&gt;25</td><td>&gt;25</td></tr><tr><td>11 N</td><td><eq>0 . 9 5 0   \\pm   0 . 1 8 5</eq></td><td><eq>0 . 3 5 9   \\pm   0 . 1 1 0</eq></td><td>&gt;25</td><td>17</td></tr><tr><td>12 <img src=\"images/page_2_table_image_7_4.jpg\"/></td><td>&gt;25</td><td>&gt;25</td><td>&gt;25</td><td>&gt;25</td></tr><tr><td>13 <img src=\"images/page_2_table_image_7_5.jpg\"/></td><td>0.153±0.042</td><td>0.066±0.026</td><td>&gt;25</td><td>&gt;25</td></tr><tr><td>14</td><td><eq>0 . 2 6 1   \\pm   0 . 0 3 7</eq></td><td>0.274±0.034</td><td>&gt;25</td><td>23</td></tr><tr><td>15 <img src=\"images/page_2_table_image_7_6.jpg\"/></td><td><eq>0 . 2 1 3   \\pm   0 . 0 6 4</eq></td><td>0.101±0.023</td><td>&gt;25</td><td>&gt;25</td></tr><tr><td>16 <img src=\"images/page_2_table_image_7_7.jpg\"/></td><td>0.093±0.039</td><td>0.027±0.012</td><td>&gt;25</td><td>&gt;25</td></tr><tr><td>17 <img src=\"images/page_2_table_image_7_8.jpg\"/></td><td>13.275±3.4</td><td>3.95±1.62</td><td>&gt;25</td><td>21</td></tr><tr><td>18 <img src=\"images/page_2_table_image_7_9.jpg\"/></td><td>0.253±0.047</td><td>0.127±0.056</td><td>&gt;25</td><td>4.69</td></tr></table>"
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "index": 8,
+     "bbox": [
+      0.505,
+      0.688,
+      0.924,
+      0.716
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "well disrupt CODD binding in the immediate active site (see Yeh et al. for discussion)."
+      },
+      {
+       "type": "text",
+       "content": "[2b]",
+       "styles": [
+        "superscript"
+       ]
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "index": 9,
+     "bbox": [
+      0.505,
+      0.717,
+      0.926,
+      0.888
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "8–"
+      },
+      {
+       "type": "text",
+       "content": "18",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " were tested for inhibition of other 2OG oxygenases (Table 1) using solid phase extraction linked to MS (RapidFire MS) or MALDI MS based assays."
+      },
+      {
+       "type": "text",
+       "content": "[2a,b,5,10]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " 8–"
+      },
+      {
+       "type": "text",
+       "content": "18",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " showed little/no inhibition of human FIH (factor inhibiting HIF, a JmjC ‘hydroxylase’) and KDM4A (a JmjC demethylase) using RapidFire MS assays. By contrast, spiro[4.5]decanone "
+      },
+      {
+       "type": "text",
+       "content": "18",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " was active against KDM4A "
+      },
+      {
+       "type": "equation_inline",
+       "content": "( | C _ { 5 0 }"
+      },
+      {
+       "type": "text",
+       "content": " "
+      },
+      {
+       "type": "text",
+       "content": "18",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": ", 4.65 μM) (Table 1). Results (using MALDI MS) with two other prolyl hydroxylases, human OGFOD1 and a viral collagen prolyl hydroxylase (vCPH, a model for human collagen type prolyl hydroxylases) (Table 1) reveal the importance of the C-5 amido group identity in obtaining selectivity ("
+      },
+      {
+       "type": "text",
+       "content": "Figure S6",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": ")."
+      },
+      {
+       "type": "text",
+       "content": "[5,11]",
+       "styles": [
+        "superscript"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " As with PHD2, 6 was inactive versus vCPH; 8 and "
+      },
+      {
+       "type": "text",
+       "content": "16",
+       "styles": [
+        "bold"
+       ]
+      },
+      {
+       "type": "text",
+       "content": " were potent"
+      }
+     ]
+    },
+    {
+     "type": "footer",
+     "index": 10,
+     "bbox": [
+      0.074,
+      0.909,
+      0.424,
+      0.921
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "ChemMedChem 2020, 15, 270–273 "
+      },
+      {
+       "type": "hyperlink",
+       "url": "https://doi.org/10.1002/cmdc.201900557",
+       "content": [
+        {
+         "type": "text",
+         "content": "www.chemmedchem.org"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "page_number",
+     "index": 11,
+     "bbox": [
+      0.491,
+      0.908,
+      0.519,
+      0.92
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "272"
+      }
+     ]
+    },
+    {
+     "type": "footer",
+     "index": 12,
+     "bbox": [
+      0.57,
+      0.909,
+      0.924,
+      0.921
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "© 2019 The Authors. Published by Wiley-VCH Verlag GmbH & Co. KGaA"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "is_full_document": true,
+ "schema": "docvortex.middle",
+ "schema_version": "2.0"
+}

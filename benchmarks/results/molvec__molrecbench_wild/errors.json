@@ -1,0 +1,20 @@
+{
+  "images": 5024,
+  "failed": 14,
+  "errors": {
+    "10.1002_anie.202408423_1_figure_1_mol_7": "RuntimeError: MolVec: gov.nih.ncats.molvec.internal.algo.StructureImageExtractor$ImageTooSmallException",
+    "10.1002_anie.202409834_34_figure_1_mol_12": "RuntimeError: MolVec: gov.nih.ncats.molvec.internal.algo.StructureImageExtractor$ImageTooSmallException",
+    "10.1002_anie.202411296_2_figure_0_mol_20": "RuntimeError: MolVec: gov.nih.ncats.molvec.internal.algo.StructureImageExtractor$ImageTooSmallException",
+    "10.1002_anie.202412925_8_figure_0_mol_11": "RuntimeError: MolVec: gov.nih.ncats.molvec.internal.algo.StructureImageExtractor$ImageTooSmallException",
+    "10.1002_anie.202413374_5_figure_1_mol_3": "RuntimeError: MolVec: gov.nih.ncats.molvec.internal.algo.StructureImageExtractor$ImageTooSmallException",
+    "10.1002_anie.202419786_5_figure_1_mol_6": "RuntimeError: MolVec: gov.nih.ncats.molvec.internal.algo.StructureImageExtractor$ImageTooSmallException",
+    "10.1002_anie.202506832_2_figure_0_mol_3": "RuntimeError: MolVec: gov.nih.ncats.molvec.internal.algo.StructureImageExtractor$ImageTooSmallException",
+    "10.1021_acscatal.4c04490_3_figure_1_mol_2": "ValueError: RDKit could not parse the molfile",
+    "10.1021_acscatal.4c05268_2_figure_0_mol_7": "RuntimeError: MolVec: gov.nih.ncats.molvec.internal.algo.StructureImageExtractor$ImageTooSmallException",
+    "10.1021_acscentsci.5c00779_0_figure_0_mol_1": "RuntimeError: MolVec: gov.nih.ncats.molvec.internal.algo.StructureImageExtractor$ImageTooSmallException",
+    "10.1021_jacs.4c15986_3_figure_0_mol_20": "RuntimeError: MolVec: gov.nih.ncats.molvec.internal.algo.StructureImageExtractor$ImageTooSmallException",
+    "10.1039_d4gc04450a_1_figure_0_mol_4": "RuntimeError: MolVec: gov.nih.ncats.molvec.internal.algo.StructureImageExtractor$ImageTooSmallException",
+    "10.1039_d4sc05623j_3_figure_1_mol_2": "RuntimeError: MolVec: gov.nih.ncats.molvec.internal.algo.StructureImageExtractor$ImageTooSmallException",
+    "10.1039_d5sc01006c_2_figure_0_mol_24": "RuntimeError: MolVec: gov.nih.ncats.molvec.internal.algo.StructureImageExtractor$ImageTooSmallException"
+  }
+}

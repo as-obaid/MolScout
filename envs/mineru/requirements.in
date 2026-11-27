@@ -1,0 +1,5 @@
+# What the mineru environment asks for; requirements.txt is it compiled with hashes (see its header).
+mineru[full]==4.2.3
+vllm==0.19.1
+# vLLM 0.19.1 refuses transformers 5.23 or newer (MinerU checks this before it starts the VLM).
+transformers>=5.10.1,<5.23.0
